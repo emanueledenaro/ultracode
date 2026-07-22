@@ -1,0 +1,41 @@
+{
+  "name": "ultracode",
+  "version": "0.2.0+codex.20260722195636",
+  "description": "Transparent, adaptive multi-agent software engineering orchestration for Codex.",
+  "author": {
+    "name": "Emanuele Denaro"
+  },
+  "homepage": "https://github.com/emanueledenaro/ultracode",
+  "repository": "https://github.com/emanueledenaro/ultracode",
+  "license": "MIT",
+  "keywords": [
+    "coding",
+    "multi-agent",
+    "orchestration",
+    "review",
+    "validation",
+    "project-control"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "UltraCode",
+    "shortDescription": "Transparent adaptive engineering workflow.",
+    "longDescription": "Keeps the user in control while it inspects, decomposes, delegates, verifies, implements, validates, and synthesizes complex engineering work. Includes guided project initialization, safe configuration editing, live status, Codex and Claude Code adapters, and data-driven swarms whose size follows the problem rather than a preset number.",
+    "developerName": "Emanuele Denaro",
+    "category": "Productivity",
+    "websiteURL": "https://github.com/emanueledenaro/ultracode",
+    "brandColor": "#2FB9D1",
+    "composerIcon": "./assets/ultracode-icon.png",
+    "logo": "./assets/ultracode-icon.png",
+    "logoDark": "./assets/ultracode-icon.png",
+    "capabilities": [
+      "Interactive",
+      "Write"
+    ],
+    "defaultPrompt": [
+      "Use $ultracode-init to configure this repository.",
+      "Use $ultracode to execute this task end to end.",
+      "Use $ultracode-status to show the live work state."
+    ]
+  }
+}

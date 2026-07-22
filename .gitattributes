@@ -1,0 +1,5 @@
+* text=auto eol=lf
+plugins/ultracode/** -text whitespace=cr-at-eol
+*.png binary
+*.ico binary
+*.zip binary

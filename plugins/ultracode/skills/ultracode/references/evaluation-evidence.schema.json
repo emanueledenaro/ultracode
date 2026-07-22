@@ -1,0 +1,116 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ultracode.local/schemas/evaluation-evidence.schema.json",
+  "title": "UltraCode release evaluation evidence",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "attestation_scope",
+    "plugin_version_prefix",
+    "evaluated_on",
+    "skill_sha256",
+    "payload_sha256",
+    "trace_artifact",
+    "trace_sha256",
+    "scenario_results",
+    "fixture_results",
+    "validation_results",
+    "audit_results"
+  ],
+  "properties": {
+    "schema_version": { "const": 2 },
+    "attestation_scope": {
+      "const": "local-consistency-only",
+      "description": "Local evidence supports consistency and tamper detection, not independent authenticity."
+    },
+    "plugin_version_prefix": { "type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$" },
+    "evaluated_on": { "type": "string", "format": "date" },
+    "skill_sha256": {
+      "type": "object",
+      "required": ["ultracode", "ultracode-init", "ultracode-edit", "ultracode-status"],
+      "properties": {
+        "ultracode": { "$ref": "#/$defs/sha256" },
+        "ultracode-init": { "$ref": "#/$defs/sha256" },
+        "ultracode-edit": { "$ref": "#/$defs/sha256" },
+        "ultracode-status": { "$ref": "#/$defs/sha256" }
+      },
+      "additionalProperties": false
+    },
+    "payload_sha256": {
+      "$ref": "#/$defs/sha256",
+      "description": "SHA-256 over ordinally sorted POSIX relative path + NUL + exact bytes + NUL for every plugin file except evaluation-evidence.json and evaluation-traces.json."
+    },
+    "trace_artifact": { "const": "evaluation-traces.json" },
+    "trace_sha256": { "$ref": "#/$defs/sha256" },
+    "scenario_results": {
+      "type": "array",
+      "minItems": 12,
+      "maxItems": 12,
+      "uniqueItems": true,
+      "items": { "$ref": "#/$defs/scenarioResult" }
+    },
+    "fixture_results": {
+      "type": "array",
+      "minItems": 10,
+      "maxItems": 10,
+      "uniqueItems": true,
+      "items": { "$ref": "#/$defs/executableResult" }
+    },
+    "validation_results": {
+      "type": "array",
+      "minItems": 8,
+      "maxItems": 8,
+      "uniqueItems": true,
+      "items": { "$ref": "#/$defs/executableResult" }
+    },
+    "audit_results": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 1,
+      "uniqueItems": true,
+      "items": { "$ref": "#/$defs/auditResult" }
+    }
+  },
+  "$defs": {
+    "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "status": { "enum": ["PASSED", "FAILED", "DRIFT", "PENDING", "NOT_AVAILABLE"] },
+    "traceId": { "type": "string", "pattern": "^trace-[a-z0-9][a-z0-9-]*$" },
+    "scenarioResult": {
+      "type": "object",
+      "required": ["id", "status", "trace_id", "evidence"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^UC-[0-9]{2}$" },
+        "status": { "$ref": "#/$defs/status" },
+        "trace_id": { "$ref": "#/$defs/traceId" },
+        "evidence": { "type": "string", "minLength": 1 }
+      },
+      "additionalProperties": false
+    },
+    "executableResult": {
+      "type": "object",
+      "required": ["check", "status", "command", "exit_code", "trace_id", "evidence"],
+      "properties": {
+        "check": { "type": "string", "minLength": 1 },
+        "status": { "$ref": "#/$defs/status" },
+        "command": { "type": "string", "minLength": 1 },
+        "exit_code": { "type": ["integer", "null"] },
+        "trace_id": { "$ref": "#/$defs/traceId" },
+        "evidence": { "type": "string", "minLength": 1 }
+      },
+      "additionalProperties": false
+    },
+    "auditResult": {
+      "type": "object",
+      "required": ["check", "severity", "status", "trace_id", "evidence"],
+      "properties": {
+        "check": { "type": "string", "minLength": 1 },
+        "severity": { "enum": ["HIGH", "MEDIUM", "LOW"] },
+        "status": { "$ref": "#/$defs/status" },
+        "trace_id": { "$ref": "#/$defs/traceId" },
+        "evidence": { "type": "string", "minLength": 1 }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

@@ -1,0 +1,6 @@
+interface:
+  display_name: "UltraCode"
+  short_description: "Transparent adaptive engineering workflow"
+  default_prompt: "Use $ultracode to execute this engineering task with visible progress, data-driven delegation, and adversarial verification."
+policy:
+  allow_implicit_invocation: true

@@ -1,0 +1,59 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ultracode.local/schemas/managed-manifest.schema.json",
+  "title": "UltraCode managed artifact manifest",
+  "type": "object",
+  "required": ["schema_version", "generated_by", "entries"],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "generated_by": {
+      "enum": ["ultracode-init", "ultracode-edit"]
+    },
+    "entries": {
+      "type": "array",
+      "minItems": 3,
+      "items": {
+        "type": "object",
+        "required": ["path", "mode", "sha256"],
+        "properties": {
+          "path": {
+            "type": "string",
+            "pattern": "^(?!/)(?![A-Za-z]:)(?!~)(?!.*(?:^|/)\\.{1,2}(?:/|$))[A-Za-z0-9._-]+(?:/[A-Za-z0-9._-]+)*$"
+          },
+          "mode": { "enum": ["file", "block"] },
+          "sha256": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          },
+          "start": {
+            "type": "string",
+            "pattern": "^<!-- ultracode:[a-z0-9]+(?:-[a-z0-9]+)*:start -->$"
+          },
+          "end": {
+            "type": "string",
+            "pattern": "^<!-- ultracode:[a-z0-9]+(?:-[a-z0-9]+)*:end -->$"
+          }
+        },
+        "allOf": [
+          {
+            "if": {
+              "properties": { "mode": { "const": "block" } },
+              "required": ["mode"]
+            },
+            "then": { "required": ["start", "end"] },
+            "else": {
+              "not": {
+                "anyOf": [
+                  { "required": ["start"] },
+                  { "required": ["end"] }
+                ]
+              }
+            }
+          }
+        ],
+        "additionalProperties": true
+      }
+    }
+  },
+  "additionalProperties": true
+}

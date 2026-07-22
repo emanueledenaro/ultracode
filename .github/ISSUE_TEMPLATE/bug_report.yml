@@ -1,0 +1,47 @@
+name: Bug report
+description: Report reproducible UltraCode behavior that violates the contract.
+title: "[Bug]: "
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: Do not include credentials, private source code, or sensitive logs.
+  - type: input
+    id: version
+    attributes:
+      label: UltraCode version
+      placeholder: 0.2.0
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Minimal reproduction
+      description: Include sanitized steps and relevant status or validator output.
+    validations:
+      required: true
+  - type: dropdown
+    id: surface
+    attributes:
+      label: Affected surface
+      options:
+        - ultracode
+        - ultracode-init
+        - ultracode-edit
+        - ultracode-status
+        - project doctor
+        - packaging or installation
+    validations:
+      required: true

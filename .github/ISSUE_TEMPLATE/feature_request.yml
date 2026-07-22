@@ -1,0 +1,25 @@
+name: Feature request
+description: Propose a bounded capability or protocol improvement.
+title: "[Feature]: "
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: Describe the user-visible limitation, not only a proposed mechanism.
+    validations:
+      required: true
+  - type: textarea
+    id: outcome
+    attributes:
+      label: Desired outcome
+    validations:
+      required: true
+  - type: textarea
+    id: safety
+    attributes:
+      label: Authority and safety impact
+      description: Explain effects on user control, writes, delegation, verification, or adapters.
+    validations:
+      required: true

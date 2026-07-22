@@ -1,0 +1,256 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ultracode.local/schemas/project-config.schema.json",
+  "title": "UltraCode project configuration",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "project",
+    "control",
+    "authority",
+    "swarm",
+    "adapters",
+    "artifacts",
+    "commands",
+    "completion",
+    "roles"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "project": {
+      "type": "object",
+      "required": ["name", "mission", "root", "stack", "targets", "non_goals"],
+      "properties": {
+        "name": { "type": "string", "minLength": 1 },
+        "mission": { "type": "string", "minLength": 1 },
+        "root": { "const": "." },
+        "stack": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 },
+          "uniqueItems": true
+        },
+        "targets": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 },
+          "uniqueItems": true
+        },
+        "non_goals": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 },
+          "uniqueItems": true
+        }
+      },
+      "additionalProperties": true
+    },
+    "control": {
+      "type": "object",
+      "required": [
+        "plan_gate",
+        "updates",
+        "detail",
+        "show_agent_jobs",
+        "show_files",
+        "show_validation",
+        "persistent_status",
+        "status_path"
+      ],
+      "properties": {
+        "plan_gate": {
+          "enum": ["follow-repository", "confirm-before-write", "autonomous-within-authority"]
+        },
+        "updates": {
+          "enum": ["phase-and-barrier", "phase-only", "detailed"]
+        },
+        "detail": {
+          "enum": ["compact", "standard", "detailed"]
+        },
+        "show_agent_jobs": { "type": "boolean" },
+        "show_files": { "type": "boolean" },
+        "show_validation": { "type": "boolean" },
+        "persistent_status": {
+          "enum": ["conversation-only", "local", "tracked"]
+        },
+        "status_path": {
+          "type": "string",
+          "pattern": "^\\.ultracode/[A-Za-z0-9._-]+(?:/[A-Za-z0-9._-]+)*$"
+        }
+      },
+      "additionalProperties": true
+    },
+    "authority": {
+      "type": "object",
+      "required": ["git", "external", "destructive", "dependencies", "deployment", "status_writes"],
+      "properties": {
+        "git": { "enum": ["explicit-only"] },
+        "external": { "enum": ["explicit-only"] },
+        "destructive": { "enum": ["explicit-only"] },
+        "dependencies": { "enum": ["explicit-only"] },
+        "deployment": { "enum": ["explicit-only"] },
+        "status_writes": {
+          "enum": ["change-tasks-only", "explicit-per-task"]
+        }
+      },
+      "additionalProperties": true
+    },
+    "swarm": {
+      "type": "object",
+      "required": [
+        "decomposition",
+        "orthogonal_lenses",
+        "verification",
+        "synthesis_agents",
+        "concurrency",
+        "hard_safety_cap",
+        "model_policy"
+      ],
+      "properties": {
+        "decomposition": { "const": "data-driven" },
+        "orthogonal_lenses": { "const": "as-needed" },
+        "verification": { "const": "one-per-material-finding" },
+        "synthesis_agents": { "const": 1 },
+        "concurrency": {
+          "oneOf": [
+            { "const": "auto" },
+            { "type": "integer", "minimum": 1 }
+          ]
+        },
+        "hard_safety_cap": { "type": "integer", "minimum": 1 },
+        "model_policy": {
+          "type": "object",
+          "required": ["lead", "bounded_agents", "verifiers", "fallback"],
+          "properties": {
+            "lead": {
+              "enum": ["strongest-available", "balanced-available", "inherit"]
+            },
+            "bounded_agents": {
+              "enum": ["strongest-available", "balanced-available", "inherit"]
+            },
+            "verifiers": {
+              "enum": ["strongest-available", "balanced-available", "inherit"]
+            },
+            "fallback": { "const": "inherit" }
+          },
+          "additionalProperties": true
+        }
+      },
+      "not": {
+        "required": ["max_total_agents"]
+      },
+      "additionalProperties": true
+    },
+    "adapters": {
+      "type": "object",
+      "required": ["codex", "claude"],
+      "properties": {
+        "codex": { "type": "boolean" },
+        "claude": { "type": "boolean" }
+      },
+      "anyOf": [
+        { "properties": { "codex": { "const": true } } },
+        { "properties": { "claude": { "const": true } } }
+      ],
+      "additionalProperties": true
+    },
+    "artifacts": {
+      "type": "object",
+      "required": ["context", "rules", "skills"],
+      "properties": {
+        "context": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "pattern": "^\\.agents/context/[A-Za-z0-9._-]+(?:/[A-Za-z0-9._-]+)*\\.md$"
+          },
+          "uniqueItems": true
+        },
+        "rules": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^\\.agents/rules/[a-z0-9]+(?:-[a-z0-9]+)*\\.md$"
+          },
+          "uniqueItems": true
+        },
+        "skills": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^\\.agents/skills/[a-z0-9]+(?:-[a-z0-9]+)*/SKILL\\.md$"
+          },
+          "uniqueItems": true
+        }
+      },
+      "additionalProperties": true
+    },
+    "commands": {
+      "type": "object",
+      "required": ["install", "format", "lint", "typecheck", "test", "build", "run", "health"],
+      "properties": {
+        "install": { "$ref": "#/$defs/commandList" },
+        "format": { "$ref": "#/$defs/commandList" },
+        "lint": { "$ref": "#/$defs/commandList" },
+        "typecheck": { "$ref": "#/$defs/commandList" },
+        "test": { "$ref": "#/$defs/commandList" },
+        "build": { "$ref": "#/$defs/commandList" },
+        "run": { "$ref": "#/$defs/commandList" },
+        "health": { "$ref": "#/$defs/commandList" }
+      },
+      "additionalProperties": true
+    },
+    "completion": {
+      "type": "object",
+      "required": ["required_checks", "real_path", "review"],
+      "properties": {
+        "required_checks": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 },
+          "uniqueItems": true
+        },
+        "real_path": { "type": "string" },
+        "review": {
+          "enum": ["independent-for-material-change", "independent-for-critical-only", "repository-policy"]
+        }
+      },
+      "additionalProperties": true
+    },
+    "roles": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "purpose", "mode", "skills"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+          },
+          "purpose": { "type": "string", "minLength": 1 },
+          "mode": { "enum": ["read-only", "workspace-write"] },
+          "skills": {
+            "type": "array",
+            "items": { "type": "string", "minLength": 1 },
+            "uniqueItems": true
+          }
+        },
+        "additionalProperties": true
+      }
+    }
+  },
+  "$defs": {
+    "commandList": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["command", "evidence"],
+        "properties": {
+          "command": { "type": "string", "minLength": 1 },
+          "evidence": { "enum": ["VERIFIED", "INFERRED", "UNKNOWN"] }
+        },
+        "additionalProperties": true
+      }
+    }
+  },
+  "additionalProperties": true
+}

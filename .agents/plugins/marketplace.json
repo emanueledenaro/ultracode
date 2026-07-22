@@ -1,0 +1,23 @@
+{
+  "name": "ultracode",
+  "interface": {
+    "displayName": "UltraCode"
+  },
+  "plugins": [
+    {
+      "name": "ultracode",
+      "source": {
+        "source": "local",
+        "path": "./plugins/ultracode"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL",
+        "products": [
+          "CODEX"
+        ]
+      },
+      "category": "Productivity"
+    }
+  ]
+}

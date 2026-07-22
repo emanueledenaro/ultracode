@@ -1,0 +1,247 @@
+{
+  "schema_version": 2,
+  "attestation_scope": "local-consistency-only",
+  "plugin_version_prefix": "0.2.0",
+  "evaluated_on": "2026-07-22",
+  "skill_sha256": {
+    "ultracode": "231d5ac1a952f6daf58a778d92ddecc71b0a6dee8e9ec559daea4bd32bc8bf23",
+    "ultracode-init": "0bd558057cd05dad328f83cc39a7a5ee0f5c7026d3829935d286c2ae3e93256f",
+    "ultracode-edit": "a7f01190e06d0dbc58de0352be48c5b275d907e61f820be979eb48a94a39333a",
+    "ultracode-status": "a024a309bfaf4c4b5d719a04265ba2b93952e5e58c0f6427e553a7bff1c2b0b4"
+  },
+  "payload_sha256": "9b1e3ab1166a3a84375dda968a61806684b2afe6e02435668c3d5caf2b5e90a0",
+  "trace_artifact": "evaluation-traces.json",
+  "trace_sha256": "fbd839f7d587ec4ec0c45aa21d766931190cd1625b8376088e6f3ab34ba7422c",
+  "scenario_results": [
+    {
+      "id": "UC-01",
+      "status": "PASSED",
+      "trace_id": "trace-uc-01-direct",
+      "evidence": "Fresh agent answered directly in one sentence with no delegation, repository command, or write."
+    },
+    {
+      "id": "UC-03",
+      "status": "PASSED",
+      "trace_id": "trace-uc-03-diagnose",
+      "evidence": "Fresh agent diagnosed duplicated guidance trees read-only and made no changes."
+    },
+    {
+      "id": "UC-04",
+      "status": "PASSED",
+      "trace_id": "trace-uc-04-audit",
+      "evidence": "Fresh independent audit remained read-only and returned evidence-backed findings."
+    },
+    {
+      "id": "UC-19",
+      "status": "PASSED",
+      "trace_id": "trace-uc-19-fanout",
+      "evidence": "Fresh agent derived 37 unit jobs, one synthesis, conditional verifiers, and visible capacity waves without truncation."
+    },
+    {
+      "id": "UC-23",
+      "status": "PASSED",
+      "trace_id": "trace-uc-23-status",
+      "evidence": "Fresh agent separated 45 logical jobs from 3 live agents and marked a mismatched snapshot stale without writes."
+    },
+    {
+      "id": "UC-24",
+      "status": "PASSED",
+      "trace_id": "trace-uc-24-init",
+      "evidence": "Fresh agent inspected, interviewed, and previewed exact generated files without writing or asking for an agent count."
+    },
+    {
+      "id": "UC-25",
+      "status": "PASSED",
+      "trace_id": "trace-uc-25-edit",
+      "evidence": "Fresh agent detected drift, preserved manual content, and requested conflict resolution before writing."
+    },
+    {
+      "id": "UC-29",
+      "status": "PASSED",
+      "trace_id": "trace-uc-29-control",
+      "evidence": "Fresh forward test resolved precedence, eight logical jobs, four operational waves, safety-cap behavior, visibility, and model routing without writes or delegation."
+    },
+    {
+      "id": "UC-30",
+      "status": "PASSED",
+      "trace_id": "trace-uc-30-manifest",
+      "evidence": "Both live disposable 36-case harnesses matched every expected status and exit code, including incomplete manifests, exact routing, boolean type-confusion, case-sensitive keys and identifiers, canonical-skill, adapter-semantic, and reparse failures."
+    },
+    {
+      "id": "UC-31",
+      "status": "PASSED",
+      "trace_id": "trace-uc-31-reparse",
+      "evidence": "Both live harnesses created the reparse fixture and both doctors rejected it before target access with exit code 1."
+    },
+    {
+      "id": "UC-32",
+      "status": "PASSED",
+      "trace_id": "trace-uc-32-adapter",
+      "evidence": "Both live harnesses rejected missing, contrary, and mismatched canonical adapter semantics despite refreshed managed byte hashes."
+    },
+    {
+      "id": "UC-34",
+      "status": "PASSED",
+      "trace_id": "trace-uc-34-casing",
+      "evidence": "Both 36-case doctor corpora rejected malformed config keys, artifact paths, and role IDs; the six-case contract corpus passed both baselines and both runtimes rejected Schema_Version plus an unexpected required schema field."
+    }
+  ],
+  "fixture_results": [
+    {
+      "check": "valid project fixture Python",
+      "status": "PASSED",
+      "command": "${PYTHON} ${PLUGIN_ROOT}/skills/ultracode/scripts/project_doctor.py ${VALID_FIXTURE}",
+      "exit_code": 0,
+      "trace_id": "trace-fixture-valid",
+      "evidence": "Python doctor passed the valid corpus case with exit code 0."
+    },
+    {
+      "check": "valid project fixture PowerShell",
+      "status": "PASSED",
+      "command": "powershell -File ${PLUGIN_ROOT}/skills/ultracode/scripts/project_doctor.ps1 -ProjectRoot ${VALID_FIXTURE}",
+      "exit_code": 0,
+      "trace_id": "trace-fixture-valid-powershell",
+      "evidence": "PowerShell doctor passed the valid corpus case with exit code 0."
+    },
+    {
+      "check": "managed drift fixture Python",
+      "status": "DRIFT",
+      "command": "${PYTHON} ${PLUGIN_ROOT}/skills/ultracode/scripts/project_doctor.py ${DRIFT_FIXTURE}",
+      "exit_code": 2,
+      "trace_id": "trace-fixture-drift",
+      "evidence": "Python doctor detected managed drift with exit code 2."
+    },
+    {
+      "check": "managed drift fixture PowerShell",
+      "status": "DRIFT",
+      "command": "powershell -File ${PLUGIN_ROOT}/skills/ultracode/scripts/project_doctor.ps1 -ProjectRoot ${DRIFT_FIXTURE}",
+      "exit_code": 2,
+      "trace_id": "trace-fixture-drift-powershell",
+      "evidence": "PowerShell doctor detected managed drift with exit code 2."
+    },
+    {
+      "check": "incomplete managed manifest fixture Python",
+      "status": "FAILED",
+      "command": "${PYTHON} ${PLUGIN_ROOT}/skills/ultracode/scripts/project_doctor.py ${INCOMPLETE_MANIFEST_FIXTURE}",
+      "exit_code": 1,
+      "trace_id": "trace-fixture-incomplete-manifest",
+      "evidence": "Python doctor rejected both empty-manifest and omitted-config with exit code 1 using the canonical incomplete-fixture command template."
+    },
+    {
+      "check": "incomplete managed manifest fixture PowerShell",
+      "status": "FAILED",
+      "command": "powershell -File ${PLUGIN_ROOT}/skills/ultracode/scripts/project_doctor.ps1 -ProjectRoot ${INCOMPLETE_MANIFEST_FIXTURE}",
+      "exit_code": 1,
+      "trace_id": "trace-fixture-incomplete-manifest-powershell",
+      "evidence": "PowerShell doctor rejected both empty-manifest and omitted-config with exit code 1 using the canonical incomplete-fixture command template."
+    },
+    {
+      "check": "reparse boundary fixture Python",
+      "status": "FAILED",
+      "command": "${PYTHON} ${PLUGIN_ROOT}/skills/ultracode/scripts/project_doctor.py ${REPARSE_FIXTURE}",
+      "exit_code": 1,
+      "trace_id": "trace-fixture-reparse",
+      "evidence": "Python doctor rejected the reparse boundary before target access with exit code 1."
+    },
+    {
+      "check": "reparse boundary fixture PowerShell",
+      "status": "FAILED",
+      "command": "powershell -File ${PLUGIN_ROOT}/skills/ultracode/scripts/project_doctor.ps1 -ProjectRoot ${REPARSE_FIXTURE}",
+      "exit_code": 1,
+      "trace_id": "trace-fixture-reparse-powershell",
+      "evidence": "PowerShell doctor rejected the reparse boundary before target access with exit code 1."
+    },
+    {
+      "check": "semantic adapter mismatch fixture Python",
+      "status": "FAILED",
+      "command": "${PYTHON} ${PLUGIN_ROOT}/skills/ultracode/scripts/project_doctor.py ${SEMANTIC_ADAPTER_FIXTURE}",
+      "exit_code": 1,
+      "trace_id": "trace-fixture-semantic-adapter",
+      "evidence": "Python doctor rejected the incorrect canonical marker despite a matching managed hash, with exit code 1."
+    }
+    ,
+    {
+      "check": "semantic adapter mismatch fixture PowerShell",
+      "status": "FAILED",
+      "command": "powershell -File ${PLUGIN_ROOT}/skills/ultracode/scripts/project_doctor.ps1 -ProjectRoot ${SEMANTIC_ADAPTER_FIXTURE}",
+      "exit_code": 1,
+      "trace_id": "trace-fixture-semantic-adapter-powershell",
+      "evidence": "PowerShell doctor rejected the incorrect canonical marker despite a matching managed hash, with exit code 1."
+    }
+  ],
+  "validation_results": [
+    {
+      "check": "quick_validate ultracode",
+      "status": "PASSED",
+      "command": "uv run --offline --with pyyaml -- python ${SKILL_CREATOR}/scripts/quick_validate.py ${PLUGIN_ROOT}/skills/ultracode",
+      "exit_code": 0,
+      "trace_id": "trace-validate-skill-core",
+      "evidence": "Official skill-creator validator passed after the control, doctor, and payload-gate edits."
+    },
+    {
+      "check": "quick_validate ultracode-init",
+      "status": "PASSED",
+      "command": "uv run --offline --with pyyaml -- python ${SKILL_CREATOR}/scripts/quick_validate.py ${PLUGIN_ROOT}/skills/ultracode-init",
+      "exit_code": 0,
+      "trace_id": "trace-validate-skill-init",
+      "evidence": "Official skill-creator validator passed after the control, doctor, and payload-gate edits."
+    },
+    {
+      "check": "quick_validate ultracode-edit",
+      "status": "PASSED",
+      "command": "uv run --offline --with pyyaml -- python ${SKILL_CREATOR}/scripts/quick_validate.py ${PLUGIN_ROOT}/skills/ultracode-edit",
+      "exit_code": 0,
+      "trace_id": "trace-validate-skill-edit",
+      "evidence": "Official skill-creator validator passed after the control, doctor, and payload-gate edits."
+    },
+    {
+      "check": "quick_validate ultracode-status",
+      "status": "PASSED",
+      "command": "uv run --offline --with pyyaml -- python ${SKILL_CREATOR}/scripts/quick_validate.py ${PLUGIN_ROOT}/skills/ultracode-status",
+      "exit_code": 0,
+      "trace_id": "trace-validate-skill-status",
+      "evidence": "Official skill-creator validator passed after the control, doctor, and payload-gate edits."
+    },
+    {
+      "check": "validate_plugin",
+      "status": "PASSED",
+      "command": "uv run --offline --with pyyaml -- python ${PLUGIN_CREATOR}/scripts/validate_plugin.py ${PLUGIN_ROOT}",
+      "exit_code": 0,
+      "trace_id": "trace-validate-plugin",
+      "evidence": "Official plugin-creator validator passed after the control, doctor, and payload-gate edits."
+    },
+    {
+      "check": "contract checker Python bootstrap",
+      "status": "PASSED",
+      "command": "${PYTHON} ${PLUGIN_ROOT}/skills/ultracode/scripts/check_contract.py --allow-pending",
+      "exit_code": 0,
+      "trace_id": "trace-contract-python",
+      "evidence": "Bootstrap command executed successfully; strict release mode remains a separate final gate."
+    },
+    {
+      "check": "contract checker PowerShell bootstrap",
+      "status": "PASSED",
+      "command": "powershell -File ${PLUGIN_ROOT}/skills/ultracode/scripts/check_contract.ps1 -AllowPending",
+      "exit_code": 0,
+      "trace_id": "trace-contract-powershell",
+      "evidence": "Bootstrap command executed successfully; strict release mode remains a separate final gate."
+    },
+    {
+      "check": "contract casing corpus",
+      "status": "PASSED",
+      "command": "${PYTHON} ${PLUGIN_ROOT}/skills/ultracode/scripts/run_contract_casing_corpus.py",
+      "exit_code": 0,
+      "trace_id": "trace-contract-casing-corpus",
+      "evidence": "Disposable-copy corpus completed 6/6 matches: both baselines passed and both runtimes rejected malformed evidence keys plus an unexpected required schema field."
+    }
+  ],
+  "audit_results": [
+    {
+      "check": "final independent high-severity audit",
+      "severity": "HIGH",
+      "status": "PASSED",
+      "trace_id": "trace-audit-final",
+      "evidence": "Independent full audit plus targeted follow-up confirmed zero open HIGH and zero open MEDIUM findings; all adversarial casing and exact-schema bypasses failed closed in both runtimes."
+    }
+  ]
+}
