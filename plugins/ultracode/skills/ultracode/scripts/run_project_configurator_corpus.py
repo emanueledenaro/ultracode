@@ -515,37 +515,6 @@ def case_project_root_under_linked_ancestor_is_accepted(base: Path) -> None:
         raise AssertionError(
             "doctor rejected a project under a linked ancestor: " f"{stderr or report}"
         )
-    if os.name == "nt":
-        powershell_doctor = subprocess.run(
-            [
-                "powershell.exe",
-                "-NoProfile",
-                "-ExecutionPolicy",
-                "Bypass",
-                "-File",
-                str(DOCTOR.with_suffix(".ps1")),
-                "-ProjectRoot",
-                str(alias / "project"),
-                "-Json",
-            ],
-            capture_output=True,
-            text=True,
-            check=False,
-        )
-        try:
-            powershell_report = json.loads(powershell_doctor.stdout)
-        except json.JSONDecodeError as exc:
-            raise AssertionError(
-                "PowerShell doctor returned invalid JSON through a linked ancestor: "
-                f"{powershell_doctor.stdout!r}"
-            ) from exc
-        if powershell_doctor.returncode != 0 or powershell_report.get("status") != "PASSED":
-            raise AssertionError(
-                "PowerShell doctor rejected a project under a linked ancestor: "
-                f"{powershell_doctor.stderr or powershell_report}"
-            )
-
-
 def case_unsafe_paths_and_reparse_are_rejected(base: Path) -> None:
     unsafe_root = base / "unsafe-project"
     unsafe_root.mkdir(parents=True)

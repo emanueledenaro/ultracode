@@ -12,7 +12,7 @@
   <a href="https://github.com/emanueledenaro/ultracode/actions/workflows/validate.yml"><img alt="Validation" src="https://github.com/emanueledenaro/ultracode/actions/workflows/validate.yml/badge.svg"></a>
   <a href="LICENSE"><img alt="MIT License" src="https://img.shields.io/badge/license-MIT-2FB9D1.svg"></a>
   <img alt="Codex plugin" src="https://img.shields.io/badge/Codex-plugin-202124.svg">
-  <img alt="Release" src="https://img.shields.io/badge/release-0.5.2-2FB9D1.svg">
+  <img alt="Release" src="https://img.shields.io/badge/release-0.5.3-2FB9D1.svg">
 </p>
 
 UltraCode is a Codex plugin that keeps complex AI engineering work observable, interruptible, and evidence-driven. It inspects the real project, derives bounded jobs from the problem, schedules them through available capacity, verifies material findings adversarially, and produces one coherent result.

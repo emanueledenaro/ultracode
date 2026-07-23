@@ -1,6 +1,6 @@
 {
   "name": "ultracode",
-  "version": "0.5.2+codex.20260723195500",
+  "version": "0.5.3+codex.20260724011735",
   "description": "Transparent, adaptive engineering orchestration for Codex with read-only command Help.",
   "author": {
     "name": "Emanuele Denaro"

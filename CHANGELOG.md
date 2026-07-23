@@ -2,7 +2,7 @@
 
 All notable changes to UltraCode are documented here.
 
-## [Unreleased]
+## [0.5.3] - 2026-07-24
 
 ### Fixed
 
