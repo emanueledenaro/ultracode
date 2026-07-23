@@ -470,6 +470,82 @@ def create_directory_link(link: Path, target: Path) -> None:
         )
 
 
+def case_project_root_under_linked_ancestor_is_accepted(base: Path) -> None:
+    canonical_base = base / "canonical-base"
+    root = canonical_base / "project"
+    root.mkdir(parents=True)
+    alias = base / "base-alias"
+    create_directory_link(alias, canonical_base)
+    proposal_path = base / "linked-ancestor-proposal.json"
+    write_json(proposal_path, base_proposal())
+
+    exit_code, result, stderr = run_configurator(
+        "plan", "--project-root", str(alias / "project"), "--proposal", str(proposal_path)
+    )
+    if exit_code != 0 or result.get("status") != "PLANNED":
+        raise AssertionError(
+            "project root under a linked ancestor was rejected: " f"{stderr or result}"
+        )
+    apply_exit, applied, stderr = run_configurator(
+        "apply",
+        "--project-root",
+        str(alias / "project"),
+        "--proposal",
+        str(proposal_path),
+        "--plan-id",
+        result["plan_id"],
+    )
+    if apply_exit != 0 or applied.get("status") != "APPLIED":
+        raise AssertionError(
+            "linked-ancestor project could not be initialized: " f"{stderr or applied}"
+        )
+    doctor = subprocess.run(
+        [sys.executable, str(DOCTOR), str(alias / "project"), "--json"],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    try:
+        report = json.loads(doctor.stdout)
+    except json.JSONDecodeError as exc:
+        raise AssertionError(
+            f"doctor returned invalid JSON through a linked ancestor: {doctor.stdout!r}"
+        ) from exc
+    if doctor.returncode != 0 or report.get("status") != "PASSED":
+        raise AssertionError(
+            "doctor rejected a project under a linked ancestor: " f"{stderr or report}"
+        )
+    if os.name == "nt":
+        powershell_doctor = subprocess.run(
+            [
+                "powershell.exe",
+                "-NoProfile",
+                "-ExecutionPolicy",
+                "Bypass",
+                "-File",
+                str(DOCTOR.with_suffix(".ps1")),
+                "-ProjectRoot",
+                str(alias / "project"),
+                "-Json",
+            ],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        try:
+            powershell_report = json.loads(powershell_doctor.stdout)
+        except json.JSONDecodeError as exc:
+            raise AssertionError(
+                "PowerShell doctor returned invalid JSON through a linked ancestor: "
+                f"{powershell_doctor.stdout!r}"
+            ) from exc
+        if powershell_doctor.returncode != 0 or powershell_report.get("status") != "PASSED":
+            raise AssertionError(
+                "PowerShell doctor rejected a project under a linked ancestor: "
+                f"{powershell_doctor.stderr or powershell_report}"
+            )
+
+
 def case_unsafe_paths_and_reparse_are_rejected(base: Path) -> None:
     unsafe_root = base / "unsafe-project"
     unsafe_root.mkdir(parents=True)
@@ -920,13 +996,14 @@ def main() -> int:
             case_second_apply_is_noop(base / "idempotent-apply")
             case_existing_agents_content_is_preserved(base / "existing-agents")
             case_managed_drift_conflicts_without_writes(base / "managed-drift")
+            case_project_root_under_linked_ancestor_is_accepted(base / "linked-ancestor")
             case_unsafe_paths_and_reparse_are_rejected(base / "unsafe-paths")
             case_rich_adapters_are_generated_deterministically(base / "rich-adapters")
             case_localized_edit_only_updates_dependents(base / "localized-edit")
     except (OSError, AssertionError, ValueError) as exc:
         print(f"Project configurator corpus failed: {exc}", file=sys.stderr)
         return 1
-    print("Project configurator corpus passed: 8/8")
+    print("Project configurator corpus passed: 9/9")
     return 0
 
 

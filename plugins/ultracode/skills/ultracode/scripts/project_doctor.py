@@ -994,6 +994,10 @@ def main() -> int:
     elif not root.is_dir():
         errors.append(f"project root is not a directory: {root}")
     else:
+        # Compare managed paths against the same canonical root that Path.resolve()
+        # produces below. On Windows, a temporary directory can be reached through
+        # a junction even when the project directory itself is not a reparse point.
+        root = root.resolve()
         config_path = safe_project_path(
             root, ".ultracode/config.json", ".ultracode/config.json", errors
         )

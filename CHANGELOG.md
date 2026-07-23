@@ -2,6 +2,14 @@
 
 All notable changes to UltraCode are documented here.
 
+## [Unreleased]
+
+### Fixed
+
+- The Python project doctor now canonicalizes a project root reached through an ancestor junction or
+  symlink before comparing managed paths, preventing a false “outside the repository” failure in
+  Windows temporary directories. The configurator corpus covers that route explicitly.
+
 ## [0.5.2] - 2026-07-23
 
 ### Changed

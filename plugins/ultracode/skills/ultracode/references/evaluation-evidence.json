@@ -2,7 +2,7 @@
   "schema_version": 2,
   "attestation_scope": "local-consistency-only",
   "plugin_version_prefix": "0.5.2",
-  "evaluated_on": "2026-07-23",
+  "evaluated_on": "2026-07-24",
   "skill_sha256": {
     "ultracode": "ee0890e7c20af906552fac2df227c0c47caacf30ee755fbbd4a9dad01984b1d7",
     "ultracode-help": "ed49458283f4ebb67fddd5bfdbc1286f7feba27ce39749b9e5df2153056ec7d6",
@@ -11,9 +11,9 @@
     "ultracode-flow": "ee457339fb5d33919e7d9356cef7fb530bdb9d732d889a4ff040dbefcbf4daec",
     "ultracode-status": "2147d19ff4634701e9dc1c8bc53b9e24a41c9c6f896dac17649307f30252432a"
   },
-  "payload_sha256": "ea6ba707254eb53a542a5f0426cd2d5badf96b26f914656fed476f8d28d99b47",
+  "payload_sha256": "e43278dc2da972e6bbd6e16e452d861e43d5c30557b98a55c269666bf069f1df",
   "trace_artifact": "evaluation-traces.json",
-  "trace_sha256": "ecb97b4b0ce38403c87d302acabf5cca4cac870b76e3ee3cff63e51833239580",
+  "trace_sha256": "447744826729f577a89e2f4d3f3c2862cf7bfaf983a8a186b43af6d4327fb680",
   "scenario_results": [
     {
       "id": "UC-01",
@@ -282,7 +282,7 @@
       "command": "${PYTHON} ${PLUGIN_ROOT}/skills/ultracode/scripts/run_project_configurator_corpus.py",
       "exit_code": 0,
       "trace_id": "trace-project-configurator-corpus",
-      "evidence": "Disposable configurator corpus passed 8/8 cases covering exact and idempotent plans, conflicts, drift and reparse safety including both Claude root candidates before read, rich adapters, unknown-key preservation, localized edits, and rollback."
+      "evidence": "Disposable configurator corpus passed 9/9 cases covering exact and idempotent plans, conflicts, drift and reparse safety including both Claude root candidates and a project under a linked ancestor before read, rich adapters, unknown-key preservation, localized edits, and rollback."
     }
   ],
   "audit_results": [

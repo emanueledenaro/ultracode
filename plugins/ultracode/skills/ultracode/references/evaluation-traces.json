@@ -2,7 +2,7 @@
   "schema_version": 1,
   "attestation_scope": "local-consistency-only",
   "plugin_version_prefix": "0.5.2",
-  "generated_on": "2026-07-23",
+  "generated_on": "2026-07-24",
   "records": [
     {
       "trace_id": "trace-uc-01-direct",
@@ -372,7 +372,7 @@
       "source_type": "command-result",
       "command": "${PYTHON} ${PLUGIN_ROOT}/skills/ultracode/scripts/run_project_configurator_corpus.py",
       "exit_code": 0,
-      "facts": ["The disposable corpus completed 8/8 cases with exit code 0.", "It proved invalid config, non-portable selectors, control, managed, nested-Claude, and top-level-Claude reparse traversal, unmanaged markers, collisions, and drift are rejected before selection, read, hash, or project writes.", "A forced Windows mid-apply PermissionError restored every earlier file and left the doctor-valid project byte-identical.", "It also proved deterministic plans, confirmed apply, no-op behavior, rich adapters, unknown-key preservation, and localized edits."]
+      "facts": ["The disposable corpus completed 9/9 cases with exit code 0.", "It proved a project below a linked ancestor remains valid after canonical root normalization, while invalid config, non-portable selectors, control, managed, nested-Claude, and top-level-Claude reparse traversal, unmanaged markers, collisions, and drift are rejected before selection, read, hash, or project writes.", "A forced Windows mid-apply PermissionError restored every earlier file and left the doctor-valid project byte-identical.", "It also proved deterministic plans, confirmed apply, no-op behavior, rich adapters, unknown-key preservation, and localized edits."]
     },
     {
       "trace_id": "trace-audit-final",
