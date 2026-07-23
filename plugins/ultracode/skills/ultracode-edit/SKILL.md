@@ -1,9 +1,14 @@
 ---
 name: ultracode-edit
-description: Safely modify an initialized UltraCode repository configuration and its managed Codex or Claude Code projections. Use when the user explicitly invokes `$ultracode-edit`, wants to change project AI rules, commands, control visibility, status persistence, model or objective-driven reasoning policy, safety cap, roles, skills, or adapters, or needs to repair configuration drift without losing manual edits.
+description: Safely modify an initialized UltraCode repository configuration and its managed Codex or Claude Code projections. Use when the user explicitly invokes `$ultracode-edit`, wants to change project AI rules, commands, control visibility, status persistence, model or objective-driven reasoning policy, safety cap, roles, skills, or adapters, or needs to repair configuration drift without losing manual edits. Do not select this skill when the request explicitly invokes `$ultracode-help`; `edit` is then only a Help topic.
 ---
 
 # UltraCode Edit
+
+## Respect explicit Help precedence
+
+If the request explicitly invokes `$ultracode-help` or `ultracode-help`, stop before diagnosis or
+configuration work. Read `../ultracode-help/SKILL.md` and answer `edit` as a read-only Help topic.
 
 Change the smallest configuration surface and regenerate only affected managed artifacts. Preserve user-authored content and make drift visible.
 

@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "attestation_scope": "local-consistency-only",
-  "plugin_version_prefix": "0.5.0",
+  "plugin_version_prefix": "0.5.2",
   "generated_on": "2026-07-23",
   "records": [
     {
@@ -152,7 +152,7 @@
       "source_type": "fresh-agent-result",
       "command": null,
       "exit_code": null,
-      "facts": ["Fresh Terra low task explained all six commands, command-selection rules, model and effort behavior, and copyable examples in plain language.", "It recommended Sol medium only before opening a new lead task, kept an active task inherited, denied automatic global Codex configuration changes, and performed no initialization, delegation, checks, or writes."]
+      "facts": ["Fresh 0.5.2 bare and brief Terra low contexts rendered the required chat hierarchy and semantic content read-only.", "A raw `$ultracode-help flow` context selected Flow and reconstructed live state; the source contract was repaired so every non-Help skill defers an explicit Help invocation before action.", "A new fresh source context returned only focused Flow help with four labeled fields, an inline blockquote example, and the nearest comparison; it did not inspect or invent live state.", "After the H1 gate changed the prompt text, a final fresh context received the exact current default prompt and produced exactly one H1, six ordered H2 areas, six H3 command sections, quick-choice/model/ticket tables, four fields and one blockquote per command, preflight behavior, and authority boundaries.", "No successful Help evaluation initialized, delegated, ran project checks, changed global settings, or wrote files."]
     },
     {
       "trace_id": "trace-uc-38-reasoning",
@@ -282,7 +282,7 @@
       "source_type": "command-result",
       "command": "uv run --offline --with pyyaml -- python ${SKILL_CREATOR}/scripts/quick_validate.py ${PLUGIN_ROOT}/skills/ultracode-help",
       "exit_code": 0,
-      "facts": ["Official skill-creator validator returned Skill is valid for the new always read-only Help skill."]
+      "facts": ["Official skill-creator validator returned Skill is valid for the chat-friendly Help layout and explicit command-precedence contract."]
     },
     {
       "trace_id": "trace-validate-skill-init",
@@ -342,7 +342,7 @@
       "source_type": "command-result",
       "command": "${PYTHON} ${PLUGIN_ROOT}/skills/ultracode/scripts/check_contract.py --allow-pending",
       "exit_code": 0,
-      "facts": ["The Python checker accepted the complete 0.5.0 structure, six skill hashes, frozen payload hash, 38 trace bindings, 44-case live doctor corpus, and all executed evidence.", "Only the explicitly pending final audit was reported as pending."]
+      "facts": ["Python accepted the 0.5.2 chat layout, per-command structure, table headers, inline blockquotes, explicit Help precedence in all five non-Help skills, semantic routing, prompt values, skill hashes, payload hash, and trace bindings.", "It completed the live doctor corpus and returned exit 0 with only the independent audit pending."]
     },
     {
       "trace_id": "trace-contract-powershell",
@@ -352,7 +352,7 @@
       "source_type": "command-result",
       "command": "powershell -File ${PLUGIN_ROOT}/skills/ultracode/scripts/check_contract.ps1 -AllowPending",
       "exit_code": 0,
-      "facts": ["The PowerShell checker independently accepted the same complete 0.5.0 structure, hashes, traces, 44-case live corpus, and executed evidence.", "Its pending-result report matched the Python checker."]
+      "facts": ["PowerShell independently enforced the same 0.5.2 layout, precedence, semantic, prompt-value, hash, and trace gates.", "It completed its live doctor corpus and returned exit 0 with only the independent audit pending."]
     },
     {
       "trace_id": "trace-contract-casing-corpus",
@@ -362,7 +362,7 @@
       "source_type": "command-result",
       "command": "${PYTHON} ${PLUGIN_ROOT}/skills/ultracode/scripts/run_contract_casing_corpus.py",
       "exit_code": 0,
-      "facts": ["The disposable contract corpus completed 6/6 matches with exit code 0.", "Both runtime baselines passed, both rejected Schema_Version, and both rejected an unexpected required schema field."]
+      "facts": ["The expanded disposable-copy corpus completed 34/34 matches with zero mismatches and zero unavailable runtimes.", "Python and PowerShell passed the baseline and rejected evidence casing, schema expansion, a demoted H1, missing command fields, missing inline prompt tokens, broken quick/model/ticket tables, flattened blockquotes, removed Flow Help precedence, routing semantics, Init preflight, and weakened metadata or manifest prompt values.", "The metadata mutation kept all required phrases only in a YAML comment while reducing the actual default_prompt to a generic invocation; both validators still rejected it."]
     },
     {
       "trace_id": "trace-project-configurator-corpus",
@@ -382,7 +382,7 @@
       "source_type": "independent-audit-result",
       "command": null,
       "exit_code": null,
-      "facts": ["Independent Sol xhigh review found one HIGH Claude-root reparse pre-read path, then verified it closed after both candidates moved behind require_safe_target.", "The reviewer confirmed nested invalid-UTF-8 and top-level Claude reparse regressions, Sol-medium startup boundaries, zero remaining HIGH, MEDIUM, or LOW findings, and release readiness."]
+      "facts": ["Independent Sol xhigh review found one material evidence gap: UC-37 required one H1, but the three validators and adversarial corpus did not enforce it.", "The repair added a canonical one-H1 gate to the repository, Python, and PowerShell validators, changed both default prompts to request one H1 explicitly, and added paired adversarial H1 cases.", "Re-audit verified repository validation exit 0, Python and PowerShell bootstrap checks exit 0, Python AST and PowerShell parser success, both project doctors exit 0, git diff check exit 0, 34/34 adversarial cases, exact current default-prompt behavior, explicit Help precedence, 6/6 skill hashes, payload and trace bindings, and 38 result-to-trace bindings.", "No HIGH, MEDIUM, or LOW findings remain."]
     }
   ]
 }

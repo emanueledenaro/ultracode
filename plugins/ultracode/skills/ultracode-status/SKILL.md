@@ -1,9 +1,14 @@
 ---
 name: ultracode-status
-description: Detailed, read-only diagnosis of an UltraCode task. Use when the user explicitly invokes `$ultracode-status` or asks for complete job history, files, findings, model and reasoning effort, validation evidence, blockers, persisted-state freshness, or a full diagnostic account. Prefer `$ultracode-flow` for a quick current-work snapshot. Never mutate the repository merely to refresh status.
+description: Detailed, read-only diagnosis of an UltraCode task. Use when the user explicitly invokes `$ultracode-status` or asks for complete job history, files, findings, model and reasoning effort, validation evidence, blockers, persisted-state freshness, or a full diagnostic account. Do not select this skill when the request explicitly invokes `$ultracode-help`; `status` is then only a Help topic. Prefer `$ultracode-flow` for a quick current-work snapshot. Never mutate the repository merely to refresh status.
 ---
 
 # UltraCode Status
+
+## Respect explicit Help precedence
+
+If the request explicitly invokes `$ultracode-help` or `ultracode-help`, do not inspect live state.
+Read `../ultracode-help/SKILL.md` and answer `status` as a read-only Help topic.
 
 Explain the current state so the user can decide whether to continue, redirect, pause, or stop.
 

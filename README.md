@@ -12,7 +12,7 @@
   <a href="https://github.com/emanueledenaro/ultracode/actions/workflows/validate.yml"><img alt="Validation" src="https://github.com/emanueledenaro/ultracode/actions/workflows/validate.yml/badge.svg"></a>
   <a href="LICENSE"><img alt="MIT License" src="https://img.shields.io/badge/license-MIT-2FB9D1.svg"></a>
   <img alt="Codex plugin" src="https://img.shields.io/badge/Codex-plugin-202124.svg">
-  <img alt="Release" src="https://img.shields.io/badge/release-0.5.0-2FB9D1.svg">
+  <img alt="Release" src="https://img.shields.io/badge/release-0.5.2-2FB9D1.svg">
 </p>
 
 UltraCode is a Codex plugin that keeps complex AI engineering work observable, interruptible, and evidence-driven. It inspects the real project, derives bounded jobs from the problem, schedules them through available capacity, verifies material findings adversarially, and produces one coherent result.
@@ -57,6 +57,14 @@ Use $ultracode-edit to change the validation commands and status policy.
 ```
 
 Choose `$ultracode-help` when you need to understand or select a command. Use `$ultracode` for an engineering outcome, `$ultracode-init` to propose baseline project control, `$ultracode-edit` to change existing control, `$ultracode-flow` for a quick live snapshot, and `$ultracode-status` for the detailed evidence view. Help, Flow, and Status are always read-only; none starts work, initializes a repository, or runs checks merely to answer.
+
+Invoking `$ultracode-help` without a topic returns the complete command overview. Add a topic such
+as `flow` or `models` for focused help, or explicitly add `breve` or `sintetico` when you want the
+compact version. The wording can vary between tasks, but the required facts do not.
+
+The complete overview is formatted for the chat surface: a quick-choice table, one H3 section per
+command, four short labeled fields, an example beside each command, and compact comparison tables
+for model routing and tickets versus agents. Examples are not repeated in a separate footer.
 
 `$ultracode-flow` and `$ultracode-status` are both read-only, but answer different questions. Flow answers “what is happening right now?” with a short control view. Status answers “what exactly happened, what proves it, and why is anything blocked?” with the full diagnostic detail. Neither command invents progress percentages, completion times, agents, models, or results that the runtime does not expose.
 

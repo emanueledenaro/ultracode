@@ -2,6 +2,28 @@
 
 All notable changes to UltraCode are documented here.
 
+## [0.5.2] - 2026-07-23
+
+### Changed
+
+- Complete Help now renders as chat-friendly Markdown with a title, comparison tables, H3 command
+  sections, short labeled fields, and examples embedded beside their commands.
+- The repeated six-example footer has been removed so the full overview remains scannable.
+- Python, PowerShell, and repository validators now fail closed when the required chat layout is
+  flattened or its tables and blockquote examples are removed.
+- An explicit `$ultracode-help` invocation now takes precedence over command names used as topics,
+  so `$ultracode-help flow` explains Flow instead of reconstructing live task state.
+
+## [0.5.1] - 2026-07-23
+
+### Changed
+
+- A bare `$ultracode-help` invocation now requires a complete ordered overview instead of allowing
+  the model to compress away command, startup, routing, ticket, or authority details.
+- Explicit command topics use focused mode, while only `breve` or `sintetico` enables compact mode.
+- Help now uses a semantic completion checklist: wording remains natural, but required facts cannot
+  be omitted.
+
 ## [0.5.0] - 2026-07-23
 
 ### Added

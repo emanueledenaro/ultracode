@@ -199,12 +199,22 @@ routing behavior in the prompt.
 ## UC-37 Help and command choice
 
 ```text
-Use $ultracode-help in <disposable uninitialized repository>. The user asks:
-"Non conosco UltraCode: spiegami tutti i comandi, come si usa dall'inizio e
-quale comando scegliere. Fammi anche esempi per modelli e lavoro in corso."
-Stay read-only and return the help response plus whether you initialized,
-delegated, ran project checks, or wrote files.
+In three fresh, independent contexts inside <disposable uninitialized
+repositories>, send exactly these user requests:
+
+1. `Use $ultracode-help`
+2. `Use $ultracode-help flow`
+3. `Use $ultracode-help breve`
+
+Return each response plus whether it initialized, delegated, ran project
+checks, changed global settings, or wrote files. Do not add expected sections
+or routing behavior to the requests.
 ```
+
+The evaluator, not the raw requests, must also inspect whether the no-topic
+responses use the required chat Markdown hierarchy, comparison tables,
+per-command labeled fields, and inline blockquote examples without collecting
+the examples into a repeated footer.
 
 ## UC-38 Objective-driven reasoning
 

@@ -1,124 +1,197 @@
 # UltraCode command guide
 
-Use this as the canonical user-facing guide for UltraCode commands. It explains what each command does without implying that a command was run or that runtime-only facts are known.
+This is the canonical detailed guide for `$ultracode-help`. Keep the user-facing wording natural,
+but preserve the semantic content and order below.
 
-## Decision path
+## Response contract
 
-```text
-Need an explanation, comparison, or example?             -> $ultracode-help
-Need work investigated, built, fixed, reviewed, or run?  -> $ultracode
-Need project control added for Codex and Claude Code?     -> $ultracode-init
-Need existing UltraCode control changed or drift repaired?-> $ultracode-edit
-Need a quick live view of current work?                  -> $ultracode-flow
-Need the detailed evidence and diagnostic view?          -> $ultracode-status
-```
+Strip the `$ultracode-help` or `ultracode-help` invocation token before interpreting the request.
+That token invokes the command; it is not the `help` topic. With no remaining explicit topic,
+including a bare `Use $ultracode-help` request, return the complete overview in this order:
 
-If the requested outcome is only an explanation, review, audit, or diagnosis, use Help or UltraCode read-only. If a change is needed in a project without `.ultracode`, `$ultracode` keeps the original objective and first prepares the read-only `$ultracode-init` proposal; it never initializes silently.
+An explicit Help invocation has precedence over any command name that follows it. For example,
+`$ultracode-help flow` explains Flow read-only and must never reconstruct live Flow state.
 
-## `$ultracode-help`
+1. quick choice as a two-column Markdown table;
+2. all six commands, each with four labeled fields and an inline blockquote example;
+3. unconfigured-project and Init preflight behavior;
+4. models and reasoning effort as a compact table plus honest runtime notes;
+5. tickets versus agents as a compact comparison table;
+6. authority boundaries;
 
-**What it does:** Explains the six commands, the control model, models and effort, safety boundaries, and copyable prompts.
+An explicit command, `models`, or `examples` selects a focused answer. The words `breve` and
+`sintetico` request compact wording; they do not remove mandatory content. A compact no-topic
+overview still contains all six content areas. Do not end a response while a required semantic block is
+missing.
 
-**Use it when:** You are deciding where to start, do not know what a command means, or want a safe example.
+The chat layout is part of the contract. Start with one H1 title. Use H2 headings for the content
+areas, H3 headings for individual commands, short labeled paragraphs, GitHub-flavored Markdown
+tables, and inline blockquote examples. Do not move all examples to the end or render them as six
+separate fenced code blocks.
 
-**Writes and confirmation:** Never writes, initializes, delegates, runs tests or builds, or changes the task. It works even when `.ultracode` does not exist.
+## Quick choice
 
-**Result:** A recommendation and explanation, not a plan, state refresh, or execution.
+| Need | Use |
+| --- | --- |
+| An explanation, comparison, or example | `$ultracode-help` |
+| Engineering work investigated, built, fixed, or run | `$ultracode` |
+| UltraCode project control added | `$ultracode-init` |
+| Existing UltraCode control changed or drift repaired | `$ultracode-edit` |
+| A quick view of work in progress | `$ultracode-flow` |
+| Detailed state, evidence, and blockers | `$ultracode-status` |
 
-**Compared with:** Help describes commands; Flow and Status describe a real task only when state is available.
+Recommend the least powerful command that satisfies the outcome. Help explains; Flow and Status
+observe; Init configures; Edit changes that configuration; UltraCode performs engineering work.
 
-```text
-Use $ultracode-help to explain whether I need init or edit.
-```
+## The six commands
 
-## `$ultracode`
+### `$ultracode-help`
 
-**What it does:** Leads engineering work end to end: classifies the request, inspects relevant evidence, derives bounded jobs when useful, keeps ownership visible, verifies material findings, implements authorized changes, and reports validation evidence.
+**When to use it:** Choose it when deciding where to start, comparing commands, learning the model
+policy, or asking for safe examples.
 
-**Use it when:** You want an implementation, fix, migration, refactor, broad audit, difficult diagnosis, or another engineering outcome that needs accountable orchestration.
+**What you get:** An explanation or recommendation. It is not task execution, a project plan, or a live
+state refresh.
 
-**Writes and confirmation:** Read-only requests remain read-only. For changes, it follows the repository's confirmation and authority boundaries. Git, dependency, external, destructive, and deployment actions each require explicit user authority; implementation authority does not imply them.
+**Can it write?:** No. It never writes, initializes, delegates, tests, or builds.
 
-**Result:** The requested engineering outcome plus visible jobs, changed files, checks actually run, evidence, blockers, and unknowns.
+**When confirmation is required:** Never. Help has no write path and also works without
+`.ultracode`.
 
-**Compared with:** Use Init only to establish project control, Edit only to change existing control, Flow/Status only to inspect progress, and Help only to choose or understand commands.
+> **Example:** `Use $ultracode-help to explain all six commands and recommend where I should start.`
 
-```text
-Use $ultracode to fix the failing payment webhook tests. Do not commit, deploy, or install dependencies.
-```
+### `$ultracode`
 
-## `$ultracode-init`
+**When to use it:** Choose it for an implementation, fix, migration, refactor, broad audit, difficult
+diagnosis, or another accountable engineering outcome.
 
-**What it does:** Inspects a repository and proposes shared UltraCode project control for Codex and Claude Code: canonical guidance, adapters, configuration, and managed-content tracking.
+**What you get:** The requested outcome plus visible jobs when useful, changed files, checks actually run,
+evidence, blockers, and unknowns.
 
-**Use it when:** The repository has no UltraCode control and you want repeatable AI project guidance, or you explicitly want to inspect the initialization proposal.
+**Can it write?:** Yes, when the requested engineering outcome requires authorized file changes.
+Answers, reviews, audits, and diagnoses remain read-only unless a fix is also requested.
 
-**Writes and confirmation:** Discovery and deterministic planning are read-only. It shows the plan ID, exact files, practical effects, and preservation boundaries; it writes only after one explicit confirmation. Existing manual content outside managed blocks stays preserved.
+**When confirmation is required:** Authorized change work follows project confirmation rules. Git,
+dependencies, external actions, destructive operations, and deployment each require their own
+explicit authority.
 
-**Result:** Either a read-only proposal or, after confirmation and validation, an initialized project. A declined or unconfirmed proposal leaves the repository unchanged.
+> **Example:** `Use $ultracode to fix the failing payment webhook tests. Do not commit, deploy, or install dependencies.`
 
-**Compared with:** Init creates baseline control. Edit changes control that already exists. `$ultracode` can route change work through Init's read-only preflight when control is missing.
+### `$ultracode-init`
 
-```text
-Use $ultracode-init to inspect this repository and show the exact setup proposal. Do not apply it yet.
-```
+**When to use it:** Choose it when a repository has no UltraCode project control and you want shared,
+repeatable guidance and adapters for supported coding tools.
 
-## `$ultracode-edit`
+**What you get:** First, an exact read-only proposal with a stable plan ID, files, effects, and preservation
+boundaries. After confirmation, it can produce a doctor-valid initialized project.
 
-**What it does:** Safely changes initialized UltraCode configuration and only the dependent Codex or Claude projections.
+**Can it write?:** Yes, but discovery and planning never write. Only the apply phase can create or
+update the managed project-control files.
 
-**Use it when:** You need to change project rules, validation commands, visibility, status policy, model policy, adapters, roles, safety cap, or repair managed-content drift.
+**When confirmation is required:** Applying the initialization requires one explicit confirmation.
+Declining or withholding confirmation leaves the repository unchanged; manual content outside
+managed blocks is preserved.
 
-**Writes and confirmation:** It diagnoses first, presents a before-and-after delta and conflicts, then writes only a confirmed plan. It never silently overwrites manual managed-content changes; unsafe or stale plans stop on conflict.
+> **Example:** `Use $ultracode-init to inspect this repository and show the exact setup proposal. Do not apply it yet.`
 
-**Result:** A narrow configuration change with preserved manual content, regenerated dependent projections, doctor evidence, or a clear conflict requiring a decision.
+### `$ultracode-edit`
 
-**Compared with:** Edit is not for product code. Use `$ultracode` for engineering work and Init when no project control exists.
+**When to use it:** Choose it to change initialized UltraCode rules, validation commands, visibility,
+status policy, model policy, adapters, roles, safety controls, or managed-content drift.
 
-```text
-Use $ultracode-edit to change the project status detail to concise. Show the delta and wait for confirmation.
-```
+**What you get:** A before-and-after configuration delta, affected projections, preserved content, detected
+conflicts, and validation evidence after an approved apply.
 
-## `$ultracode-flow`
+**Can it write?:** Yes, but diagnosis and planning are read-only. Only the apply phase can update
+the confirmed managed configuration and its dependent projections.
 
-**What it does:** Gives a short live control view: objective, phase, ticket counts, active or blocked tickets, owner, live agent when available, model/effort visibility, blockers, completion criteria, and next action.
+**When confirmation is required:** It writes only an explicitly confirmed, still-current plan.
+Drift or stale preconditions stop the apply instead of silently overwriting manual work.
 
-**Use it when:** You need to understand what is happening now quickly.
+> **Example:** `Use $ultracode-edit to change status detail to concise. Show the delta and wait for confirmation.`
 
-**Writes and confirmation:** Always read-only. It does not start, resume, initialize, delegate, test, build, or write a status file.
+### `$ultracode-flow`
 
-**Result:** A compact, freshness-labelled snapshot. Persisted state is labelled stale when it is not current live state.
+**When to use it:** Choose it to understand current work quickly: objective, phase, active or blocked
+tickets, owners, observable agents and models, completion criteria, and next action.
 
-**Compared with:** Flow is concise and action-oriented. Status is the full diagnostic and evidence view. Help is the command guide, not a task snapshot.
+**What you get:** A compact snapshot whose freshness and unknowns are explicit.
 
-```text
-Use $ultracode-flow to show the active tickets, blockers, and next action.
-```
+**Can it write?:** No. It is always read-only and does not initialize, delegate, resume work, run
+checks, or write a status file.
 
-## `$ultracode-status`
+**When confirmation is required:** Never. Flow has no write path.
 
-**What it does:** Gives the detailed read-only diagnostic view: jobs, files, checks, evidence, configuration drift, blockers, and next action.
+> **Example:** `Use $ultracode-flow to show active tickets, blockers, and the next action.`
 
-**Use it when:** Flow is not enough and you need to know what happened, what proves it, or why something is blocked.
+### `$ultracode-status`
 
-**Writes and confirmation:** Always read-only. It does not refresh state by running tests, builds, delegation, initialization, or writes.
+**When to use it:** Choose it when Flow is not detailed enough and you need jobs, files, checks,
+evidence, drift, blockers, history, or the reason a claim cannot be verified.
 
-**Result:** A detailed evidence-backed report that labels missing, stale, or unavailable information honestly.
+**What you get:** A detailed diagnostic report that distinguishes live, stale, missing, failed, blocked,
+and verified information.
 
-**Compared with:** Status goes deeper than Flow. It does not replace `$ultracode` for execution or Help for choosing commands.
+**Can it write?:** No. It is always read-only and never runs checks or modifies state merely to
+refresh the report.
 
-```text
-Use $ultracode-status to explain why the validation ticket is blocked and show the available evidence.
-```
+**When confirmation is required:** Never. Status has no write path.
 
-## Models, effort, and user control
+> **Example:** `Use $ultracode-status to explain why validation is blocked and show the available evidence.`
 
-For a new UltraCode task, the recommended lead baseline is Sol with medium effort when those choices
-are available. UltraCode does not change the model of an already-open task and does not rewrite the
-user's global Codex configuration without a separate explicit request.
+## Unconfigured projects
 
-UltraCode starts with the model and effort of the chat where it is opened. A normal subagent defaults to Terra with low effort. Increase effort only because the objective requires it, not because more effort looks reassuring. Verifiers use Sol with at least high effort; critical verification or reasoning uses at least xhigh effort.
+Read-only Help, Flow, Status, answers, reviews, audits, and diagnoses can work without
+`.ultracode`. Missing persistent project control must not trigger initialization merely for
+inspection.
 
-Requested model and effort are the routing intent. Effective model and effort are what the runtime actually assigned. A fallback is used when the requested route cannot be used. Report effective values and fallbacks only when the runtime exposes them; otherwise say they are not observable. Do not convert a configured preference into an observed runtime fact.
+For requested change work, `$ultracode` preserves the original objective and enters the read-only
+`$ultracode-init` baseline preflight. It derives conservative defaults from repository evidence,
+shows the exact proposal, and asks once before initialization writes. If confirmed, it validates
+the initialized state and then resumes the original objective. If declined or unconfirmed, the
+repository and original task remain read-only.
 
-The user remains in control. Tickets map to bounded jobs and explain why work exists; they are not a second hidden tracker. An owner is accountable for a ticket, while a live agent is only a currently running runtime instance. Explicit authority is still required for Git, deployment, external actions, dependencies, and destructive operations.
+## Models and reasoning effort
+
+| Role | Default request |
+| --- | --- |
+| New lead task | Sol with `medium` effort |
+| Active lead task | Inherit the model and effort of its chat |
+| Normal bounded worker | Terra with `low` effort |
+| Material verifier | Sol with at least `high` |
+| Critical work | At least `xhigh` |
+
+Before opening a new lead task, recommend Sol with `medium` effort when the user can choose those
+settings. This is startup guidance only. UltraCode cannot replace the model or effort of an
+already-open task and must not change global Codex defaults without a separate explicit request.
+
+The active lead inherits the model and effort of its chat. Normal bounded workers default to Terra
+with `low` effort and rise only when ambiguity, consequences, coupling, evidence burden, or
+reversibility justify it. Material verifiers use Sol with at least `high`; critical security,
+data-integrity, migration, irreversible, external, privileged, or release work uses at least
+`xhigh`.
+
+Requested model and effort are routing intent. Effective model and effort are what the runtime
+actually assigned. A fallback is the route used when a request cannot be honored. Report effective
+values and fallback only when observable; otherwise say they are not observable. A full-history
+inheritance constraint, queued job, configured preference, or policy default is not proof of an
+effective runtime value.
+
+## Tickets and agents
+
+| Concept | Meaning |
+| --- | --- |
+| Ticket | One bounded logical job with an accountable owner |
+| Agent | A runtime instance that actually exists and is attached to work |
+
+A ticket is the user-facing form of one bounded logical job and reuses that job's ID. Its
+responsible owner remains accountable. A live agent is only a currently running runtime instance;
+queued work can have a ticket and owner without having an agent. Never invent an agent, model,
+effort, or parallel ID to make the view look complete.
+
+## Authority boundaries
+
+Approval to implement does not authorize Git staging, commits, pushes, pull requests, deployment,
+dependency changes, external actions, destructive operations, privileged actions, or credential
+use. Each protected boundary requires explicit user authority. Read-only commands never acquire
+write authority from project configuration.

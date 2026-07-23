@@ -1,6 +1,6 @@
 {
   "name": "ultracode",
-  "version": "0.5.0+codex.20260723134028",
+  "version": "0.5.2+codex.20260723195500",
   "description": "Transparent, adaptive engineering orchestration for Codex with read-only command Help.",
   "author": {
     "name": "Emanuele Denaro"
@@ -33,7 +33,7 @@
       "Write"
     ],
     "defaultPrompt": [
-      "Use $ultracode-help to explain every UltraCode command and recommend the right one.",
+      "Use $ultracode-help. With no explicit topic, return the complete ordered overview in a chat-friendly Markdown layout with one H1 title, comparison tables, H3 command sections, and inline blockquote examples; focus on one command, models, flow, or examples only when named; use compact wording only for an explicit breve or sintetico request.",
       "Use $ultracode-init to explain and configure this repository.",
       "Use $ultracode-edit to explain and safely change the project configuration.",
       "Use $ultracode to execute this task end to end, initialize project control safely if missing, and show visible progress.",

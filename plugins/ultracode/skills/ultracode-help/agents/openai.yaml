@@ -1,6 +1,6 @@
 interface:
   display_name: "UltraCode Help"
   short_description: "Understand and choose UltraCode commands"
-  default_prompt: "Use $ultracode-help to explain every UltraCode command and recommend the right one."
+  default_prompt: "Use $ultracode-help. With no explicit topic, give me the complete ordered UltraCode overview in a chat-friendly Markdown layout with one H1 title, comparison tables, H3 command sections, and inline blockquote examples. Include all six commands, safety gates, models, and tickets versus agents. If I provide a command, models, flow, or examples, answer only that topic. Use compact wording only when I explicitly say breve or sintetico."
 policy:
   allow_implicit_invocation: true

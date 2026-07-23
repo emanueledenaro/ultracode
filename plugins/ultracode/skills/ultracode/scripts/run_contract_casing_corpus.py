@@ -7,6 +7,7 @@ import concurrent.futures
 import hashlib
 import json
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -75,35 +76,46 @@ def run_case(case_id: str, command: list[str], expected_exit: int) -> dict[str, 
     }
 
 
-def checker_commands(plugin_root: Path) -> list[tuple[str, list[str]]]:
+def checker_commands(
+    plugin_root: Path, *, skip_live_corpus: bool = False
+) -> list[tuple[str, list[str]]]:
     script_root = plugin_root / "skills" / "ultracode" / "scripts"
+    python_command = [
+        sys.executable,
+        "-B",
+        str(script_root / "check_contract.py"),
+        "--allow-pending",
+    ]
+    if skip_live_corpus:
+        python_command.append("--skip-live-corpus")
     commands = [
-        (
-            "python",
-            [sys.executable, "-B", str(script_root / "check_contract.py"), "--allow-pending"],
-        )
+        ("python", python_command)
     ]
     powershell = find_powershell()
     if powershell:
-        commands.append(
-            (
-                "powershell",
-                [
-                    powershell,
-                    "-NoProfile",
-                    "-ExecutionPolicy",
-                    "Bypass",
-                    "-File",
-                    str(script_root / "check_contract.ps1"),
-                    "-AllowPending",
-                ],
-            )
-        )
+        powershell_command = [
+            powershell,
+            "-NoProfile",
+            "-ExecutionPolicy",
+            "Bypass",
+            "-File",
+            str(script_root / "check_contract.ps1"),
+            "-AllowPending",
+        ]
+        if skip_live_corpus:
+            powershell_command.append("-SkipLiveCorpus")
+        commands.append(("powershell", powershell_command))
     return commands
 
 
-def run_group(prefix: str, plugin_root: Path, expected_exit: int) -> list[dict[str, Any]]:
-    commands = checker_commands(plugin_root)
+def run_group(
+    prefix: str,
+    plugin_root: Path,
+    expected_exit: int,
+    *,
+    skip_live_corpus: bool = False,
+) -> list[dict[str, Any]]:
+    commands = checker_commands(plugin_root, skip_live_corpus=skip_live_corpus)
     with concurrent.futures.ThreadPoolExecutor(max_workers=len(commands)) as executor:
         futures = [
             executor.submit(run_case, f"{prefix}-{runtime}", command, expected_exit)
@@ -159,7 +171,12 @@ def add_unexpected_required_schema_field(plugin_root: Path) -> None:
     with schema_path.open("w", encoding="utf-8", newline="\n") as handle:
         json.dump(schema, handle, indent=2, ensure_ascii=False)
         handle.write("\n")
+    refresh_payload_binding(plugin_root)
 
+
+def refresh_payload_binding(plugin_root: Path) -> None:
+    reference_root = plugin_root / "skills" / "ultracode" / "references"
+    evidence_path = reference_root / "evaluation-evidence.json"
     checker = plugin_root / "skills" / "ultracode" / "scripts" / "check_contract.py"
     process = subprocess.run(
         [sys.executable, "-B", str(checker), "--print-payload-hash"],
@@ -181,6 +198,159 @@ def add_unexpected_required_schema_field(plugin_root: Path) -> None:
         handle.write("\n")
 
 
+def replace_once(path: Path, old: str, new: str) -> None:
+    text = path.read_text(encoding="utf-8")
+    if text.count(old) != 1:
+        raise RuntimeError(f"{path.name} does not contain exactly one mutation target: {old}")
+    path.write_text(text.replace(old, new, 1), encoding="utf-8", newline="\n")
+
+
+def remove_help_field(plugin_root: Path) -> None:
+    guide = plugin_root / "skills" / "ultracode" / "references" / "command-guide.md"
+    text = guide.read_text(encoding="utf-8")
+    if text.count("**What you get:**") != 6:
+        raise RuntimeError("command guide does not contain six result fields")
+    guide.write_text(
+        text.replace("**What you get:**", "**Outcome:**", 1),
+        encoding="utf-8",
+        newline="\n",
+    )
+
+
+def remove_help_example(plugin_root: Path) -> None:
+    guide = plugin_root / "skills" / "ultracode" / "references" / "command-guide.md"
+    replace_once(
+        guide,
+        "Use $ultracode-status to explain why validation is blocked and show the available evidence.",
+        "Explain why validation is blocked and show the available evidence.",
+    )
+
+
+def remove_help_quick_table(plugin_root: Path) -> None:
+    guide = plugin_root / "skills" / "ultracode" / "references" / "command-guide.md"
+    replace_once(guide, "| Need | Use |", "| Need / Use |")
+
+
+def demote_help_guide_h1(plugin_root: Path) -> None:
+    guide = plugin_root / "skills" / "ultracode" / "references" / "command-guide.md"
+    replace_once(
+        guide,
+        "# UltraCode command guide",
+        "## UltraCode command guide",
+    )
+
+
+def remove_help_model_table(plugin_root: Path) -> None:
+    guide = plugin_root / "skills" / "ultracode" / "references" / "command-guide.md"
+    replace_once(guide, "| Role | Default request |", "| Model routing |")
+
+
+def remove_help_ticket_table(plugin_root: Path) -> None:
+    guide = plugin_root / "skills" / "ultracode" / "references" / "command-guide.md"
+    replace_once(guide, "| Concept | Meaning |", "| Concept / Meaning |")
+
+
+def flatten_help_example(plugin_root: Path) -> None:
+    guide = plugin_root / "skills" / "ultracode" / "references" / "command-guide.md"
+    text = guide.read_text(encoding="utf-8")
+    if text.count("> **Example:**") != 6:
+        raise RuntimeError("command guide does not contain six inline blockquote examples")
+    guide.write_text(
+        text.replace("> **Example:**", "**Example:**", 1),
+        encoding="utf-8",
+        newline="\n",
+    )
+
+
+def remove_flow_help_precedence(plugin_root: Path) -> None:
+    flow_skill = plugin_root / "skills" / "ultracode-flow" / "SKILL.md"
+    replace_once(
+        flow_skill,
+        "## Respect explicit Help precedence",
+        "## Interpret command precedence",
+    )
+
+
+def remove_sol_medium_semantics(plugin_root: Path) -> None:
+    guide = plugin_root / "skills" / "ultracode" / "references" / "command-guide.md"
+    text = guide.read_text(encoding="utf-8")
+    target = "Sol with `medium` effort"
+    if text.count(target) < 2:
+        raise RuntimeError("command guide does not contain the expected Sol medium semantics")
+    guide.write_text(
+        text.replace(target, "the selected lead model"),
+        encoding="utf-8",
+        newline="\n",
+    )
+
+
+def remove_terra_low_semantics(plugin_root: Path) -> None:
+    guide = plugin_root / "skills" / "ultracode" / "references" / "command-guide.md"
+    text = guide.read_text(encoding="utf-8")
+    inline_target = "Terra with `low` effort"
+    wrapped_target = "Terra\nwith `low` effort"
+    if inline_target not in text or wrapped_target not in text:
+        raise RuntimeError("command guide does not contain the expected Terra low semantics")
+    guide.write_text(
+        text.replace(inline_target, "a bounded worker route").replace(
+            wrapped_target,
+            "a bounded worker route",
+        ),
+        encoding="utf-8",
+        newline="\n",
+    )
+
+
+def remove_requested_effective_semantics(plugin_root: Path) -> None:
+    guide = plugin_root / "skills" / "ultracode" / "references" / "command-guide.md"
+    replace_once(guide, "Requested model and effort", "Routing intent")
+
+
+def remove_init_preflight_semantics(plugin_root: Path) -> None:
+    guide = plugin_root / "skills" / "ultracode" / "references" / "command-guide.md"
+    replace_once(guide, "`$ultracode-init` baseline preflight", "a setup review")
+
+
+def weaken_help_metadata_prompt(plugin_root: Path) -> None:
+    metadata = plugin_root / "skills" / "ultracode-help" / "agents" / "openai.yaml"
+    text = metadata.read_text(encoding="utf-8")
+    mutated, count = re.subn(
+        r'(?m)^  default_prompt: ".*"$',
+        '  default_prompt: "Use $ultracode-help."',
+        text,
+    )
+    if count != 1:
+        raise RuntimeError("cannot locate the Help metadata default_prompt")
+    mutated += (
+        "# With no explicit topic, request the complete ordered UltraCode overview. "
+        "Use a chat-friendly Markdown layout with one H1 title, comparison tables, "
+        "H3 command sections, and inline blockquote examples. "
+        "If I provide a command, models, flow, or examples, answer only that topic. "
+        "Use compact wording only when I explicitly say breve or sintetico.\n"
+    )
+    metadata.write_text(mutated, encoding="utf-8", newline="\n")
+
+
+def weaken_help_manifest_prompt(plugin_root: Path) -> None:
+    manifest_path = plugin_root / ".codex-plugin" / "plugin.json"
+    with manifest_path.open("r", encoding="utf-8") as handle:
+        manifest = json.load(handle, object_pairs_hook=OrderedDict)
+    prompts = manifest.get("interface", {}).get("defaultPrompt")
+    if not isinstance(prompts, list):
+        raise RuntimeError("manifest defaultPrompt is not an array")
+    help_indexes = [
+        index
+        for index, prompt in enumerate(prompts)
+        if isinstance(prompt, str) and "$ultracode-help" in prompt
+    ]
+    if help_indexes != [0]:
+        raise RuntimeError("manifest does not expose one leading Help prompt")
+    prompts[0] = "Use $ultracode-help."
+    with manifest_path.open("w", encoding="utf-8", newline="\n") as handle:
+        json.dump(manifest, handle, indent=2, ensure_ascii=False)
+        handle.write("\n")
+
+
 def main() -> int:
     plugin_root = Path(__file__).resolve().parents[3]
     with tempfile.TemporaryDirectory(prefix="ultracode-contract-casing-") as temporary:
@@ -188,14 +358,46 @@ def main() -> int:
         baseline_root = temporary_root / "baseline"
         malformed_evidence_root = temporary_root / "evidence-key-casing"
         malformed_schema_root = temporary_root / "schema-extra-required"
+        semantic_mutations = (
+            ("help-field-missing", remove_help_field),
+            ("help-example-missing", remove_help_example),
+            ("help-h1-missing", demote_help_guide_h1),
+            ("help-quick-table-missing", remove_help_quick_table),
+            ("help-model-table-missing", remove_help_model_table),
+            ("help-ticket-table-missing", remove_help_ticket_table),
+            ("help-example-not-blockquote", flatten_help_example),
+            ("help-flow-precedence-missing", remove_flow_help_precedence),
+            ("help-sol-medium-missing", remove_sol_medium_semantics),
+            ("help-terra-low-missing", remove_terra_low_semantics),
+            ("help-requested-effective-missing", remove_requested_effective_semantics),
+            ("help-init-preflight-missing", remove_init_preflight_semantics),
+            ("help-metadata-prompt-weakened", weaken_help_metadata_prompt),
+            ("help-manifest-prompt-weakened", weaken_help_manifest_prompt),
+        )
         shutil.copytree(plugin_root, baseline_root)
         shutil.copytree(plugin_root, malformed_evidence_root)
         shutil.copytree(plugin_root, malformed_schema_root)
         replace_evidence_key(malformed_evidence_root)
         add_unexpected_required_schema_field(malformed_schema_root)
+        semantic_roots: list[tuple[str, Path]] = []
+        for case_id, mutate in semantic_mutations:
+            mutation_root = temporary_root / case_id
+            shutil.copytree(plugin_root, mutation_root)
+            mutate(mutation_root)
+            refresh_payload_binding(mutation_root)
+            semantic_roots.append((case_id, mutation_root))
         results = run_group("baseline", baseline_root, 0)
         results.extend(run_group("evidence-key-casing", malformed_evidence_root, 1))
         results.extend(run_group("schema-extra-required", malformed_schema_root, 1))
+        for case_id, mutation_root in semantic_roots:
+            results.extend(
+                run_group(
+                    case_id,
+                    mutation_root,
+                    1,
+                    skip_live_corpus=True,
+                )
+            )
 
     mismatched = [item["id"] for item in results if item["outcome"] == "MISMATCH"]
     unavailable = [item["id"] for item in results if item["outcome"] == "NOT_AVAILABLE"]

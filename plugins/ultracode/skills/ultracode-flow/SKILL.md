@@ -1,9 +1,14 @@
 ---
 name: ultracode-flow
-description: Concise, read-only live control view for an UltraCode task. Use when the user explicitly invokes `$ultracode-flow` or asks for a quick but fully explained view of the objective, phase, active tickets, assigned agents, requested and effective models and reasoning effort, blockers, completion criteria, and next actions. Use `full` for all known tickets or `agents` for an agent-focused view.
+description: Concise, read-only live control view for an UltraCode task. Use when the user explicitly invokes `$ultracode-flow` or asks for a quick but fully explained view of the objective, phase, active tickets, assigned agents, requested and effective models and reasoning effort, blockers, completion criteria, and next actions. Do not select this skill when the request explicitly invokes `$ultracode-help`; `flow` is then only a Help topic. Use `full` for all known tickets or `agents` for an agent-focused view.
 ---
 
 # UltraCode Flow
+
+## Respect explicit Help precedence
+
+If the request explicitly invokes `$ultracode-help` or `ultracode-help`, do not reconstruct live
+state. Read `../ultracode-help/SKILL.md` and answer `flow` as a read-only Help topic.
 
 Show what is happening now in a form the user can understand in one pass and act on immediately.
 

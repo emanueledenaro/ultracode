@@ -1,19 +1,19 @@
 {
   "schema_version": 2,
   "attestation_scope": "local-consistency-only",
-  "plugin_version_prefix": "0.5.0",
+  "plugin_version_prefix": "0.5.2",
   "evaluated_on": "2026-07-23",
   "skill_sha256": {
-    "ultracode": "eac65f291e5eb60d3d60234d3ea1399a68011456e4d557361d3fae6a626abc24",
-    "ultracode-help": "033a50bfd22ae4e16291f577002638517e0bd429be0fadcc35a632fc6f2284d1",
-    "ultracode-init": "ba6e9f30a6e47415d6203c96f1bd2a37bbf6e4e69d1cec87476ddbe74330bf8a",
-    "ultracode-edit": "801a9a831e813086bd942941e186fe71967105e4f2d261aee653489088fb8955",
-    "ultracode-flow": "0232e137587d329c31a3bc7b309c383b7183543f3fdbf72c370fd2dba44e24a4",
-    "ultracode-status": "178f3c9059902d0d35340a6d466a62d91a4c84235a30e18352b6378b32d77845"
+    "ultracode": "ee0890e7c20af906552fac2df227c0c47caacf30ee755fbbd4a9dad01984b1d7",
+    "ultracode-help": "ed49458283f4ebb67fddd5bfdbc1286f7feba27ce39749b9e5df2153056ec7d6",
+    "ultracode-init": "1c6001a0b7b5285daffb11b12f258fc1b779122d3764f2b7181b3c7a136bb5e1",
+    "ultracode-edit": "30382f67e27302726509d89e2dce19694f8e618ce536cd58e57dd78bc12e2007",
+    "ultracode-flow": "ee457339fb5d33919e7d9356cef7fb530bdb9d732d889a4ff040dbefcbf4daec",
+    "ultracode-status": "2147d19ff4634701e9dc1c8bc53b9e24a41c9c6f896dac17649307f30252432a"
   },
-  "payload_sha256": "3410bdb1dd727bfa7f2823c212c5da628f264c6d90cefe58d2604f0683b14445",
+  "payload_sha256": "ea6ba707254eb53a542a5f0426cd2d5badf96b26f914656fed476f8d28d99b47",
   "trace_artifact": "evaluation-traces.json",
-  "trace_sha256": "b6dd7a5dc367d85f476217ff5a4078eed99a39a0119c7816d9a408ba08256e10",
+  "trace_sha256": "ecb97b4b0ce38403c87d302acabf5cca4cac870b76e3ee3cff63e51833239580",
   "scenario_results": [
     {
       "id": "UC-01",
@@ -103,7 +103,7 @@
       "id": "UC-37",
       "status": "PASSED",
       "trace_id": "trace-uc-37-help",
-      "evidence": "Fresh Terra low agent explained all six commands and recommended Sol medium only for a new lead task, while keeping active-task inheritance, global settings, initialization, delegation, checks, and files untouched."
+      "evidence": "Fresh Terra low contexts proved the 0.5.2 modes: bare and brief rendered the chat-friendly structure read-only; a raw focused run exposed Flow-selection interference, explicit Help precedence was added to all non-Help skills, a fresh source rerun returned focused Flow help without live state, and the final exact one-H1 default prompt produced the complete required layout."
     },
     {
       "id": "UC-38",
@@ -210,7 +210,7 @@
       "command": "uv run --offline --with pyyaml -- python ${SKILL_CREATOR}/scripts/quick_validate.py ${PLUGIN_ROOT}/skills/ultracode-help",
       "exit_code": 0,
       "trace_id": "trace-validate-skill-help",
-      "evidence": "Official skill-creator validator passed for the new always read-only Help skill."
+      "evidence": "Official skill-creator validator passed for the chat-friendly Help layout and explicit command-precedence contract."
     },
     {
       "check": "quick_validate ultracode-init",
@@ -258,7 +258,7 @@
       "command": "${PYTHON} ${PLUGIN_ROOT}/skills/ultracode/scripts/check_contract.py --allow-pending",
       "exit_code": 0,
       "trace_id": "trace-contract-python",
-      "evidence": "Python checker accepted the refreshed 0.5.0 structure, six skill hashes, 38 trace bindings, live 44-case corpus, and every executed result; only the final independent audit remained pending."
+      "evidence": "Python accepted the 0.5.2 Markdown layout, explicit Help precedence, semantic guide, prompt values, payload and trace bindings, then completed its live doctor corpus with only the independent audit pending."
     },
     {
       "check": "contract checker PowerShell bootstrap",
@@ -266,7 +266,7 @@
       "command": "powershell -File ${PLUGIN_ROOT}/skills/ultracode/scripts/check_contract.ps1 -AllowPending",
       "exit_code": 0,
       "trace_id": "trace-contract-powershell",
-      "evidence": "PowerShell checker independently accepted the same 0.5.0 structure, hashes, traces, live 44-case corpus, and executed evidence with a matching pending-result report."
+      "evidence": "PowerShell independently accepted the same 0.5.2 contract, payload and trace bindings, then completed its live doctor corpus with only the independent audit pending."
     },
     {
       "check": "contract casing corpus",
@@ -274,7 +274,7 @@
       "command": "${PYTHON} ${PLUGIN_ROOT}/skills/ultracode/scripts/run_contract_casing_corpus.py",
       "exit_code": 0,
       "trace_id": "trace-contract-casing-corpus",
-      "evidence": "Disposable-copy corpus completed 6/6 matches: both runtime baselines passed, both rejected malformed evidence-key casing, and both rejected an unexpected required schema field."
+      "evidence": "Expanded disposable-copy corpus completed 34/34 matches with zero unavailable runtimes. Python and PowerShell both rejected a missing H1, broken quick/model/ticket tables, command fields, inline examples, Help precedence, routing semantics, and weakened prompt values."
     },
     {
       "check": "project configurator corpus",
@@ -291,7 +291,7 @@
       "severity": "HIGH",
       "status": "PASSED",
       "trace_id": "trace-audit-final",
-      "evidence": "Independent Sol xhigh reviewer found and then verified closure of the Claude-root reparse pre-read path; zero HIGH, MEDIUM, or LOW findings remain."
+      "evidence": "Independent Sol xhigh review found one validator-coverage gap for the required H1. After repair, re-audit verified the one-H1 gate, 34/34 adversarial corpus, final exact-default-prompt evaluation, routing precedence, Python/PowerShell parity, and all release hashes; no HIGH, MEDIUM, or LOW findings remain."
     }
   ]
 }

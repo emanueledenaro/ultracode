@@ -1,6 +1,7 @@
 param(
     [switch]$AllowPending,
-    [switch]$PrintPayloadHash
+    [switch]$PrintPayloadHash,
+    [switch]$SkipLiveCorpus
 )
 
 $ErrorActionPreference = 'Stop'
@@ -517,7 +518,9 @@ foreach ($relative in $resources) {
         Stop-ContractCheck "missing core resource: $relative"
     }
 }
-Invoke-LivePowerShellCorpus $coreRoot
+if (-not $SkipLiveCorpus) {
+    Invoke-LivePowerShellCorpus $coreRoot
+}
 foreach ($schemaName in @('project-config.schema.json','managed-manifest.schema.json','evaluation-evidence.schema.json')) {
     [void](Read-JsonFile (Join-Path $referenceRoot $schemaName) $schemaName)
 }
@@ -560,14 +563,210 @@ if (-not (Test-ContractExactString $rulePathPattern '^(?!/)(?![A-Za-z]:)(?!~)(?!
 }
 
 $helpText = Get-Content -Raw -Encoding UTF8 -LiteralPath (Join-Path $skillsRoot 'ultracode-help\SKILL.md')
+$helpRequiredOrder = @(
+    '1. **Scelta rapida:**',
+    '2. **Sei comandi:**',
+    '3. **Progetto non configurato:**',
+    '4. **Modelli ed effort:**',
+    '5. **Ticket e agenti:**',
+    '6. **Autorizzazioni:**'
+)
 foreach ($required in @(
-    'always read-only',
-    'command guide',
-    'all six commands',
     '../ultracode/references/command-guide.md',
-    'model and reasoning'
-)) {
+    '../ultracode/references/reasoning-routing.md',
+    'The invocation token is never itself the `help` topic.',
+    'An explicit Help invocation has precedence over every command name',
+    '`$ultracode-help flow` explains Flow',
+    '**No remaining topic:**',
+    'A bare `Use $ultracode-help` invocation',
+    '**Explicit topic:**',
+    '**Explicit `breve` or `sintetico`:**',
+    'read-only Init preflight',
+    'Sol `medium`',
+    'Terra `low`',
+    'requested versus effective',
+    'Render for the chat surface, not as a dense document.',
+    'Use one H1 title at the top',
+    'For each command explanation, cover all four required fields even in compact mode:',
+    "Put the command's example immediately after those fields as a Markdown blockquote",
+    'Do not collect examples into a repeated section at the end',
+    'Do not finish the response until every semantic item required by the selected mode is covered.'
+) + $helpRequiredOrder) {
     if (-not $helpText.Contains($required)) { Stop-ContractCheck "ultracode-help is missing: $required" }
+}
+$lastHelpPosition = -1
+foreach ($required in $helpRequiredOrder) {
+    $helpPosition = $helpText.IndexOf($required, [StringComparison]::Ordinal)
+    if ($helpPosition -le $lastHelpPosition) {
+        Stop-ContractCheck 'ultracode-help mandatory overview blocks are out of order'
+    }
+    $lastHelpPosition = $helpPosition
+}
+$commandGuideText = Get-Content -Raw -Encoding UTF8 -LiteralPath (Join-Path $referenceRoot 'command-guide.md')
+$helpGuideSections = @(
+    '## Response contract',
+    '## Quick choice',
+    '## The six commands',
+    '## Unconfigured projects',
+    '## Models and reasoning effort',
+    '## Tickets and agents',
+    '## Authority boundaries'
+)
+$lastGuidePosition = -1
+foreach ($heading in $helpGuideSections) {
+    $guidePosition = $commandGuideText.IndexOf($heading, [StringComparison]::Ordinal)
+    if ($guidePosition -le $lastGuidePosition) {
+        Stop-ContractCheck 'command guide is missing or misorders Help sections'
+    }
+    $lastGuidePosition = $guidePosition
+}
+$h1Matches = [regex]::Matches($commandGuideText, '(?m)^# [^#\r\n].*$')
+if ($h1Matches.Count -ne 1 -or $h1Matches[0].Value -cne '# UltraCode command guide') {
+    Stop-ContractCheck 'command guide must contain exactly one canonical H1 title'
+}
+if ($commandGuideText.Contains('## Copyable examples') -or $commandGuideText.Contains('```text')) {
+    Stop-ContractCheck 'command guide must keep inline examples with commands, not in a repeated footer'
+}
+$quickStart = $commandGuideText.IndexOf('## Quick choice', [StringComparison]::Ordinal)
+$quickEnd = $commandGuideText.IndexOf('## The six commands', $quickStart, [StringComparison]::Ordinal)
+$quickSection = $commandGuideText.Substring($quickStart, $quickEnd - $quickStart)
+if (-not $quickSection.Contains('| Need | Use |') -or -not $quickSection.Contains('| --- | --- |')) {
+    Stop-ContractCheck 'command guide Quick choice must use a two-column Markdown table'
+}
+$helpCommands = @('ultracode-help','ultracode','ultracode-init','ultracode-edit','ultracode-flow','ultracode-status')
+foreach ($command in $helpCommands) {
+    if (-not $quickSection.Contains('$' + $command)) {
+        Stop-ContractCheck "command guide Quick choice table is missing `$$command"
+    }
+}
+$helpFieldMarkers = @(
+    '**When to use it:**',
+    '**What you get:**',
+    '**Can it write?:**',
+    '**When confirmation is required:**'
+)
+$commandsStart = $commandGuideText.IndexOf('## The six commands', [StringComparison]::Ordinal)
+$commandsEnd = $commandGuideText.IndexOf('## Unconfigured projects', $commandsStart, [StringComparison]::Ordinal)
+$commandPositions = [Collections.Generic.List[int]]::new()
+foreach ($command in $helpCommands) {
+    $heading = '### `$' + $command + '`'
+    $position = $commandGuideText.IndexOf($heading, $commandsStart, [StringComparison]::Ordinal)
+    if ($position -lt $commandsStart -or $position -ge $commandsEnd) {
+        Stop-ContractCheck "command guide is missing the $command section"
+    }
+    if ($commandPositions.Count -ne 0 -and $position -le $commandPositions[$commandPositions.Count - 1]) {
+        Stop-ContractCheck 'command guide command sections are out of order'
+    }
+    [void]$commandPositions.Add($position)
+}
+for ($commandIndex = 0; $commandIndex -lt $helpCommands.Count; $commandIndex++) {
+    $sectionStart = $commandPositions[$commandIndex]
+    $sectionEnd = if ($commandIndex + 1 -lt $helpCommands.Count) {
+        $commandPositions[$commandIndex + 1]
+    } else {
+        $commandsEnd
+    }
+    $section = $commandGuideText.Substring($sectionStart, $sectionEnd - $sectionStart)
+    $fieldPositions = [Collections.Generic.List[int]]::new()
+    foreach ($marker in $helpFieldMarkers) {
+        if ([regex]::Matches($section, [regex]::Escape($marker)).Count -ne 1) {
+            Stop-ContractCheck "command guide $($helpCommands[$commandIndex]) must contain exactly one $marker"
+        }
+        [void]$fieldPositions.Add($section.IndexOf($marker, [StringComparison]::Ordinal))
+    }
+    $exampleMatches = [regex]::Matches($section, [regex]::Escape('> **Example:**'))
+    if ($exampleMatches.Count -ne 1) {
+        Stop-ContractCheck "command guide $($helpCommands[$commandIndex]) must contain exactly one inline blockquote example"
+    }
+    $examplePosition = $section.IndexOf('> **Example:**', [StringComparison]::Ordinal)
+    if ($examplePosition -le $fieldPositions[$fieldPositions.Count - 1]) {
+        Stop-ContractCheck "command guide $($helpCommands[$commandIndex]) example must follow all four fields"
+    }
+    for ($fieldIndex = 0; $fieldIndex -lt $helpFieldMarkers.Count; $fieldIndex++) {
+        if ($fieldIndex -ne 0 -and $fieldPositions[$fieldIndex] -le $fieldPositions[$fieldIndex - 1]) {
+            Stop-ContractCheck "command guide $($helpCommands[$commandIndex]) fields are out of order"
+        }
+        $contentStart = $fieldPositions[$fieldIndex] + $helpFieldMarkers[$fieldIndex].Length
+        $contentEnd = if ($fieldIndex + 1 -lt $helpFieldMarkers.Count) {
+            $fieldPositions[$fieldIndex + 1]
+        } else {
+            $examplePosition
+        }
+        $content = [regex]::Replace(
+            $section.Substring($contentStart, $contentEnd - $contentStart),
+            '\s+',
+            ' '
+        ).Trim()
+        if ($content.Length -lt 20) {
+            Stop-ContractCheck "command guide $($helpCommands[$commandIndex]) has empty or trivial field content"
+        }
+    }
+    $example = $section.Substring($examplePosition)
+    if (-not $example.Contains('$' + $helpCommands[$commandIndex]) -or -not $example.Contains('`')) {
+        Stop-ContractCheck "command guide $($helpCommands[$commandIndex]) blockquote must contain one inline copyable prompt"
+    }
+}
+$modelsStart = $commandGuideText.IndexOf('## Models and reasoning effort', [StringComparison]::Ordinal)
+$modelsEnd = $commandGuideText.IndexOf('## Tickets and agents', $modelsStart, [StringComparison]::Ordinal)
+$modelsSection = $commandGuideText.Substring($modelsStart, $modelsEnd - $modelsStart)
+if (-not $modelsSection.Contains('| Role | Default request |') -or -not $modelsSection.Contains('| --- | --- |')) {
+    Stop-ContractCheck 'command guide Models must use a compact Markdown table'
+}
+$ticketsStart = $commandGuideText.IndexOf('## Tickets and agents', [StringComparison]::Ordinal)
+$ticketsEnd = $commandGuideText.IndexOf('## Authority boundaries', $ticketsStart, [StringComparison]::Ordinal)
+$ticketsSection = $commandGuideText.Substring($ticketsStart, $ticketsEnd - $ticketsStart)
+if (-not $ticketsSection.Contains('| Concept | Meaning |') -or -not $ticketsSection.Contains('| --- | --- |')) {
+    Stop-ContractCheck 'command guide Tickets and agents must use a comparison table'
+}
+$normalizedGuide = [regex]::Replace($commandGuideText, '\s+', ' ').Trim()
+$helpGuideSemantics = @(
+    'Strip the `$ultracode-help` or `ultracode-help` invocation token',
+    'An explicit Help invocation has precedence',
+    'With no remaining explicit topic',
+    '`breve` and `sintetico` request compact wording',
+    '`$ultracode-init` baseline preflight',
+    'Sol with `medium` effort',
+    'Terra with `low` effort',
+    'Requested model and effort',
+    'Effective model and effort',
+    'A ticket is the user-facing form',
+    'A live agent is only',
+    'requires explicit user authority'
+)
+foreach ($required in $helpGuideSemantics) {
+    if (-not $normalizedGuide.Contains($required)) {
+        Stop-ContractCheck "command guide is missing Help semantics: $required"
+    }
+}
+$helpMetadataText = Get-Content -Raw -Encoding UTF8 -LiteralPath (Join-Path $skillsRoot 'ultracode-help\agents\openai.yaml')
+$helpMetadataPromptMatches = [regex]::Matches(
+    $helpMetadataText,
+    '(?m)^  default_prompt:\s*"([^"\r\n]*)"\s*$'
+)
+if ($helpMetadataPromptMatches.Count -ne 1) {
+    Stop-ContractCheck 'ultracode-help agents/openai.yaml must declare one quoted default_prompt'
+}
+$normalizedHelpMetadata = [regex]::Replace(
+    $helpMetadataPromptMatches[0].Groups[1].Value,
+    '\s+',
+    ' '
+).Trim()
+$helpMetadataRequirements = @(
+    '$ultracode-help',
+    'With no explicit topic',
+    'complete ordered UltraCode overview',
+    'chat-friendly Markdown layout',
+    'one H1 title',
+    'comparison tables',
+    'H3 command sections',
+    'inline blockquote examples',
+    'If I provide a command, models, flow, or examples, answer only that topic',
+    'compact wording only when I explicitly say breve or sintetico'
+)
+foreach ($required in $helpMetadataRequirements) {
+    if (-not $normalizedHelpMetadata.Contains($required)) {
+        Stop-ContractCheck "ultracode-help agents/openai.yaml is missing Help mode semantics: $required"
+    }
 }
 $initText = Get-Content -Raw -Encoding UTF8 -LiteralPath (Join-Path $skillsRoot 'ultracode-init\SKILL.md')
 foreach ($required in @(
@@ -629,6 +828,24 @@ foreach ($required in @(
 )) {
     if (-not $statusText.Contains($required)) { Stop-ContractCheck "ultracode-status is missing: $required" }
 }
+$helpPrecedenceSkills = @(
+    [pscustomobject]@{ Name = 'ultracode'; Text = $coreText },
+    [pscustomobject]@{ Name = 'ultracode-init'; Text = $initText },
+    [pscustomobject]@{ Name = 'ultracode-edit'; Text = $editText },
+    [pscustomobject]@{ Name = 'ultracode-flow'; Text = $flowText },
+    [pscustomobject]@{ Name = 'ultracode-status'; Text = $statusText }
+)
+foreach ($skill in $helpPrecedenceSkills) {
+    foreach ($required in @(
+        '## Respect explicit Help precedence',
+        '../ultracode-help/SKILL.md',
+        'read-only Help topic'
+    )) {
+        if (-not $skill.Text.Contains($required)) {
+            Stop-ContractCheck "$($skill.Name) is missing explicit Help precedence: $required"
+        }
+    }
+}
 
 $contractText = Get-Content -Raw -Encoding UTF8 -LiteralPath (Join-Path $referenceRoot 'behavioral-contract.md')
 foreach ($index in 1..38) {
@@ -660,6 +877,28 @@ if (@($defaultPrompts | Where-Object { $_ -isnot [string] }).Count -ne 0) {
 foreach ($skillName in $skillNames) {
     if (-not ($defaultPrompts | Where-Object { $_.Contains('$' + $skillName) })) {
         Stop-ContractCheck "plugin default prompts must expose `$$skillName"
+    }
+}
+$helpManifestPrompts = @($defaultPrompts | Where-Object { $_.Contains('$ultracode-help') })
+if ($helpManifestPrompts.Count -ne 1) {
+    Stop-ContractCheck 'plugin default prompts must contain exactly one UltraCode Help entry'
+}
+$normalizedHelpManifestPrompt = [regex]::Replace($helpManifestPrompts[0], '\s+', ' ').Trim()
+$helpManifestPromptRequirements = @(
+    '$ultracode-help',
+    'With no explicit topic',
+    'complete ordered overview',
+    'chat-friendly Markdown layout',
+    'one H1 title',
+    'comparison tables',
+    'H3 command sections',
+    'inline blockquote examples',
+    'focus on one command, models, flow, or examples only when named',
+    'compact wording only for an explicit breve or sintetico request'
+)
+foreach ($required in $helpManifestPromptRequirements) {
+    if (-not $normalizedHelpManifestPrompt.Contains($required)) {
+        Stop-ContractCheck "plugin defaultPrompt Help entry is missing Help mode semantics: $required"
     }
 }
 

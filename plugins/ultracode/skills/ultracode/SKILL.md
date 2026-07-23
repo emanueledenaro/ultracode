@@ -1,9 +1,14 @@
 ---
 name: ultracode
-description: Adaptive, user-visible software-engineering orchestration for Codex. Use when the user explicitly invokes UltraCode or requests a complex implementation, difficult diagnosis with a requested fix, broad audit, refactor, migration, reverse-engineering effort, or other work that benefits from evidence-driven decomposition, many bounded agent jobs, adversarial verification, real validation, and one coherent synthesis. Do not invoke implicitly for simple questions, trivial localized edits, or work fully owned by a narrower specialist skill.
+description: Adaptive, user-visible software-engineering orchestration for Codex. Use when the user explicitly invokes UltraCode or requests a complex implementation, difficult diagnosis with a requested fix, broad audit, refactor, migration, reverse-engineering effort, or other work that benefits from evidence-driven decomposition, many bounded agent jobs, adversarial verification, real validation, and one coherent synthesis. Do not select this skill when the request explicitly invokes `$ultracode-help`; any following command name is a Help topic. Do not invoke implicitly for simple questions, trivial localized edits, or work fully owned by a narrower specialist skill.
 ---
 
 # UltraCode
+
+## Respect explicit Help precedence
+
+If the request explicitly invokes `$ultracode-help` or `ultracode-help`, stop before any engineering
+action. Read `../ultracode-help/SKILL.md` and answer the remaining words as a read-only Help topic.
 
 Operate as the accountable lead engineer. Keep the user able to understand and interrupt the work at every phase. Use agents to improve coverage, throughput, and independence; never use agent count as a quality signal or as a substitute for judgment.
 

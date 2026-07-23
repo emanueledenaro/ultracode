@@ -1,9 +1,14 @@
 ---
 name: ultracode-init
-description: Guided, safe initialization of UltraCode project control for Codex and Claude Code. Use when the user explicitly invokes `$ultracode-init`, asks to adopt UltraCode in a repository, or wants shared AI documentation, rules, skills, reviewers, model and objective-driven reasoning policy, configuration, and status structure generated from the real project without copying machine-local settings.
+description: Guided, safe initialization of UltraCode project control for Codex and Claude Code. Use when the user explicitly invokes `$ultracode-init`, asks to adopt UltraCode in a repository, or wants shared AI documentation, rules, skills, reviewers, model and objective-driven reasoning policy, configuration, and status structure generated from the real project without copying machine-local settings. Do not select this skill when the request explicitly invokes `$ultracode-help`; `init` is then only a Help topic.
 ---
 
 # UltraCode Init
+
+## Respect explicit Help precedence
+
+If the request explicitly invokes `$ultracode-help` or `ultracode-help`, stop before discovery or
+initialization. Read `../ultracode-help/SKILL.md` and answer `init` as a read-only Help topic.
 
 Initialize the current repository through inspection, a short interview, a reviewable proposal, and idempotent writes. Never clone another project's domain facts.
 

@@ -1,33 +1,99 @@
 ---
 name: ultracode-help
-description: Explain and help choose UltraCode commands without changing the task or repository. Use when the user invokes `$ultracode-help` or `ultracode-help`, asks what UltraCode can do, which of `$ultracode`, `$ultracode-init`, `$ultracode-edit`, `$ultracode-flow`, `$ultracode-status`, or Help to use, or asks about UltraCode control, tickets, agents, models, effort, initialization, safety, or validation.
+description: Explain and help choose UltraCode commands without changing the task or repository. Use when the user invokes `$ultracode-help` or `ultracode-help`, asks how UltraCode works or which command fits, or asks about UltraCode initialization, control, tickets, agents, models, reasoning effort, safety, validation, or examples. Support focused command and model topics plus an explicitly brief or synthetic mode.
 ---
 
 # UltraCode Help
 
-Explain UltraCode's six commands in the user's language. This command is always read-only: do not initialize a project, delegate, run tests or builds, modify files, or create a plan merely to answer.
+Explain UltraCode in the user's language. Remain strictly read-only: do not initialize, plan project
+changes, delegate, run tests or builds, refresh task state, or modify any file.
 
-Read [the command guide](../ultracode/references/command-guide.md) completely before answering. It
-is the canonical detailed guide. For the `models` topic or a question about effort selection, also
-read [the reasoning router](../ultracode/references/reasoning-routing.md) completely.
+Read [the command guide](../ultracode/references/command-guide.md) completely before answering. Read
+[the reasoning router](../ultracode/references/reasoning-routing.md) completely for `models` or any
+question about model or effort selection.
 
-## Answer the request
+## Select the response mode
 
-Accept `ultracode`, `init`, `edit`, `flow`, `status`, `models`, and `examples` as optional topics;
-accept the same names with a leading `$` or the complete command name. Treat `help` as a request
-for the default overview.
+First remove the invocation token `$ultracode-help` or `ultracode-help` from the request.
+The invocation token is never itself the `help` topic. Only the remaining words can select a mode.
+Normalize remaining topics with or without `$`: `ultracode`, `init`, `edit`, `flow`, `status`,
+`help`, `models`, and `examples`. Accept complete command names such as `ultracode-status`.
+An explicit Help invocation has precedence over every command name in the remaining words:
+`$ultracode-help flow` explains Flow and must never execute `$ultracode-flow`.
 
-- With no topic, give the decision path and explain all six commands: purpose, when to use it, writes and confirmation boundary, result, comparison, and one copyable example each.
-- With a command topic, explain that command first, then give the shortest useful comparison and a copyable example.
-- With `models`, explain active-chat inheritance, objective-driven model and reasoning effort selection,
-  requested versus effective values, fallback, and context constraints.
-- With `examples`, offer one safe, concrete prompt for each command.
-- If the request is ambiguous, recommend the least powerful command that meets it. Do not invoke or simulate the recommended command.
+- **No remaining topic:** render the complete overview. A bare `Use $ultracode-help` invocation and
+  a broad request such as "come funziona?", "come inizio?", or "spiegami UltraCode" are not
+  focused topics.
+- **Explicit topic:** answer that topic first and include only the minimum comparison and example
+  needed to place it correctly. Do not expand into the complete overview.
+- **Explicit `breve` or `sintetico`:** use compact mode. Compress prose, never truth conditions or
+  a requested topic. For a no-topic overview, retain every mandatory overview block.
+- **Ambiguous choice:** recommend the least powerful command that satisfies the outcome. Explain
+  the recommendation; do not invoke or simulate it.
 
-## Keep claims honest
+## Render the complete overview
 
-Explain that UltraCode inherits the model of the chat in which it is opened. Normal subagents default to Terra with low effort and rise only when the objective justifies it; verifiers use Sol at least high, and critical work at least xhigh. Distinguish requested model and effort from effective runtime values and fallback. If the runtime does not expose an effective value, say it is not observable rather than inventing it.
+Render for the chat surface, not as a dense document. Translate headings naturally into the user's
+language while preserving this Markdown hierarchy and semantic order:
 
-Explain that read-only questions can work without `.ultracode`. Change work in an uninitialized project gets a read-only initialization proposal and one confirmation before setup writes. Git, deployment, external, destructive, and dependency actions always need explicit user authority. Tickets describe bounded jobs; agents are live workers only when the runtime actually has them.
+1. **Scelta rapida:** an H2 section containing a two-column GitHub-flavored Markdown table that maps
+   user intent to the right command.
+2. **Sei comandi:** explain `$ultracode-help`, `$ultracode`, `$ultracode-init`,
+   `$ultracode-edit`, `$ultracode-flow`, and `$ultracode-status` under one H2 section. Give each
+   command its own H3 subsection, the four bold fields below, and one copyable example in a
+   blockquote directly inside that subsection.
+3. **Progetto non configurato:** explain that read-only use works without `.ultracode`; change work
+   preserves the original objective, enters the read-only Init preflight, and requires confirmation
+   before initialization writes.
+4. **Modelli ed effort:** distinguish Sol `medium` as guidance only before opening a new lead task;
+   the active lead inherits its chat; bounded workers normally request Terra `low`; material
+   verifiers request Sol with at least `high`; critical work uses at least `xhigh`. Explain
+   requested versus effective values and fallback, and never present an unexposed runtime value as
+   observed.
+5. **Ticket e agenti:** tickets are bounded logical jobs; an owner is accountable; a live agent is
+   a runtime instance only when one actually exists.
+6. **Autorizzazioni:** Git, deployment, external, dependency, destructive, and privileged actions
+   require explicit authority and are not implied by implementation approval.
 
-Never claim current task state, files, checks, agents, models, effort, fallback, or initialization status unless the user supplied it or the active runtime exposes it.
+Use one H1 title at the top, H2 headings for the six content areas, and H3 headings only for the
+commands. Use a compact Markdown table for model routing and another for ticket versus agent. Keep
+paragraphs short. Do not collect examples into a repeated section at the end and do not put the six
+examples in separate fenced code blocks.
+
+For each command explanation, cover all four required fields even in compact mode:
+
+- **Quando usarlo**
+- **Cosa ottieni**
+- **Può scrivere?**
+- **Quando chiede conferma**
+
+Put the command's example immediately after those fields as a Markdown blockquote with an inline
+code prompt.
+
+## Keep focused answers complete
+
+For a command topic, use one H2 command heading, the same four bold fields, its closest comparison,
+and one blockquote example. For `models`, use a compact table and cover new-task guidance,
+active-task inheritance, worker/verifier/critical routes, requested and effective model plus
+effort, fallback, and runtime visibility. For `examples`, give one safe blockquote prompt per
+command. For `help`, explain Help itself unless the user asked for a general overview.
+
+Do not claim current task state, project initialization, files, checks, tickets, agents, models,
+effort, or fallback unless the user supplied it or the active runtime exposes it. Do not change a
+global Codex model or effort default; describe startup guidance only.
+
+## Check before sending
+
+Internally verify the response without printing this checklist:
+
+- correct mode selected;
+- read-only boundary preserved;
+- no-topic overview contains all six content areas in order;
+- the overview uses one H1, H2 sections, a quick-choice table, H3 command sections, inline
+  blockquote examples, a model table, and a ticket-versus-agent table;
+- every described command includes when, result, write capability, and confirmation trigger;
+- model and effort claims separate requested, effective, inheritance, and fallback;
+- one example per command appears in the overview;
+- no runtime or project fact was invented.
+
+Do not finish the response until every semantic item required by the selected mode is covered.
