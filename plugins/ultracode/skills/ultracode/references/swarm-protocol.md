@@ -52,18 +52,26 @@ Use IDs that remain stable in status and follow-ups:
 - `V-001` for adversarial verification jobs;
 - `S-001` for the single synthesis.
 
-Record for every job: type, scope, owner, parent, dependencies, read/write mode, owned files, expected evidence, state, and result.
+Record for every job: type, scope, responsible owner, live agent when one exists, parent,
+dependencies, read/write mode, owned files, requested model, effective model when observable,
+requested reasoning effort, effective effort when observable, the plain-language routing reason,
+expected evidence, state, completion criterion, and result.
 
 Allowed job states are `QUEUED`, `ACTIVE`, `DONE`, `FAILED`, `BLOCKED`, and `CANCELLED`.
 
 ## Dispatch in visible waves
 
 1. Detect the currently available collaboration capacity; do not assume a fixed number.
-2. Start the highest-value dependency-free jobs that fit.
+2. Score each ready job with `reasoning-routing.md`, then start the highest-value dependency-free
+   jobs that fit.
 3. Keep the rest in a visible queue with counts and next IDs.
 4. Continue useful lead work while a wave runs.
 5. At the wave barrier, collect results, inspect any writes, release completed capacity, and dispatch the next wave.
 6. Do not finish while an active job can change the conclusion or shared files.
+
+Use a fresh or bounded context with a complete job brief when an explicit model or effort override
+and context isolation matter. A full-history fork inherits the active chat model and effort; show
+that inheritance instead of claiming that a requested override became effective.
 
 Platform limits determine simultaneous execution and latency only. The problem graph determines total coverage.
 

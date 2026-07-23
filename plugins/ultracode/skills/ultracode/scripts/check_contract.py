@@ -15,13 +15,23 @@ from pathlib import Path
 from typing import Any
 
 
-SKILL_NAMES = ("ultracode", "ultracode-init", "ultracode-edit", "ultracode-status")
+SKILL_NAMES = (
+    "ultracode",
+    "ultracode-help",
+    "ultracode-init",
+    "ultracode-edit",
+    "ultracode-flow",
+    "ultracode-status",
+)
 CORE_REFERENCES = {
     "routing-and-delegation.md",
     "validation-and-review.md",
     "project-adapter.md",
     "swarm-protocol.md",
     "control-and-status.md",
+    "command-interface.md",
+    "command-guide.md",
+    "reasoning-routing.md",
     "behavioral-contract.md",
     "eval-prompts.md",
 }
@@ -33,6 +43,8 @@ CORE_RESOURCES = {
     "references/evaluation-evidence.json",
     "scripts/project_doctor.py",
     "scripts/project_doctor.ps1",
+    "scripts/project_configurator.py",
+    "scripts/run_project_configurator_corpus.py",
     "scripts/run_doctor_corpus.py",
     "scripts/run_doctor_corpus.ps1",
     "scripts/run_contract_casing_corpus.py",
@@ -48,16 +60,19 @@ REQUIRED_CORE_TEXT = {
     "status write boundary": "a read-only task remains read-only",
     "bounded repair": "Limit the automatic fix-review loop to two iterations",
     "authority boundary": "Treat staging, committing, pushing, deploying, publishing",
+    "uninitialized project preflight": "Handle an uninitialized project",
+    "objective-driven reasoning": "objective-driven",
+    "reasoning routing": "reasoning-routing.md",
 }
-REQUIRED_SCENARIOS = {f"UC-{index:02d}" for index in range(1, 35)}
+REQUIRED_SCENARIOS = {f"UC-{index:02d}" for index in range(1, 39)}
 REQUIRED_EVAL_PROMPTS = {
     "UC-01", "UC-03", "UC-04", "UC-06", "UC-08", "UC-10", "UC-14",
     "UC-18", "UC-19", "UC-20", "UC-23", "UC-24", "UC-25", "UC-26",
-    "UC-29", "UC-30", "UC-31", "UC-32", "UC-33", "UC-34",
+    "UC-29", "UC-30", "UC-31", "UC-32", "UC-33", "UC-34", "UC-35", "UC-36", "UC-37", "UC-38",
 }
 REQUIRED_EVIDENCE_SCENARIOS = {
     "UC-01", "UC-03", "UC-04", "UC-19", "UC-23", "UC-24", "UC-25",
-    "UC-29", "UC-30", "UC-31", "UC-32", "UC-34",
+    "UC-29", "UC-30", "UC-31", "UC-32", "UC-34", "UC-35", "UC-36", "UC-37", "UC-38",
 }
 EXPECTED_FIXTURES = {
     "valid project fixture Python": ("PASSED", 0),
@@ -85,23 +100,29 @@ EXPECTED_FIXTURE_COMMANDS = {
 }
 REQUIRED_VALIDATIONS = {
     "quick_validate ultracode",
+    "quick_validate ultracode-help",
     "quick_validate ultracode-init",
     "quick_validate ultracode-edit",
+    "quick_validate ultracode-flow",
     "quick_validate ultracode-status",
     "validate_plugin",
     "contract checker Python bootstrap",
     "contract checker PowerShell bootstrap",
     "contract casing corpus",
+    "project configurator corpus",
 }
 EXPECTED_VALIDATION_COMMANDS = {
     "quick_validate ultracode": "uv run --offline --with pyyaml -- python ${SKILL_CREATOR}/scripts/quick_validate.py ${PLUGIN_ROOT}/skills/ultracode",
+    "quick_validate ultracode-help": "uv run --offline --with pyyaml -- python ${SKILL_CREATOR}/scripts/quick_validate.py ${PLUGIN_ROOT}/skills/ultracode-help",
     "quick_validate ultracode-init": "uv run --offline --with pyyaml -- python ${SKILL_CREATOR}/scripts/quick_validate.py ${PLUGIN_ROOT}/skills/ultracode-init",
     "quick_validate ultracode-edit": "uv run --offline --with pyyaml -- python ${SKILL_CREATOR}/scripts/quick_validate.py ${PLUGIN_ROOT}/skills/ultracode-edit",
+    "quick_validate ultracode-flow": "uv run --offline --with pyyaml -- python ${SKILL_CREATOR}/scripts/quick_validate.py ${PLUGIN_ROOT}/skills/ultracode-flow",
     "quick_validate ultracode-status": "uv run --offline --with pyyaml -- python ${SKILL_CREATOR}/scripts/quick_validate.py ${PLUGIN_ROOT}/skills/ultracode-status",
     "validate_plugin": "uv run --offline --with pyyaml -- python ${PLUGIN_CREATOR}/scripts/validate_plugin.py ${PLUGIN_ROOT}",
     "contract checker Python bootstrap": "${PYTHON} ${PLUGIN_ROOT}/skills/ultracode/scripts/check_contract.py --allow-pending",
     "contract checker PowerShell bootstrap": "powershell -File ${PLUGIN_ROOT}/skills/ultracode/scripts/check_contract.ps1 -AllowPending",
     "contract casing corpus": "${PYTHON} ${PLUGIN_ROOT}/skills/ultracode/scripts/run_contract_casing_corpus.py",
+    "project configurator corpus": "${PYTHON} ${PLUGIN_ROOT}/skills/ultracode/scripts/run_project_configurator_corpus.py",
 }
 EVIDENCE_KEYS = {
     "schema_version", "attestation_scope", "plugin_version_prefix", "evaluated_on",
@@ -137,12 +158,20 @@ LIVE_CORPUS_CASES = {
     "duplicate-claude-role-key": ("FAILED", 1),
     "extra-claude-role-key": ("FAILED", 1),
     "reparse": ("FAILED", 1),
+    "control-reparse": ("FAILED", 1),
+    "rule-path-portability": ("FAILED", 1),
     "missing-config-route": ("FAILED", 1),
     "boolean-control-plan": ("FAILED", 1),
     "boolean-authority": ("FAILED", 1),
     "boolean-decomposition": ("FAILED", 1),
     "boolean-concurrency": ("FAILED", 1),
     "boolean-model-policy": ("FAILED", 1),
+    "boolean-reasoning-policy": ("FAILED", 1),
+    "reasoning-effort-invalid": ("FAILED", 1),
+    "reasoning-order-invalid": ("FAILED", 1),
+    "explicit-model-ids": ("PASSED", 0),
+    "model-id-trailing-newline": ("FAILED", 1),
+    "rule-path-mismatch": ("FAILED", 1),
     "boolean-command-evidence": ("FAILED", 1),
     "boolean-completion-review": ("FAILED", 1),
     "boolean-generated-by": ("FAILED", 1),
@@ -377,9 +406,9 @@ def validate_schema_document(schema: Any) -> None:
     if properties.get("trace_artifact", {}).get("const") != "evaluation-traces.json":
         fail("evaluation evidence schema must pin the trace artifact name")
     expected_counts = {
-        "scenario_results": 12,
+        "scenario_results": 16,
         "fixture_results": 10,
-        "validation_results": 8,
+        "validation_results": 11,
         "audit_results": 1,
     }
     for field, count in expected_counts.items():
@@ -394,7 +423,7 @@ def validate_schema_document(schema: Any) -> None:
     if hashes.get("additionalProperties") is not False:
         fail("evaluation evidence schema must close skill_sha256")
     if set(hashes.get("required", [])) != set(SKILL_NAMES):
-        fail("evaluation evidence schema must require exactly four skill hashes")
+        fail("evaluation evidence schema must require exactly six skill hashes")
     defs = schema.get("$defs", {})
     status_enum = set(defs.get("status", {}).get("enum", []))
     if status_enum != VALID_STATUSES:
@@ -613,28 +642,87 @@ def main() -> None:
         "evaluation-evidence.schema.json",
     ):
         load_json(reference_root / schema_name, schema_name)
+    project_schema = load_json(reference_root / "project-config.schema.json", "project config schema")
+    reasoning_policy_schema = (
+        project_schema.get("properties", {})
+        .get("swarm", {})
+        .get("properties", {})
+        .get("reasoning_policy", {})
+    )
+    if (
+        reasoning_policy_schema.get("required") != [
+            "mode", "bounded_default", "material_verifier_minimum", "critical_minimum", "maximum"
+        ]
+        or reasoning_policy_schema.get("additionalProperties") is not False
+        or project_schema.get("$defs", {}).get("reasoningEffort", {}).get("enum")
+        != ["low", "medium", "high", "xhigh", "max", "ultra"]
+    ):
+        fail("project config schema must declare the exact objective-driven reasoning policy")
+    model_pattern = project_schema.get("$defs", {}).get("modelSelector", {}).get("anyOf", [{}, {}])[1].get("pattern")
+    if model_pattern != r"^[a-z0-9][a-z0-9._-]{2,}(?![\s\S])":
+        fail("project config schema must reject trailing model-selector characters absolutely")
+    rule_scope_pattern = (
+        project_schema.get("properties", {})
+        .get("artifacts", {})
+        .get("properties", {})
+        .get("rule_paths", {})
+        .get("additionalProperties", {})
+        .get("items", {})
+        .get("pattern")
+    )
+    if rule_scope_pattern != (
+        r"^(?!/)(?![A-Za-z]:)(?!~)(?!.*(?:^|/)\.{1,2}(?:/|$))"
+        r"[A-Za-z0-9._*?-]+(?:/[A-Za-z0-9._*?-]+)*(?![\s\S])"
+    ):
+        fail("project config schema must enforce portable relative rule-path selectors")
 
+    help_text = read_text(skills_root / "ultracode-help" / "SKILL.md")
     init_text = read_text(skills_root / "ultracode-init" / "SKILL.md")
     edit_text = read_text(skills_root / "ultracode-edit" / "SKILL.md")
+    flow_text = read_text(skills_root / "ultracode-flow" / "SKILL.md")
     status_text = read_text(skills_root / "ultracode-status" / "SKILL.md")
     for required in (
+        "always read-only", "command guide", "all six commands",
+        "../ultracode/references/command-guide.md", "model and reasoning",
+    ):
+        if required not in help_text:
+            fail(f"ultracode-help is missing: {required}")
+    for required in (
         "project-config.schema.json", "Do not ask how many swarm agents",
-        ".ultracode/managed.json", ".git/info/exclude",
+        ".ultracode/managed.json", ".git/info/exclude", "project_configurator.py",
+        "Plan before apply", "confirmed plan only", "no automatic delete",
+        "../ultracode/references/command-interface.md", "Explain the proposal in plain language",
+        "baseline preflight mode",
+        "load_workspace_dependencies",
     ):
         if required not in init_text:
             fail(f"ultracode-init is missing: {required}")
     for required in (
         "project_doctor", "managed.json", "Never ask for an agent count",
-        "Do not delete automatically",
+        "Do not delete automatically", "project_configurator.py",
+        "Plan before apply", "confirmed plan only", "no automatic delete",
+        "../ultracode/references/command-interface.md", "Explain the delta in plain language",
+        "load_workspace_dependencies",
     ):
         if required not in edit_text:
             fail(f"ultracode-edit is missing: {required}")
     for required in (
         "Stay read-only", "logical jobs versus currently live agent instances",
-        "Never invent percentages",
+        "Never invent percentages", "../ultracode/references/command-interface.md",
+        "Status is the detailed diagnostic view",
     ):
         if required not in status_text:
             fail(f"ultracode-status is missing: {required}")
+    for required in (
+        "Stay read-only", "A ticket is a bounded unit of work", "requested model",
+        "effective model", "Why it exists", "Completion criterion",
+        "$ultracode-flow full", "$ultracode-flow agents",
+        "../ultracode/references/command-interface.md",
+    ):
+        if required not in flow_text:
+            fail(f"ultracode-flow is missing: {required}")
+    if "SITUAZIONE NUDA E CRUDA" in flow_text.upper():
+        fail("ultracode-flow contains the rejected situation summary")
 
     contract_text = read_text(reference_root / "behavioral-contract.md")
     missing_scenarios = REQUIRED_SCENARIOS - set(re.findall(r"UC-\d{2}", contract_text))
@@ -656,10 +744,9 @@ def main() -> None:
     prompts = manifest.get("interface", {}).get("defaultPrompt", [])
     if not isinstance(prompts, list) or not all(isinstance(item, str) for item in prompts):
         fail("plugin default prompts must be an array of strings")
-    if not any("$ultracode-init" in item for item in prompts):
-        fail("plugin default prompts must expose $ultracode-init")
-    if not any("$ultracode-status" in item for item in prompts):
-        fail("plugin default prompts must expose $ultracode-status")
+    for skill_name in SKILL_NAMES:
+        if not any(f"${skill_name}" in item for item in prompts):
+            fail(f"plugin default prompts must expose ${skill_name}")
 
     schema = load_json(reference_root / "evaluation-evidence.schema.json", "evaluation evidence schema")
     validate_schema_document(schema)
@@ -684,7 +771,7 @@ def main() -> None:
         fail("evaluated_on must be an ISO date")
     hashes = evidence.get("skill_sha256")
     if not isinstance(hashes, dict) or set(hashes) != set(SKILL_NAMES):
-        fail("evaluation evidence must contain exactly four named skill hashes")
+        fail("evaluation evidence must contain exactly six named skill hashes")
     for skill_name, actual_hash in skill_hashes.items():
         recorded_hash = hashes.get(skill_name)
         if not isinstance(recorded_hash, str) or not HASH_RE.fullmatch(recorded_hash):

@@ -26,6 +26,9 @@ jobs:
       - name: Validate repository structure
         run: python scripts/validate_repository.py
 
+      - name: Validate deterministic project configurator
+        run: python plugins/ultracode/skills/ultracode/scripts/run_project_configurator_corpus.py
+
       - name: Validate UltraCode contract with Python
         run: python plugins/ultracode/skills/ultracode/scripts/check_contract.py
 

@@ -32,11 +32,16 @@ REQUIRED_TOP_LEVEL = {
 COMMAND_KEYS = ("install", "format", "lint", "typecheck", "test", "build", "run", "health")
 EVIDENCE_STATES = {"VERIFIED", "INFERRED", "UNKNOWN"}
 MODEL_POLICIES = {"strongest-available", "balanced-available", "inherit"}
+MODEL_SELECTOR = re.compile(r"^[a-z0-9][a-z0-9._-]{2,}\Z")
 HEX_SHA256 = re.compile(r"^[0-9a-f]{64}$")
 KEBAB = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
 STATUS_PATH = re.compile(r"^\.ultracode/[A-Za-z0-9._-]+(?:/[A-Za-z0-9._-]+)*$")
 CONTEXT_PATH = re.compile(r"^\.agents/context/[A-Za-z0-9._-]+(?:/[A-Za-z0-9._-]+)*\.md$")
 RULE_PATH = re.compile(r"^\.agents/rules/[a-z0-9]+(?:-[a-z0-9]+)*\.md$")
+RULE_SCOPE_PATH = re.compile(
+    r"^(?!/)(?![A-Za-z]:)(?!~)(?!.*(?:^|/)\.{1,2}(?:/|$))"
+    r"[A-Za-z0-9._*?-]+(?:/[A-Za-z0-9._*?-]+)*\Z"
+)
 SKILL_PATH = re.compile(r"^\.agents/skills/[a-z0-9]+(?:-[a-z0-9]+)*/SKILL\.md$")
 SOURCE_HASH = re.compile(r"ultracode-source-sha256:\s*([0-9a-f]{64})")
 MANAGED_PATH = re.compile(r"^[A-Za-z0-9._-]+(?:/[A-Za-z0-9._-]+)*$")
@@ -404,6 +409,7 @@ def verify_claude_rule_projection(
     path: Path,
     label: str,
     canonical_raw: str,
+    expected_paths: list[str],
     errors: list[str],
 ) -> None:
     text = read_utf8(path, label, errors)
@@ -419,6 +425,8 @@ def verify_claude_rule_projection(
     if paths is not None:
         if len(paths) != len(set(paths)):
             errors.append(f"{label}.paths contains duplicates")
+        if paths != expected_paths:
+            errors.append(f"{label}.paths must exactly match artifacts.rule_paths[{canonical_raw!r}]")
         expected_frontmatter = "paths:\n" + "\n".join(
             f"  - {json.dumps(item, ensure_ascii=False)}" for item in paths
         )
@@ -625,10 +633,41 @@ def validate_config(
         errors.append("swarm.model_policy must be an object")
     else:
         for key in ("lead", "bounded_agents", "verifiers"):
-            if model_policy.get(key) not in MODEL_POLICIES:
+            selector = model_policy.get(key)
+            if not isinstance(selector, str) or (
+                selector not in MODEL_POLICIES and MODEL_SELECTOR.fullmatch(selector) is None
+            ):
                 errors.append(f"swarm.model_policy.{key} is invalid")
         if model_policy.get("fallback") != "inherit":
             errors.append("swarm.model_policy.fallback must be inherit")
+    reasoning_policy = swarm.get("reasoning_policy")
+    effort_order = ("low", "medium", "high", "xhigh", "max", "ultra")
+    if not isinstance(reasoning_policy, dict) or set(reasoning_policy) != {
+        "mode", "bounded_default", "material_verifier_minimum", "critical_minimum", "maximum"
+    }:
+        errors.append("swarm.reasoning_policy must be an exact object")
+    else:
+        if reasoning_policy.get("mode") != "objective-driven":
+            errors.append("swarm.reasoning_policy.mode must be objective-driven")
+        values = {key: reasoning_policy.get(key) for key in (
+            "bounded_default", "material_verifier_minimum", "critical_minimum", "maximum"
+        )}
+        for key, value in values.items():
+            if not isinstance(value, str) or value not in effort_order:
+                errors.append(f"swarm.reasoning_policy.{key} is invalid")
+        if all(isinstance(value, str) and value in effort_order for value in values.values()):
+            rank = {value: index for index, value in enumerate(effort_order)}
+            if rank[values["material_verifier_minimum"]] < rank["high"]:
+                errors.append("swarm.reasoning_policy.material_verifier_minimum must be at least high")
+            if rank[values["critical_minimum"]] < rank["xhigh"]:
+                errors.append("swarm.reasoning_policy.critical_minimum must be at least xhigh")
+            if not (
+                rank[values["bounded_default"]]
+                <= rank[values["material_verifier_minimum"]]
+                <= rank[values["critical_minimum"]]
+                <= rank[values["maximum"]]
+            ):
+                errors.append("swarm.reasoning_policy efforts must be ordered through maximum")
 
     adapters = require_object(config, "adapters", errors)
     for key in ("codex", "claude"):
@@ -652,6 +691,21 @@ def validate_config(
         artifacts.get("context"), "artifacts.context", errors, minimum=1, pattern=CONTEXT_PATH
     )
     rules = validate_string_list(artifacts.get("rules"), "artifacts.rules", errors, pattern=RULE_PATH)
+    raw_rule_paths = artifacts.get("rule_paths")
+    rule_paths: dict[str, list[str]] = {}
+    if not isinstance(raw_rule_paths, dict):
+        errors.append("artifacts.rule_paths must be an object")
+    else:
+        if set(raw_rule_paths) != set(rules):
+            errors.append("artifacts.rule_paths keys must exactly match artifacts.rules")
+        for raw in rules:
+            rule_paths[raw] = validate_string_list(
+                raw_rule_paths.get(raw),
+                f"artifacts.rule_paths[{raw!r}]",
+                errors,
+                minimum=1,
+                pattern=RULE_SCOPE_PATH,
+            )
     skills = validate_string_list(artifacts.get("skills"), "artifacts.skills", errors, pattern=SKILL_PATH)
     canonical_artifacts = contexts + rules + skills
     canonical_skill_descriptions: dict[str, str] = {}
@@ -692,7 +746,7 @@ def validate_config(
             expected_managed.add(adapter_raw)
             adapter_path = require_file(root, adapter_raw, f"Claude rule adapter for {raw}", errors)
             if adapter_path is not None:
-                verify_claude_rule_projection(adapter_path, adapter_raw, raw, errors)
+                verify_claude_rule_projection(adapter_path, adapter_raw, raw, rule_paths.get(raw, []), errors)
 
         for raw in skills:
             skill_name = PurePosixPath(raw).parent.name
@@ -931,15 +985,23 @@ def main() -> int:
     parser.add_argument("--json", action="store_true", dest="as_json")
     args = parser.parse_args()
 
-    root = Path(args.project_root).resolve()
+    root = Path(os.path.abspath(args.project_root))
     errors: list[str] = []
     drift: list[str] = []
     warnings: list[str] = []
-    if not root.is_dir():
+    if is_reparse_or_link(root):
+        errors.append(f"project root traverses a symlink, junction, or reparse point: {root}")
+    elif not root.is_dir():
         errors.append(f"project root is not a directory: {root}")
     else:
-        config = load_json(root / ".ultracode" / "config.json", errors)
-        manifest = load_json(root / ".ultracode" / "managed.json", errors)
+        config_path = safe_project_path(
+            root, ".ultracode/config.json", ".ultracode/config.json", errors
+        )
+        manifest_path = safe_project_path(
+            root, ".ultracode/managed.json", ".ultracode/managed.json", errors
+        )
+        config = load_json(config_path, errors) if config_path is not None else None
+        manifest = load_json(manifest_path, errors) if manifest_path is not None else None
         expected_managed: set[str] = set()
         status_path: str | None = None
         if config is not None:

@@ -15,6 +15,9 @@ ROOT = Path(__file__).resolve().parent.parent
 MARKETPLACE_PATH = ROOT / ".agents" / "plugins" / "marketplace.json"
 PLUGIN_ROOT = ROOT / "plugins" / "ultracode"
 MANIFEST_PATH = PLUGIN_ROOT / ".codex-plugin" / "plugin.json"
+COMMAND_INTERFACE_PATH = (
+    PLUGIN_ROOT / "skills" / "ultracode" / "references" / "command-interface.md"
+)
 EXPECTED_REPOSITORY = "https://github.com/emanueledenaro/ultracode"
 REQUIRED_DOCS = (
     "README.md",
@@ -26,11 +29,53 @@ REQUIRED_DOCS = (
 )
 REQUIRED_SKILLS = (
     "ultracode",
+    "ultracode-help",
     "ultracode-init",
     "ultracode-edit",
+    "ultracode-flow",
     "ultracode-status",
 )
 ASSET_FIELDS = ("composerIcon", "logo", "logoDark")
+FLOW_REQUIRED_TEXT = (
+    "Stay read-only",
+    "A ticket is a bounded unit of work",
+    "requested model",
+    "effective model",
+    "Why it exists",
+    "Completion criterion",
+    "$ultracode-flow full",
+    "$ultracode-flow agents",
+)
+COMMAND_REQUIRED_TEXT = {
+    "ultracode": (
+        "references/command-interface.md",
+        "Explain each active ticket",
+        "Handle an uninitialized project",
+    ),
+    "ultracode-help": (
+        "../ultracode/references/command-guide.md",
+        "../ultracode/references/reasoning-routing.md",
+    ),
+    "ultracode-init": (
+        "../ultracode/references/command-interface.md",
+        "Explain the proposal in plain language",
+        "baseline preflight mode",
+        "load_workspace_dependencies",
+    ),
+    "ultracode-edit": (
+        "../ultracode/references/command-interface.md",
+        "Explain the delta in plain language",
+        "load_workspace_dependencies",
+    ),
+    "ultracode-flow": (
+        "../ultracode/references/command-interface.md",
+        "A ticket is a bounded unit of work",
+    ),
+    "ultracode-status": (
+        "../ultracode/references/command-interface.md",
+        "Status is the detailed diagnostic view",
+    ),
+}
 
 
 def fail(message: str) -> None:
@@ -115,6 +160,14 @@ def validate_repository() -> None:
         fail("plugin manifest interface must be an object")
     if interface.get("displayName") != "UltraCode" or interface.get("brandColor") != "#2FB9D1":
         fail("plugin interface identity is inconsistent")
+    default_prompts = interface.get("defaultPrompt")
+    if not isinstance(default_prompts, list) or not all(
+        isinstance(item, str) for item in default_prompts
+    ):
+        fail("plugin defaultPrompt must be an array of strings")
+    for skill_name in REQUIRED_SKILLS:
+        if not any(f"${skill_name}" in item for item in default_prompts):
+            fail(f"plugin defaultPrompt does not expose ${skill_name}")
     icon_paths = {validate_relative_asset(interface.get(field), field) for field in ASSET_FIELDS}
     if len(icon_paths) != 1:
         fail("all icon surfaces must use the canonical UltraCode asset")
@@ -126,6 +179,21 @@ def validate_repository() -> None:
             fail(f"missing regular SKILL.md for {skill_name}")
         if parse_skill_name(skill_path) != skill_name:
             fail(f"SKILL.md name mismatch for {skill_name}")
+        skill_text = skill_path.read_text(encoding="utf-8")
+        for required in COMMAND_REQUIRED_TEXT[skill_name]:
+            if required not in skill_text:
+                fail(f"{skill_name} is missing shared command behavior: {required}")
+
+    if not COMMAND_INTERFACE_PATH.is_file() or COMMAND_INTERFACE_PATH.is_symlink():
+        fail("missing shared command-interface.md contract")
+    flow_text = (
+        PLUGIN_ROOT / "skills" / "ultracode-flow" / "SKILL.md"
+    ).read_text(encoding="utf-8")
+    for required in FLOW_REQUIRED_TEXT:
+        if required not in flow_text:
+            fail(f"ultracode-flow is missing its public behavior: {required}")
+    if "SITUAZIONE NUDA E CRUDA" in flow_text.upper():
+        fail("ultracode-flow must not add the rejected situation summary")
 
     forbidden_names = {".DS_Store", "Thumbs.db"}
     for path in ROOT.rglob("*"):

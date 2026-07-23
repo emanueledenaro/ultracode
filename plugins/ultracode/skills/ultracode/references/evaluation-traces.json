@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
   "attestation_scope": "local-consistency-only",
-  "plugin_version_prefix": "0.2.0",
-  "generated_on": "2026-07-22",
+  "plugin_version_prefix": "0.5.0",
+  "generated_on": "2026-07-23",
   "records": [
     {
       "trace_id": "trace-uc-01-direct",
@@ -12,7 +12,7 @@
       "source_type": "fresh-agent-result",
       "command": null,
       "exit_code": null,
-      "facts": ["Answered the Git rebase request in one sentence without delegation, repository commands, or writes."]
+      "facts": ["Fresh task uc01_direct_forward answered the Git rebase request in one sentence with no delegation or writes.", "Only the packaged skill contract was read to load the requested behavior."]
     },
     {
       "trace_id": "trace-uc-03-diagnose",
@@ -22,7 +22,7 @@
       "source_type": "fresh-agent-result",
       "command": null,
       "exit_code": null,
-      "facts": ["Diagnosed divergence between separate .agents and .claude trees read-only and made no changes."]
+      "facts": ["Fresh task uc03_diagnose_forward proved that canonical .agents guidance and generated Codex/Claude projections can diverge between apply and doctor checks.", "The task remained read-only, wrote no files, and reported the available PowerShell doctor PASSED with exit code 0."]
     },
     {
       "trace_id": "trace-uc-04-audit",
@@ -32,7 +32,7 @@
       "source_type": "fresh-agent-result",
       "command": null,
       "exit_code": null,
-      "facts": ["A fresh independent audit remained read-only and returned evidence-backed findings."]
+      "facts": ["Fresh gpt-5.6-sol task uc04_audit_forward remained read-only and reported evidence-backed findings with file and line references.", "It found no HIGH issue, identified control-file reparse and rule-path portability gaps as MEDIUM, and those findings were covered by new Python and PowerShell corpus cases before release."]
     },
     {
       "trace_id": "trace-uc-19-fanout",
@@ -42,7 +42,7 @@
       "source_type": "fresh-agent-result",
       "command": null,
       "exit_code": null,
-      "facts": ["Derived U-001 through U-037 from 37 real units, one synthesis job, and conditional verifier jobs.", "Separated the logical total 38+F from two live slots and derived 19 base waves."]
+      "facts": ["Fresh task uc19_fanout_forward derived U-001 through U-037 from the 37 enumerated fixture units, one synthesis job, and conditional verifier jobs.", "It separated the logical total 38+F from four live instances including the lead, yielding three worker slots and 13 base waves without dropping coverage."]
     },
     {
       "trace_id": "trace-uc-23-status",
@@ -52,7 +52,7 @@
       "source_type": "fresh-agent-result",
       "command": null,
       "exit_code": null,
-      "facts": ["Reported 45 logical jobs separately from 3 live agents and marked the persisted snapshot STALE after detecting mismatch.", "Performed no writes or tests."]
+      "facts": ["Fresh regression task reported four logical tickets separately from one live agent and explained snapshot freshness in the user's language.", "It reported requested and effective model and effort per ticket, explained Terra low, Sol xhigh, inheritance, fallback, and unobservable runtime values without writes or tests."]
     },
     {
       "trace_id": "trace-uc-24-init",
@@ -62,7 +62,7 @@
       "source_type": "fresh-agent-result",
       "command": null,
       "exit_code": null,
-      "facts": ["Inspected the disposable repository, asked three bounded interview groups, and previewed exact files without writing.", "Did not ask for an agent count and did not invent unnecessary roles or skills."]
+      "facts": ["A fresh gpt-5.6-sol verifier ran two init plans on a disposable CRLF AGENTS.md fixture; both exited 0 with identical plan ID, identical stdout hash, and unchanged byte-plus-mtime snapshots.", "The five writes matched changes one-for-one; every exact content value produced its declared SHA-256 and the applied bytes matched those writes.", "Apply touched only config, manifest, context, Claude root, and the AGENTS managed block; the original 141-byte CRLF prefix remained byte-identical.", "The second plan and apply both returned NO_CHANGES with empty writes and unchanged bytes and mtimes; the Python doctor returned PASSED with exit code 0."]
     },
     {
       "trace_id": "trace-uc-25-edit",
@@ -72,7 +72,7 @@
       "source_type": "fresh-agent-result",
       "command": null,
       "exit_code": null,
-      "facts": ["Detected managed drift, proposed a config-only preference change, preserved the manual note, and requested conflict resolution before writing."]
+      "facts": ["A fresh gpt-5.6-sol verifier initialized a rich disposable fixture and obtained an edit plan with exactly five dependent updates.", "After the planned Codex projection was changed, apply returned CONFLICT with exit code 2 and a recursive hash-size-mtime snapshot proved zero configurator writes.", "After explicit restoration and adoption into the canonical reviewer, the new confirmed plan changed only config, manifest, that reviewer, and its Codex and Claude projections; two forward-compatible keys survived and the final Python doctor returned PASSED exit 0."]
     },
     {
       "trace_id": "trace-uc-29-control",
@@ -82,7 +82,7 @@
       "source_type": "fresh-agent-result",
       "command": null,
       "exit_code": null,
-      "facts": ["Resolved the effective fallback profile as confirm-before-write, detailed updates, compact detail, hidden routine agent/file/validation rows, concurrency 2, and safety cap 12.", "Derived five unit jobs, two verifier jobs, and one synthesis job: eight logical jobs across four operational waves.", "Performed no writes or delegation, kept the safety cap inactive, and resolved model routing to strongest, balanced, strongest, with inherit fallback."]
+      "facts": ["Fresh task uc29_controls_forward resolved the current confirm-before-write, phase-and-barrier, standard-detail, visible job/file/check, conversation-only, auto-concurrency, and safety-cap 1000 settings.", "It derived eight unit jobs plus one synthesis across three worker waves and kept the task read-only.", "The current policy now keeps the lead inherited, requests Terra for bounded jobs and Sol for verifiers, and reports inherit fallback only when runtime evidence requires it."]
     },
     {
       "trace_id": "trace-uc-30-manifest",
@@ -92,7 +92,7 @@
       "source_type": "command-result",
       "command": null,
       "exit_code": null,
-      "facts": ["The live Python and PowerShell harnesses both returned MATCH for empty-manifest and omitted-config, with doctor status FAILED and exit code 1.", "Diagnostics identified the incomplete manifest and the omitted required config entry.", "Both disposable 36-case corpora completed with 36 matches, zero mismatches, and zero NOT_AVAILABLE cases, including strict root, routing, type-confusion, ordinal config-key, artifact-path, role-ID, canonical-skill, rule, adapter, block-marker, and reparse coverage."]
+      "facts": ["The live Python and PowerShell harnesses both returned MATCH for empty-manifest and omitted-config, with doctor status FAILED and exit code 1.", "Diagnostics identified the incomplete manifest and the omitted required config entry.", "Both disposable 44-case corpora completed with 44 matches, zero mismatches, and zero NOT_AVAILABLE cases, including reasoning policy, exact model-ID acceptance, rule-path portability, control-file reparse rejection, routing, casing, canonical skills, adapters, and blocks."]
     },
     {
       "trace_id": "trace-uc-31-reparse",
@@ -102,7 +102,7 @@
       "source_type": "command-result",
       "command": null,
       "exit_code": null,
-      "facts": ["Both live harnesses created their reparse fixture successfully and the doctors returned FAILED with exit code 1.", "Both rejected the managed path before reading or hashing the junction target."]
+      "facts": ["Both live 44-case harnesses created managed-path and control-directory reparse fixtures and the doctors returned FAILED with exit code 1.", "Both rejected .ultracode/config.json, .ultracode/managed.json, and managed paths before reading or hashing linked targets; the configurator 8/8 corpus additionally rejected nested and top-level Claude root candidates before selection, decoding, or hashing."]
     },
     {
       "trace_id": "trace-uc-32-adapter",
@@ -122,7 +122,47 @@
       "source_type": "command-result",
       "command": null,
       "exit_code": null,
-      "facts": ["Python and PowerShell doctor corpora each completed 36/36 matches and rejected Plan_Gate, an upper-case artifact path, and an upper-case role ID.", "The contract corpus passed untouched baselines in both runtimes; both rejected Schema_Version and a schema with an unexpected required field using exit code 1."]
+      "facts": ["Python and PowerShell doctor corpora each completed 44/44 matches and rejected malformed reasoning policy, invalid effort ordering, Plan_Gate, upper-case artifact or role identifiers, non-portable rule-path selectors, and a newline-terminated model ID.", "The contract casing corpus is recorded separately as a release validation."]
+    },
+    {
+      "trace_id": "trace-uc-35-flow",
+      "category": "scenario",
+      "subject": "UC-35",
+      "status": "PASSED",
+      "source_type": "fresh-agent-result",
+      "command": null,
+      "exit_code": null,
+      "facts": ["Fresh regression task used the packaged 0.5 flow snapshot fixture and remained read-only.", "It explained active, blocked, queued, and completed tickets with real U-* IDs, responsibility, live agent, requested and effective model and effort, routing reason or inheritance, remaining work, blocker, completion criterion, and next action in Italian.", "It invented no fallback, percentage, ETA, agent, model, effort, or runtime state."]
+    },
+    {
+      "trace_id": "trace-uc-36-uninitialized",
+      "category": "scenario",
+      "subject": "UC-36",
+      "status": "PASSED",
+      "source_type": "fresh-agent-result",
+      "command": null,
+      "exit_code": null,
+      "facts": ["Fresh task uc36_bundled_python_forward preserved the original source-change objective and detected the missing config and managed manifest before project writes.", "Using the Codex Desktop bundled Python runtime, it generated deterministic init plan 0b41e1109ff02c4f894f6aa98dec23cbcd5891cb866e017b786c1a11458bec86 with a doctor-valid proposed state.", "It explained the conservative baseline, preserved existing AGENTS.md content, requested one confirmation, promised to resume the original task after apply, and changed no project files."]
+    },
+    {
+      "trace_id": "trace-uc-37-help",
+      "category": "scenario",
+      "subject": "UC-37",
+      "status": "PASSED",
+      "source_type": "fresh-agent-result",
+      "command": null,
+      "exit_code": null,
+      "facts": ["Fresh Terra low task explained all six commands, command-selection rules, model and effort behavior, and copyable examples in plain language.", "It recommended Sol medium only before opening a new lead task, kept an active task inherited, denied automatic global Codex configuration changes, and performed no initialization, delegation, checks, or writes."]
+    },
+    {
+      "trace_id": "trace-uc-38-reasoning",
+      "category": "scenario",
+      "subject": "UC-38",
+      "status": "PASSED",
+      "source_type": "fresh-agent-result",
+      "command": null,
+      "exit_code": null,
+      "facts": ["Fresh Terra low task independently routed the four fixture jobs to Terra low, Terra high, Sol xhigh, and independent Sol xhigh from their ambiguity, coupling, evidence, and consequence.", "It distinguished Sol medium pre-task startup guidance from the inherited active lead, changed no global setting, separated requested from effective model and effort, explained context and fallback constraints, and executed no work."]
     },
     {
       "trace_id": "trace-fixture-valid",
@@ -235,6 +275,16 @@
       "facts": ["Official skill-creator validator returned Skill is valid after the control, doctor, and payload-gate edits."]
     },
     {
+      "trace_id": "trace-validate-skill-help",
+      "category": "validation",
+      "subject": "quick_validate ultracode-help",
+      "status": "PASSED",
+      "source_type": "command-result",
+      "command": "uv run --offline --with pyyaml -- python ${SKILL_CREATOR}/scripts/quick_validate.py ${PLUGIN_ROOT}/skills/ultracode-help",
+      "exit_code": 0,
+      "facts": ["Official skill-creator validator returned Skill is valid for the new always read-only Help skill."]
+    },
+    {
       "trace_id": "trace-validate-skill-init",
       "category": "validation",
       "subject": "quick_validate ultracode-init",
@@ -253,6 +303,16 @@
       "command": "uv run --offline --with pyyaml -- python ${SKILL_CREATOR}/scripts/quick_validate.py ${PLUGIN_ROOT}/skills/ultracode-edit",
       "exit_code": 0,
       "facts": ["Official skill-creator validator returned Skill is valid after the control, doctor, and payload-gate edits."]
+    },
+    {
+      "trace_id": "trace-validate-skill-flow",
+      "category": "validation",
+      "subject": "quick_validate ultracode-flow",
+      "status": "PASSED",
+      "source_type": "command-result",
+      "command": "uv run --offline --with pyyaml -- python ${SKILL_CREATOR}/scripts/quick_validate.py ${PLUGIN_ROOT}/skills/ultracode-flow",
+      "exit_code": 0,
+      "facts": ["Official skill-creator validator returned Skill is valid for the new read-only flow skill."]
     },
     {
       "trace_id": "trace-validate-skill-status",
@@ -282,7 +342,7 @@
       "source_type": "command-result",
       "command": "${PYTHON} ${PLUGIN_ROOT}/skills/ultracode/scripts/check_contract.py --allow-pending",
       "exit_code": 0,
-      "facts": ["Executed after the gate edits; structural validation passed and explicitly listed the remaining pending release evidence.", "The strict checker must still be rerun without --allow-pending for release."]
+      "facts": ["The Python checker accepted the complete 0.5.0 structure, six skill hashes, frozen payload hash, 38 trace bindings, 44-case live doctor corpus, and all executed evidence.", "Only the explicitly pending final audit was reported as pending."]
     },
     {
       "trace_id": "trace-contract-powershell",
@@ -292,7 +352,7 @@
       "source_type": "command-result",
       "command": "powershell -File ${PLUGIN_ROOT}/skills/ultracode/scripts/check_contract.ps1 -AllowPending",
       "exit_code": 0,
-      "facts": ["Executed after the gate edits; structural validation passed and explicitly listed the remaining pending release evidence.", "The strict checker must still be rerun without -AllowPending for release."]
+      "facts": ["The PowerShell checker independently accepted the same complete 0.5.0 structure, hashes, traces, 44-case live corpus, and executed evidence.", "Its pending-result report matched the Python checker."]
     },
     {
       "trace_id": "trace-contract-casing-corpus",
@@ -302,7 +362,17 @@
       "source_type": "command-result",
       "command": "${PYTHON} ${PLUGIN_ROOT}/skills/ultracode/scripts/run_contract_casing_corpus.py",
       "exit_code": 0,
-      "facts": ["The disposable-copy report contained six MATCH outcomes, zero mismatches, and zero unavailable runtimes.", "Both untouched baselines exited 0; both Schema_Version copies and both schemas with an unexpected required field exited 1."]
+      "facts": ["The disposable contract corpus completed 6/6 matches with exit code 0.", "Both runtime baselines passed, both rejected Schema_Version, and both rejected an unexpected required schema field."]
+    },
+    {
+      "trace_id": "trace-project-configurator-corpus",
+      "category": "validation",
+      "subject": "project configurator corpus",
+      "status": "PASSED",
+      "source_type": "command-result",
+      "command": "${PYTHON} ${PLUGIN_ROOT}/skills/ultracode/scripts/run_project_configurator_corpus.py",
+      "exit_code": 0,
+      "facts": ["The disposable corpus completed 8/8 cases with exit code 0.", "It proved invalid config, non-portable selectors, control, managed, nested-Claude, and top-level-Claude reparse traversal, unmanaged markers, collisions, and drift are rejected before selection, read, hash, or project writes.", "A forced Windows mid-apply PermissionError restored every earlier file and left the doctor-valid project byte-identical.", "It also proved deterministic plans, confirmed apply, no-op behavior, rich adapters, unknown-key preservation, and localized edits."]
     },
     {
       "trace_id": "trace-audit-final",
@@ -312,7 +382,7 @@
       "source_type": "independent-audit-result",
       "command": null,
       "exit_code": null,
-      "facts": ["The independent reviewer read all 28 files and confirmed zero open HIGH findings after reproducing the prior casing bypasses.", "A targeted follow-up reproduced the prior schema-superset bypass and confirmed both runtimes now reject it; zero open MEDIUM findings remained.", "Snapshot version, 28-file census, payload hash, and trace hash remained stable throughout each read-only audit."]
+      "facts": ["Independent Sol xhigh review found one HIGH Claude-root reparse pre-read path, then verified it closed after both candidates moved behind require_safe_target.", "The reviewer confirmed nested invalid-UTF-8 and top-level Claude reparse regressions, Sol-medium startup boundaries, zero remaining HIGH, MEDIUM, or LOW findings, and release readiness."]
     }
   ]
 }

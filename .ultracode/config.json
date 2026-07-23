@@ -1,0 +1,135 @@
+{
+  "schema_version": 1,
+  "project": {
+    "name": "UltraCode",
+    "mission": "Provide transparent, adaptive, evidence-driven multi-agent software engineering orchestration for Codex.",
+    "root": ".",
+    "stack": [
+      "Codex plugin",
+      "Markdown",
+      "JSON Schema",
+      "Python 3.13",
+      "Windows PowerShell",
+      "GitHub Actions"
+    ],
+    "targets": [
+      "Codex plugin marketplace",
+      "Codex desktop and CLI",
+      "Claude Code project adapters",
+      "Windows validation"
+    ],
+    "non_goals": [
+      "Accounts, API keys, MCP servers, background services, or telemetry",
+      "Project-specific domain guidance copied from other repositories"
+    ]
+  },
+  "control": {
+    "plan_gate": "confirm-before-write",
+    "updates": "phase-and-barrier",
+    "detail": "standard",
+    "show_agent_jobs": true,
+    "show_files": true,
+    "show_validation": true,
+    "persistent_status": "conversation-only",
+    "status_path": ".ultracode/status.md"
+  },
+  "authority": {
+    "git": "explicit-only",
+    "external": "explicit-only",
+    "destructive": "explicit-only",
+    "dependencies": "explicit-only",
+    "deployment": "explicit-only",
+    "status_writes": "change-tasks-only"
+  },
+  "swarm": {
+    "decomposition": "data-driven",
+    "orthogonal_lenses": "as-needed",
+    "verification": "one-per-material-finding",
+    "synthesis_agents": 1,
+    "concurrency": "auto",
+    "hard_safety_cap": 1000,
+    "model_policy": {
+      "lead": "inherit",
+      "bounded_agents": "gpt-5.6-terra",
+      "verifiers": "gpt-5.6-sol",
+      "fallback": "inherit"
+    },
+    "reasoning_policy": {
+      "mode": "objective-driven",
+      "bounded_default": "low",
+      "material_verifier_minimum": "high",
+      "critical_minimum": "xhigh",
+      "maximum": "ultra"
+    }
+  },
+  "adapters": {
+    "codex": true,
+    "claude": true
+  },
+  "artifacts": {
+    "context": [
+      ".agents/context/project.md"
+    ],
+    "rules": [
+      ".agents/rules/plugin-contract.md"
+    ],
+    "rule_paths": {
+      ".agents/rules/plugin-contract.md": [
+        "plugins/ultracode/**",
+        "scripts/**",
+        ".agents/plugins/marketplace.json",
+        ".github/workflows/**",
+        "README.md",
+        "CONTRIBUTING.md",
+        "CHANGELOG.md"
+      ]
+    },
+    "skills": []
+  },
+  "commands": {
+    "install": [],
+    "format": [],
+    "lint": [],
+    "typecheck": [],
+    "test": [
+      {
+        "command": "python scripts/validate_repository.py",
+        "evidence": "VERIFIED"
+      },
+      {
+        "command": "python plugins/ultracode/skills/ultracode/scripts/run_project_configurator_corpus.py",
+        "evidence": "VERIFIED"
+      },
+      {
+        "command": "python plugins/ultracode/skills/ultracode/scripts/check_contract.py",
+        "evidence": "VERIFIED"
+      },
+      {
+        "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File plugins/ultracode/skills/ultracode/scripts/check_contract.ps1",
+        "evidence": "VERIFIED"
+      }
+    ],
+    "build": [],
+    "run": [],
+    "health": []
+  },
+  "completion": {
+    "required_checks": [
+      "Repository structure validation",
+      "Deterministic project configurator corpus",
+      "Python contract and release-evidence validation",
+      "PowerShell contract and release-evidence validation",
+      "Final diff inspection"
+    ],
+    "real_path": "Run the repository validator, deterministic project configurator corpus, and both strict contract checkers; inspect their exit codes and review the final diff.",
+    "review": "independent-for-material-change"
+  },
+  "roles": [
+    {
+      "id": "contract-reviewer",
+      "purpose": "Review UltraCode contract, schema, evidence, adapter, and Python/PowerShell parity without modifying the project.",
+      "mode": "read-only",
+      "skills": []
+    }
+  ]
+}

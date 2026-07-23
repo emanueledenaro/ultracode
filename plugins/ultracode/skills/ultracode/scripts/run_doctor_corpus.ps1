@@ -30,12 +30,26 @@ $script:Cases = @(
     [pscustomobject]@{ Id='duplicate-claude-role-key'; Status='FAILED'; Exit=1 },
     [pscustomobject]@{ Id='extra-claude-role-key'; Status='FAILED'; Exit=1 },
     [pscustomobject]@{ Id='reparse'; Status='FAILED'; Exit=1 },
+    [pscustomobject]@{
+        Id='control-reparse'
+        Status='FAILED'
+        Exit=1
+        RequiredDiagnostic='traverses a symlink, junction, or reparse point'
+        ForbiddenDiagnostic='cannot read JSON'
+    },
     [pscustomobject]@{ Id='missing-config-route'; Status='FAILED'; Exit=1 },
     [pscustomobject]@{ Id='boolean-control-plan'; Status='FAILED'; Exit=1 },
     [pscustomobject]@{ Id='boolean-authority'; Status='FAILED'; Exit=1 },
     [pscustomobject]@{ Id='boolean-decomposition'; Status='FAILED'; Exit=1 },
     [pscustomobject]@{ Id='boolean-concurrency'; Status='FAILED'; Exit=1 },
     [pscustomobject]@{ Id='boolean-model-policy'; Status='FAILED'; Exit=1 },
+    [pscustomobject]@{ Id='boolean-reasoning-policy'; Status='FAILED'; Exit=1 },
+    [pscustomobject]@{ Id='reasoning-effort-invalid'; Status='FAILED'; Exit=1 },
+    [pscustomobject]@{ Id='reasoning-order-invalid'; Status='FAILED'; Exit=1 },
+    [pscustomobject]@{ Id='explicit-model-ids'; Status='PASSED'; Exit=0 },
+    [pscustomobject]@{ Id='model-id-trailing-newline'; Status='FAILED'; Exit=1 },
+    [pscustomobject]@{ Id='rule-path-mismatch'; Status='FAILED'; Exit=1 },
+    [pscustomobject]@{ Id='rule-path-portability'; Status='FAILED'; Exit=1 },
     [pscustomobject]@{ Id='boolean-command-evidence'; Status='FAILED'; Exit=1 },
     [pscustomobject]@{ Id='boolean-completion-review'; Status='FAILED'; Exit=1 },
     [pscustomobject]@{ Id='boolean-generated-by'; Status='FAILED'; Exit=1 },
@@ -131,11 +145,16 @@ function New-BaseConfig {
                 lead='strongest-available'; bounded_agents='balanced-available'
                 verifiers='strongest-available'; fallback='inherit'
             }
+            reasoning_policy=[ordered]@{
+                mode='objective-driven'; bounded_default='low'
+                material_verifier_minimum='high'; critical_minimum='xhigh'; maximum='ultra'
+            }
         }
         adapters=[ordered]@{codex=$true; claude=$true}
         artifacts=[ordered]@{
             context=@($script:ContextPath)
             rules=$ruleArtifacts
+            rule_paths=if ($Rule) { [ordered]@{ $script:RulePath=@('**/*') } } else { [ordered]@{} }
             skills=$skillArtifacts
         }
         commands=[ordered]@{
@@ -165,8 +184,15 @@ function Get-AgentsText {
 }
 
 function Get-ValidRuleAdapter {
-    param([string]$RulePath=$script:RulePath)
-    return "---`npaths:`n  - `"**/*`"`n---`n<!-- ultracode-canonical: $RulePath -->`n`nRead and follow the canonical rule at ``$RulePath`` completely before applying this adapter.`n"
+    param(
+        [string]$RulePath=$script:RulePath,
+        [string[]]$Paths=@('**/*')
+    )
+    $frontmatter = 'paths:'
+    foreach ($pathValue in $Paths) {
+        $frontmatter += "`n  - $(ConvertTo-Json -Compress -InputObject $pathValue)"
+    }
+    return "---`n$frontmatter`n---`n<!-- ultracode-canonical: $RulePath -->`n`nRead and follow the canonical rule at ``$RulePath`` completely before applying this adapter.`n"
 }
 
 function Get-ValidSkillAdapter {
@@ -267,6 +293,33 @@ function New-Reparse {
             return [pscustomobject]@{Available=$false; Detail="cannot create reparse fixture: $firstError; mklink: $($output -join ' ')"}
         }
         return [pscustomobject]@{Available=$false; Detail="cannot create reparse fixture: $firstError"}
+    }
+}
+
+function New-ControlReparse {
+    param([string]$Root, [string]$External)
+    $controlDirectory = Join-Path $Root '.ultracode'
+    $externalParent = Split-Path -Parent $External
+    [void](New-Item -ItemType Directory -Force -Path $externalParent)
+    [IO.Directory]::Move($controlDirectory, $External)
+    try {
+        if ($script:IsWindowsHost) {
+            [void](New-Item -ItemType Junction -Path $controlDirectory -Target $External -ErrorAction Stop)
+            return [pscustomobject]@{Available=$true; Detail='created Windows control-directory junction'}
+        }
+        [void](New-Item -ItemType SymbolicLink -Path $controlDirectory -Target $External -ErrorAction Stop)
+        return [pscustomobject]@{Available=$true; Detail='created control-directory symbolic link'}
+    }
+    catch {
+        $firstError = $_.Exception.Message
+        if ($script:IsWindowsHost) {
+            $output = & cmd.exe /d /c mklink /J $controlDirectory $External 2>&1
+            if ($LASTEXITCODE -eq 0) {
+                return [pscustomobject]@{Available=$true; Detail='created Windows control-directory junction with mklink'}
+            }
+            return [pscustomobject]@{Available=$false; Detail="cannot create control reparse fixture: $firstError; mklink: $($output -join ' ')"}
+        }
+        return [pscustomobject]@{Available=$false; Detail="cannot create control reparse fixture: $firstError"}
     }
 }
 
@@ -374,6 +427,16 @@ function Initialize-Case {
             [void](New-Fixture $Root)
             return New-Reparse $Root (Join-Path $TempRoot 'external/reparse/context')
         }
+        'control-reparse' {
+            [void](New-Fixture $Root)
+            $external = Join-Path $TempRoot 'external/control-reparse/.ultracode'
+            $preparation = New-ControlReparse $Root $external
+            if ($preparation.Available) {
+                Write-Utf8File (Join-Path $external 'config.json') "{ invalid JSON`n"
+                Write-Utf8File (Join-Path $external 'managed.json') "{ invalid JSON`n"
+            }
+            return $preparation
+        }
         'missing-config-route' {
             $paths = @(New-Fixture $Root)
             Write-Utf8File (Join-Path $Root 'AGENTS.md') (Get-AgentsText @($script:ContextPath))
@@ -412,6 +475,59 @@ function Initialize-Case {
             $config = Read-JsonFile (Join-Path $Root '.ultracode/config.json')
             $config.swarm.model_policy.lead = $true
             Write-JsonFile (Join-Path $Root '.ultracode/config.json') $config
+            Write-Manifest $Root $paths
+        }
+        'boolean-reasoning-policy' {
+            $paths = @(New-Fixture $Root)
+            $config = Read-JsonFile (Join-Path $Root '.ultracode/config.json')
+            $config.swarm.reasoning_policy.bounded_default = $true
+            Write-JsonFile (Join-Path $Root '.ultracode/config.json') $config
+            Write-Manifest $Root $paths
+        }
+        'reasoning-effort-invalid' {
+            $paths = @(New-Fixture $Root)
+            $config = Read-JsonFile (Join-Path $Root '.ultracode/config.json')
+            $config.swarm.reasoning_policy.critical_minimum = 'extreme'
+            Write-JsonFile (Join-Path $Root '.ultracode/config.json') $config
+            Write-Manifest $Root $paths
+        }
+        'reasoning-order-invalid' {
+            $paths = @(New-Fixture $Root)
+            $config = Read-JsonFile (Join-Path $Root '.ultracode/config.json')
+            $config.swarm.reasoning_policy.maximum = 'medium'
+            Write-JsonFile (Join-Path $Root '.ultracode/config.json') $config
+            Write-Manifest $Root $paths
+        }
+        'explicit-model-ids' {
+            $paths = @(New-Fixture $Root)
+            $config = Read-JsonFile (Join-Path $Root '.ultracode/config.json')
+            $config.swarm.model_policy.lead = 'gpt-5.6-sol'
+            $config.swarm.model_policy.bounded_agents = 'gpt-5.6-terra'
+            $config.swarm.model_policy.verifiers = 'gpt-5.6-sol'
+            Write-JsonFile (Join-Path $Root '.ultracode/config.json') $config
+            Write-Manifest $Root $paths
+        }
+        'model-id-trailing-newline' {
+            $paths = @(New-Fixture $Root)
+            $config = Read-JsonFile (Join-Path $Root '.ultracode/config.json')
+            $config.swarm.model_policy.lead = "gpt-5.6-sol`n"
+            Write-JsonFile (Join-Path $Root '.ultracode/config.json') $config
+            Write-Manifest $Root $paths
+        }
+        'rule-path-mismatch' {
+            $paths = @(New-Fixture $Root -Rule)
+            $config = Read-JsonFile (Join-Path $Root '.ultracode/config.json')
+            $config.artifacts.rule_paths.($script:RulePath) = @('src/**')
+            Write-JsonFile (Join-Path $Root '.ultracode/config.json') $config
+            Write-Manifest $Root $paths
+        }
+        'rule-path-portability' {
+            $paths = @(New-Fixture $Root -Rule)
+            $unsafePaths = @('/srv/app/**','../src/**','src\**','src files/**','C:/src/**','~/src/**')
+            $config = Read-JsonFile (Join-Path $Root '.ultracode/config.json')
+            $config.artifacts.rule_paths.($script:RulePath) = $unsafePaths
+            Write-JsonFile (Join-Path $Root '.ultracode/config.json') $config
+            Write-Utf8File (Join-Path $Root '.claude/rules/no-deploy.md') (Get-ValidRuleAdapter -Paths $unsafePaths)
             Write-Manifest $Root $paths
         }
         'boolean-command-evidence' {
@@ -592,7 +708,21 @@ try {
                 $doctorResult = Invoke-Doctor $hostExecutable $doctor $root
                 foreach ($line in @($doctorResult.Diagnostics)) { [void]$diagnostics.Add($line) }
                 $actualStatus = $doctorResult.Status; $actualExit = $doctorResult.Exit
-                $outcome = if ($actualStatus -eq $case.Status -and $actualExit -eq $case.Exit) { 'MATCH' } else { 'MISMATCH' }
+                $diagnosticText = [string]::Join("`n", @($diagnostics))
+                $requiredDiagnosticMatches = (
+                    $case.PSObject.Properties.Name -notcontains 'RequiredDiagnostic' -or
+                    $diagnosticText.Contains([string]$case.RequiredDiagnostic)
+                )
+                $forbiddenDiagnosticAbsent = (
+                    $case.PSObject.Properties.Name -notcontains 'ForbiddenDiagnostic' -or
+                    -not $diagnosticText.Contains([string]$case.ForbiddenDiagnostic)
+                )
+                $outcome = if (
+                    $actualStatus -eq $case.Status -and
+                    $actualExit -eq $case.Exit -and
+                    $requiredDiagnosticMatches -and
+                    $forbiddenDiagnosticAbsent
+                ) { 'MATCH' } else { 'MISMATCH' }
             }
         }
         catch {

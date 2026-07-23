@@ -123,6 +123,11 @@ Core invariants:
 - `swarm.synthesis_agents` is `1`;
 - `swarm.concurrency` is `auto` unless the user sets a proven technical limit;
 - `swarm.hard_safety_cap` is a positive circuit breaker, default `1000`;
+- `swarm.model_policy.lead` defaults to `inherit`, bounded agents prefer `gpt-5.6-terra`,
+  verifiers prefer `gpt-5.6-sol`, and unavailable identifiers use the visible fallback;
+- `swarm.reasoning_policy.mode` is `objective-driven`; bounded work normally starts at `low`,
+  material verification is at least `high`, critical work is at least `xhigh`, and `max` or
+  `ultra` require qualifying critical evidence under `reasoning-routing.md`;
 - no normal `max_total_agents` setting exists;
 - Git, external, destructive, dependency, and deployment actions remain explicit-only by default;
 - status visibility does not grant unrelated write authority.
@@ -215,6 +220,16 @@ Serialize project-derived strings with a real JSON, TOML, or YAML-safe encoder f
 Never generate `.claude/settings.local.json`, `CLAUDE.local.md`, scheduled-task locks, session IDs, permission allowlists, secrets, or absolute machine paths.
 
 ## Idempotent initialization and editing
+
+`scripts/project_configurator.py` is the canonical writer for `$ultracode-init` and `$ultracode-edit`. Its `plan` command is read-only, renders the complete desired state in a disposable preflight, requires the project doctor to return `PASSED`, and then returns a deterministic `plan_id`, exact writes, ordered changes, and structured conflicts. Its `apply` command accepts only the unchanged proposal plus that confirmed `plan_id`, repeats the doctor preflight, rechecks manifest drift and path preconditions before writing, rejects symlinks, junctions, reparse traversal, unsafe casing, non-file collisions, unmanaged whole-file collisions, and unmanifested pre-existing managed markers. Each changed file uses a sibling temporary plus atomic replace; the manifest is last. If a later write fails, restore every earlier file byte-for-byte and remove files or empty directories created by the failed plan before returning `FAILED`; report any incomplete rollback explicitly.
+
+Resolve the configurator's Python interpreter from a verified project command or the host runtime.
+In Codex Desktop, use `codex_app.load_workspace_dependencies` when Python is not on `PATH`; use the returned
+executable only for the current command and never write that machine-local absolute path into
+managed files. If no interpreter exists, planning and apply are `NOT AVAILABLE`; no manual
+substitute may write the managed projection.
+
+Repeated plan/apply with the same desired state is a byte-and-mtime no-op. Existing bytes outside managed blocks remain user-owned. Adapter disablement never authorizes deletion; exact removals require separate explicit scope. The writer must not broaden the ownership recorded in `.ultracode/managed.json` merely because a canonical-looking file exists.
 
 Initialization:
 

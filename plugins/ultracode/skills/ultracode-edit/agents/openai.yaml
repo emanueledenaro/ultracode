@@ -1,6 +1,6 @@
 interface:
   display_name: "UltraCode Edit"
   short_description: "Safely edit UltraCode project control"
-  default_prompt: "Use $ultracode-edit to change the UltraCode project configuration and regenerate only managed adapters."
+  default_prompt: "Use $ultracode-edit to explain the configuration delta, including model and effort policy, preserve manual work, and regenerate only affected adapters."
 policy:
   allow_implicit_invocation: false

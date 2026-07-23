@@ -1,0 +1,6 @@
+interface:
+  display_name: "UltraCode Flow"
+  short_description: "Explain live work, tickets, and agents clearly"
+  default_prompt: "Use $ultracode-flow to explain the current work, tickets, agents, requested and effective models and effort, blockers, and next steps in plain language."
+policy:
+  allow_implicit_invocation: true

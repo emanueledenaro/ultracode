@@ -2,6 +2,9 @@
 
 Read this reference whenever UltraCode is active, project status is persisted, or the user asks where the work stands.
 
+Use [command-interface.md](command-interface.md) for user-facing vocabulary, ticket explanations,
+model reporting, and the distinction between the concise Flow view and detailed Status view.
+
 ## State machine
 
 Use these phases:
@@ -57,7 +60,8 @@ Precedence is: higher-level instructions, current user request and authority, ap
 | `swarm.concurrency: auto` | Use currently available platform capacity. |
 | `swarm.concurrency: N` | Run at most `N` delegated instances concurrently, clamped to actual platform capacity; total logical coverage is unchanged. |
 | `swarm.hard_safety_cap` | Pause when the projected logical graph exceeds the circuit breaker; never use it as a target. |
-| `swarm.model_policy` | Resolve role classes only through supported platform selection; otherwise use `fallback: inherit`. |
+| `swarm.model_policy` | Keeps the lead inherited from the active chat, prefers `gpt-5.6-terra` for bounded agents and `gpt-5.6-sol` for verifiers when exposed, otherwise uses `fallback`; always report requested and effective models separately. |
+| `swarm.reasoning_policy` | Selects effort per bounded objective with `reasoning-routing.md`; bounded work starts from the configured default, material verification and critical work respect their floors, and `max` or `ultra` require qualifying critical evidence. |
 
 No visibility preference may hide a blocker, authorization request, material unknown, failed required check, or evidence that changes the conclusion.
 
@@ -134,8 +138,8 @@ When persistence is authorized, use this shape:
 - Waves: <current/known>
 - Synthesis owner: <S-001 owner>
 
-| ID | Type | Scope | Owner | State | Dependencies | Result |
-| --- | --- | --- | --- | --- | --- | --- |
+| ID | Type | Scope | Responsible | Live agent | Requested model | Effective model | Requested effort | Effective effort | Routing reason | State | Dependencies | Done when | Result |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 
 ## Findings
 

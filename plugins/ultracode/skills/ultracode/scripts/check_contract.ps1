@@ -357,10 +357,14 @@ function Invoke-LivePowerShellCorpus {
         'invalid-managed-block-key'=@('FAILED',1); 'invalid-managed-path-char'=@('FAILED',1)
         'rich-valid'=@('PASSED',0); 'role-valid'=@('PASSED',0)
         'duplicate-claude-role-key'=@('FAILED',1); 'extra-claude-role-key'=@('FAILED',1)
-        reparse=@('FAILED',1); 'missing-config-route'=@('FAILED',1)
+        reparse=@('FAILED',1); 'control-reparse'=@('FAILED',1); 'missing-config-route'=@('FAILED',1)
         'boolean-control-plan'=@('FAILED',1); 'boolean-authority'=@('FAILED',1)
         'boolean-decomposition'=@('FAILED',1); 'boolean-concurrency'=@('FAILED',1)
         'boolean-model-policy'=@('FAILED',1); 'boolean-command-evidence'=@('FAILED',1)
+        'boolean-reasoning-policy'=@('FAILED',1); 'reasoning-effort-invalid'=@('FAILED',1)
+        'reasoning-order-invalid'=@('FAILED',1)
+        'explicit-model-ids'=@('PASSED',0); 'model-id-trailing-newline'=@('FAILED',1)
+        'rule-path-mismatch'=@('FAILED',1); 'rule-path-portability'=@('FAILED',1)
         'boolean-completion-review'=@('FAILED',1); 'boolean-generated-by'=@('FAILED',1)
         'boolean-manifest-mode'=@('FAILED',1); 'boolean-config-schema'=@('FAILED',1)
         'boolean-manifest-schema'=@('FAILED',1); 'boolean-synthesis'=@('FAILED',1)
@@ -421,7 +425,7 @@ $skillsRoot = Split-Path -Parent $coreRoot
 $pluginRoot = Split-Path -Parent $skillsRoot
 $referenceRoot = Join-Path $coreRoot 'references'
 $manifestPath = Join-Path $pluginRoot '.codex-plugin\plugin.json'
-$skillNames = @('ultracode','ultracode-init','ultracode-edit','ultracode-status')
+$skillNames = @('ultracode','ultracode-help','ultracode-init','ultracode-edit','ultracode-flow','ultracode-status')
 $validStatuses = @('PASSED','FAILED','DRIFT','PENDING','NOT_AVAILABLE')
 
 if ($PrintPayloadHash) {
@@ -467,7 +471,10 @@ $requiredCoreClauses = @(
     'hard_safety_cap` is a circuit breaker, not a target',
     'a read-only task remains read-only',
     'Limit the automatic fix-review loop to two iterations',
-    'Treat staging, committing, pushing, deploying, publishing'
+    'Treat staging, committing, pushing, deploying, publishing',
+    'Handle an uninitialized project',
+    'objective-driven',
+    'reasoning-routing.md'
 )
 foreach ($clause in $requiredCoreClauses) {
     if (-not $coreText.Contains($clause)) { Stop-ContractCheck "missing core contract clause: $clause" }
@@ -479,6 +486,9 @@ $references = @(
     'project-adapter.md',
     'swarm-protocol.md',
     'control-and-status.md',
+    'command-interface.md',
+    'command-guide.md',
+    'reasoning-routing.md',
     'behavioral-contract.md',
     'eval-prompts.md'
 )
@@ -496,6 +506,8 @@ $resources = @(
     'references\evaluation-evidence.json',
     'scripts\project_doctor.py',
     'scripts\project_doctor.ps1',
+    'scripts\project_configurator.py',
+    'scripts\run_project_configurator_corpus.py',
     'scripts\run_contract_casing_corpus.py',
     'scripts\run_doctor_corpus.py',
     'scripts\run_doctor_corpus.ps1'
@@ -509,29 +521,125 @@ Invoke-LivePowerShellCorpus $coreRoot
 foreach ($schemaName in @('project-config.schema.json','managed-manifest.schema.json','evaluation-evidence.schema.json')) {
     [void](Read-JsonFile (Join-Path $referenceRoot $schemaName) $schemaName)
 }
+$projectSchema = Read-JsonFile (Join-Path $referenceRoot 'project-config.schema.json') 'project config schema'
+$projectDefs = Get-ExactPropertyValue $projectSchema '$defs' 'project config schema'
+$reasoningEffort = Get-ExactPropertyValue $projectDefs 'reasoningEffort' 'project config schema.$defs'
+$reasoningEffortValues = @(Get-ExactPropertyValue $reasoningEffort 'enum' 'project config schema.$defs.reasoningEffort')
+if (($reasoningEffortValues -join "`n") -cne (@('low','medium','high','xhigh','max','ultra') -join "`n")) {
+    Stop-ContractCheck 'project config schema must declare the ordered reasoning effort ladder'
+}
+$modelSelector = Get-ExactPropertyValue $projectDefs 'modelSelector' 'project config schema.$defs'
+$modelAnyOf = @(Get-ExactPropertyValue $modelSelector 'anyOf' 'project config schema.$defs.modelSelector')
+if ($modelAnyOf.Count -ne 2 -or -not (Test-ContractExactString (Get-ExactPropertyValue $modelAnyOf[1] 'pattern' 'project config model selector pattern') '^[a-z0-9][a-z0-9._-]{2,}(?![\s\S])')) {
+    Stop-ContractCheck 'project config schema must reject trailing model-selector characters absolutely'
+}
+$projectProperties = Get-ExactPropertyValue $projectSchema 'properties' 'project config schema'
+$swarmDefinition = Get-ExactPropertyValue $projectProperties 'swarm' 'project config schema.properties'
+$swarmProperties = Get-ExactPropertyValue $swarmDefinition 'properties' 'project config schema.properties.swarm'
+$reasoningPolicyDefinition = Get-ExactPropertyValue $swarmProperties 'reasoning_policy' 'project config schema.properties.swarm.properties'
+$reasoningPolicyRequired = @(
+    Get-ExactPropertyValue $reasoningPolicyDefinition 'required' 'project config schema.properties.swarm.properties.reasoning_policy'
+)
+$reasoningPolicyAdditional = Get-ExactPropertyValue $reasoningPolicyDefinition 'additionalProperties' 'project config schema.properties.swarm.properties.reasoning_policy'
+if (
+    ($reasoningPolicyRequired -join "`n") -cne (
+        @('mode','bounded_default','material_verifier_minimum','critical_minimum','maximum') -join "`n"
+    ) -or
+    -not (Test-ContractExactBoolean $reasoningPolicyAdditional $false)
+) {
+    Stop-ContractCheck 'project config schema must declare the exact objective-driven reasoning policy'
+}
+$artifactsDefinition = Get-ExactPropertyValue $projectProperties 'artifacts' 'project config schema.properties'
+$artifactProperties = Get-ExactPropertyValue $artifactsDefinition 'properties' 'project config schema.properties.artifacts'
+$rulePathsDefinition = Get-ExactPropertyValue $artifactProperties 'rule_paths' 'project config schema.properties.artifacts.properties'
+$rulePathValues = Get-ExactPropertyValue $rulePathsDefinition 'additionalProperties' 'project config rule_paths'
+$rulePathItems = Get-ExactPropertyValue $rulePathValues 'items' 'project config rule_paths values'
+$rulePathPattern = Get-ExactPropertyValue $rulePathItems 'pattern' 'project config rule_paths item pattern'
+if (-not (Test-ContractExactString $rulePathPattern '^(?!/)(?![A-Za-z]:)(?!~)(?!.*(?:^|/)\.{1,2}(?:/|$))[A-Za-z0-9._*?-]+(?:/[A-Za-z0-9._*?-]+)*(?![\s\S])')) {
+    Stop-ContractCheck 'project config schema must enforce portable relative rule-path selectors'
+}
 
+$helpText = Get-Content -Raw -Encoding UTF8 -LiteralPath (Join-Path $skillsRoot 'ultracode-help\SKILL.md')
+foreach ($required in @(
+    'always read-only',
+    'command guide',
+    'all six commands',
+    '../ultracode/references/command-guide.md',
+    'model and reasoning'
+)) {
+    if (-not $helpText.Contains($required)) { Stop-ContractCheck "ultracode-help is missing: $required" }
+}
 $initText = Get-Content -Raw -Encoding UTF8 -LiteralPath (Join-Path $skillsRoot 'ultracode-init\SKILL.md')
-foreach ($required in @('project-config.schema.json','Do not ask how many swarm agents','.ultracode/managed.json','.git/info/exclude')) {
+foreach ($required in @(
+    'project-config.schema.json',
+    'Do not ask how many swarm agents',
+    '.ultracode/managed.json',
+    '.git/info/exclude',
+    'project_configurator.py',
+    'Plan before apply',
+    'confirmed plan only',
+    'no automatic delete',
+    '../ultracode/references/command-interface.md',
+    'Explain the proposal in plain language',
+    'baseline preflight mode',
+    'load_workspace_dependencies'
+)) {
     if (-not $initText.Contains($required)) { Stop-ContractCheck "ultracode-init is missing: $required" }
 }
 $editText = Get-Content -Raw -Encoding UTF8 -LiteralPath (Join-Path $skillsRoot 'ultracode-edit\SKILL.md')
-foreach ($required in @('project_doctor','managed.json','Never ask for an agent count','Do not delete automatically')) {
+foreach ($required in @(
+    'project_doctor',
+    'managed.json',
+    'Never ask for an agent count',
+    'Do not delete automatically',
+    'project_configurator.py',
+    'Plan before apply',
+    'confirmed plan only',
+    'no automatic delete',
+    '../ultracode/references/command-interface.md',
+    'Explain the delta in plain language',
+    'load_workspace_dependencies'
+)) {
     if (-not $editText.Contains($required)) { Stop-ContractCheck "ultracode-edit is missing: $required" }
 }
+$flowText = Get-Content -Raw -Encoding UTF8 -LiteralPath (Join-Path $skillsRoot 'ultracode-flow\SKILL.md')
+foreach ($required in @(
+    'Stay read-only',
+    'A ticket is a bounded unit of work',
+    'requested model',
+    'effective model',
+    'Why it exists',
+    'Completion criterion',
+    '$ultracode-flow full',
+    '$ultracode-flow agents',
+    '../ultracode/references/command-interface.md'
+)) {
+    if (-not $flowText.Contains($required)) { Stop-ContractCheck "ultracode-flow is missing: $required" }
+}
+if ($flowText.ToUpperInvariant().Contains('SITUAZIONE NUDA E CRUDA')) {
+    Stop-ContractCheck 'ultracode-flow contains the rejected situation summary'
+}
 $statusText = Get-Content -Raw -Encoding UTF8 -LiteralPath (Join-Path $skillsRoot 'ultracode-status\SKILL.md')
-foreach ($required in @('Stay read-only','logical jobs versus currently live agent instances','Never invent percentages')) {
+foreach ($required in @(
+    'Stay read-only',
+    'logical jobs versus currently live agent instances',
+    'Never invent percentages',
+    '../ultracode/references/command-interface.md',
+    'Status is the detailed diagnostic view'
+)) {
     if (-not $statusText.Contains($required)) { Stop-ContractCheck "ultracode-status is missing: $required" }
 }
 
 $contractText = Get-Content -Raw -Encoding UTF8 -LiteralPath (Join-Path $referenceRoot 'behavioral-contract.md')
-foreach ($index in 1..34) {
+foreach ($index in 1..38) {
     $scenario = 'UC-{0:D2}' -f $index
     if (-not $contractText.Contains($scenario)) { Stop-ContractCheck "missing behavioral scenario: $scenario" }
 }
 $promptText = Get-Content -Raw -Encoding UTF8 -LiteralPath (Join-Path $referenceRoot 'eval-prompts.md')
 $requiredPrompts = @(
     'UC-01','UC-03','UC-04','UC-06','UC-08','UC-10','UC-14','UC-18','UC-19',
-    'UC-20','UC-23','UC-24','UC-25','UC-26','UC-29','UC-30','UC-31','UC-32','UC-33','UC-34'
+    'UC-20','UC-23','UC-24','UC-25','UC-26','UC-29','UC-30','UC-31','UC-32','UC-33','UC-34','UC-35','UC-36',
+    'UC-37','UC-38'
 )
 foreach ($scenario in $requiredPrompts) {
     if (-not $promptText.Contains($scenario)) { Stop-ContractCheck "missing forward-test prompt: $scenario" }
@@ -546,11 +654,13 @@ if (-not (Test-ContractExactString $manifestName 'ultracode') -or -not (Test-Con
 if (Test-ContractExactStringIn 'hooks' (Get-PropertyNames $manifest)) { Stop-ContractCheck 'unsupported hooks field must not be present' }
 $manifestInterface = Get-ExactPropertyValue $manifest 'interface' 'plugin manifest'
 $defaultPrompts = @(Get-ExactPropertyValue $manifestInterface 'defaultPrompt' 'plugin manifest.interface')
-if (-not ($defaultPrompts | Where-Object { $_ -is [string] -and $_.Contains('$ultracode-init') })) {
-    Stop-ContractCheck 'plugin default prompts must expose $ultracode-init'
+if (@($defaultPrompts | Where-Object { $_ -isnot [string] }).Count -ne 0) {
+    Stop-ContractCheck 'plugin default prompts must be an array of strings'
 }
-if (-not ($defaultPrompts | Where-Object { $_ -is [string] -and $_.Contains('$ultracode-status') })) {
-    Stop-ContractCheck 'plugin default prompts must expose $ultracode-status'
+foreach ($skillName in $skillNames) {
+    if (-not ($defaultPrompts | Where-Object { $_.Contains('$' + $skillName) })) {
+        Stop-ContractCheck "plugin default prompts must expose `$$skillName"
+    }
 }
 
 $schema = Read-JsonFile (Join-Path $referenceRoot 'evaluation-evidence.schema.json') 'evaluation evidence schema'
@@ -580,9 +690,9 @@ if (-not (Test-ContractExactString (Get-ExactPropertyValue $traceArtifactDefinit
     Stop-ContractCheck 'evaluation evidence schema must pin the trace artifact name'
 }
 $expectedSchemaCounts = ConvertTo-OrdinalDictionary ([ordered]@{
-    scenario_results = 12
+    scenario_results = 16
     fixture_results = 10
-    validation_results = 8
+    validation_results = 11
     audit_results = 1
 }) 'evaluation schema result count'
 foreach ($field in $expectedSchemaCounts.Keys) {
@@ -720,7 +830,7 @@ foreach ($traceId in $records.Keys) {
 $pending = [Collections.Generic.List[string]]::new()
 $referenced = [Collections.Generic.HashSet[string]]::new([StringComparer]::Ordinal)
 
-$requiredEvidenceScenarios = @('UC-01','UC-03','UC-04','UC-19','UC-23','UC-24','UC-25','UC-29','UC-30','UC-31','UC-32','UC-34')
+$requiredEvidenceScenarios = @('UC-01','UC-03','UC-04','UC-19','UC-23','UC-24','UC-25','UC-29','UC-30','UC-31','UC-32','UC-34','UC-35','UC-36','UC-37','UC-38')
 $scenarios = ConvertTo-UniqueMap (Get-ExactPropertyValue $evidence 'scenario_results' 'evaluation evidence') 'id' 'scenario_results'
 Assert-ExactSet @($scenarios.Keys) $requiredEvidenceScenarios 'scenario_results'
 foreach ($scenarioId in $scenarios.Keys) {
@@ -780,13 +890,16 @@ foreach ($check in $fixtures.Keys) {
 
 $expectedValidationCommands = ConvertTo-OrdinalDictionary ([ordered]@{
     'quick_validate ultracode' = 'uv run --offline --with pyyaml -- python ${SKILL_CREATOR}/scripts/quick_validate.py ${PLUGIN_ROOT}/skills/ultracode'
+    'quick_validate ultracode-help' = 'uv run --offline --with pyyaml -- python ${SKILL_CREATOR}/scripts/quick_validate.py ${PLUGIN_ROOT}/skills/ultracode-help'
     'quick_validate ultracode-init' = 'uv run --offline --with pyyaml -- python ${SKILL_CREATOR}/scripts/quick_validate.py ${PLUGIN_ROOT}/skills/ultracode-init'
     'quick_validate ultracode-edit' = 'uv run --offline --with pyyaml -- python ${SKILL_CREATOR}/scripts/quick_validate.py ${PLUGIN_ROOT}/skills/ultracode-edit'
+    'quick_validate ultracode-flow' = 'uv run --offline --with pyyaml -- python ${SKILL_CREATOR}/scripts/quick_validate.py ${PLUGIN_ROOT}/skills/ultracode-flow'
     'quick_validate ultracode-status' = 'uv run --offline --with pyyaml -- python ${SKILL_CREATOR}/scripts/quick_validate.py ${PLUGIN_ROOT}/skills/ultracode-status'
     'validate_plugin' = 'uv run --offline --with pyyaml -- python ${PLUGIN_CREATOR}/scripts/validate_plugin.py ${PLUGIN_ROOT}'
     'contract checker Python bootstrap' = '${PYTHON} ${PLUGIN_ROOT}/skills/ultracode/scripts/check_contract.py --allow-pending'
     'contract checker PowerShell bootstrap' = 'powershell -File ${PLUGIN_ROOT}/skills/ultracode/scripts/check_contract.ps1 -AllowPending'
     'contract casing corpus' = '${PYTHON} ${PLUGIN_ROOT}/skills/ultracode/scripts/run_contract_casing_corpus.py'
+    'project configurator corpus' = '${PYTHON} ${PLUGIN_ROOT}/skills/ultracode/scripts/run_project_configurator_corpus.py'
 }) 'expected validation command'
 $requiredValidations = @($expectedValidationCommands.Keys)
 $validations = ConvertTo-UniqueMap (Get-ExactPropertyValue $evidence 'validation_results' 'evaluation evidence') 'check' 'validation_results'

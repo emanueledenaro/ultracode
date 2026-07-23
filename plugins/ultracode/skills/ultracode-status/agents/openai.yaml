@@ -1,6 +1,6 @@
 interface:
   display_name: "UltraCode Status"
-  short_description: "Show clear live AI work status"
-  default_prompt: "Use $ultracode-status to show where the AI work is, which agent jobs are active, and what happens next."
+  short_description: "Explain detailed task state and evidence"
+  default_prompt: "Use $ultracode-status to explain the complete task state, model and effort routing, job history, files, findings, checks, blockers, and next action."
 policy:
   allow_implicit_invocation: true

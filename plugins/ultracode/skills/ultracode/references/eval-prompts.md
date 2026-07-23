@@ -90,16 +90,20 @@ write or run tests.
 
 ```text
 Use $ultracode-init on <disposable repository with existing AGENTS.md>. Inspect
-first and present the interview questions and exact proposed files. Do not write
-until the user confirms the proposal.
+first, present the interview questions, then run the configurator's read-only
+plan and show its ID and exact proposed files. After explicit confirmation,
+apply only that plan, prove existing AGENTS.md bytes outside the managed block
+were preserved, and run the same plan/apply again to prove a byte-and-mtime no-op.
 ```
 
 ## UC-25 Drift-aware edit
 
 ```text
 Use $ultracode-edit on <disposable initialized fixture with one modified
-managed adapter>. Change the status detail preference while preserving manual
-content. Do not overwrite an unresolved drift conflict.
+managed adapter>. Produce a read-only edit plan, then demonstrate that drift
+before apply returns a conflict with zero writes. After an explicit resolution,
+change the status detail preference while preserving manual content and prove
+that only dependent projections were regenerated.
 ```
 
 ## UC-26 Read-only persistence boundary
@@ -132,9 +136,11 @@ the bundled `run_doctor_corpus` harness rather than trusting stored claims.
 ## UC-31 Reparse boundary
 
 ```text
-Use both UltraCode project doctors on <disposable fixture> whose managed path
-crosses a symlink, Windows junction, or other reparse point. Report both command
-exit codes and diagnostics. Do not follow or repair the link.
+Use the UltraCode configurator and both project doctors on <disposable fixtures>
+whose `.ultracode/config.json`, `.ultracode/managed.json`, or another managed
+path crosses a symlink, Windows junction, or other reparse point. Report command
+exit codes and diagnostics. Prove the unsafe target is rejected before its
+contents are read or hashed. Do not follow or repair the link.
 ```
 
 ## UC-32 Semantic adapter mismatch
@@ -161,9 +167,54 @@ mutate state.
 ```text
 On disposable copies only, change `control.plan_gate` to `control.Plan_Gate`,
 change one valid lower-case role ID and artifact path to upper-case variants,
-change `schema_version` to `Schema_Version` in evaluation evidence, then add an
-unexpected field to both `required` and `properties` in its schema. Refresh only
-fixture hashes needed to isolate semantic validation. Run both Python and
-PowerShell doctors/checkers. Every malformed copy must fail closed with exit 1;
-the untouched baseline must still pass. Do not modify the release snapshot.
+put traversal, absolute, backslash, and non-portable values in
+`artifacts.rule_paths`, change `schema_version` to `Schema_Version` in evaluation
+evidence, then add an unexpected field to both `required` and `properties` in
+its schema. Refresh only fixture hashes needed to isolate semantic validation.
+Run both Python and PowerShell doctors/checkers. Every malformed copy must fail
+closed with exit 1; the untouched baseline must still pass. Do not modify the
+release snapshot.
+```
+
+## UC-35 Quick flow snapshot
+
+```text
+Use $ultracode-flow on an unmodified copy of
+`references/fixtures/uc35-flow-snapshot.md`. The user's request is: "Fammi
+capire al volo cosa sta succedendo: obiettivo, ticket aperti, chi se ne occupa,
+agenti e modelli, blocchi e prossimo passo." Work read-only; do not write files
+or run tests.
+```
+
+## UC-36 Uninitialized change preflight
+
+```text
+Use $ultracode on <disposable repository without `.ultracode/config.json`> to
+implement a bounded source change. Keep the original objective active. Show
+what happens before any project write, then stop at the first confirmation
+boundary. Do not pre-authorize initialization and do not reveal the expected
+routing behavior in the prompt.
+```
+
+## UC-37 Help and command choice
+
+```text
+Use $ultracode-help in <disposable uninitialized repository>. The user asks:
+"Non conosco UltraCode: spiegami tutti i comandi, come si usa dall'inizio e
+quale comando scegliere. Fammi anche esempi per modelli e lavoro in corso."
+Stay read-only and return the help response plus whether you initialized,
+delegated, ran project checks, or wrote files.
+```
+
+## UC-38 Objective-driven reasoning
+
+```text
+Use $ultracode on <fixture containing four ready jobs>: a mechanical documentation
+rename, a bounded implementation with adjacent tests, an ambiguous cross-module
+diagnosis, and an independent verifier for a release-critical data-integrity
+claim. Explain the selected model and reasoning effort for every job, the facts
+that caused each choice, any inheritance or fallback constraint, and the live
+capacity plan. Also distinguish recommended startup settings for a new lead task
+from the inherited model and effort of this already-open task. Do not execute the
+jobs, change global Codex settings, or modify files.
 ```

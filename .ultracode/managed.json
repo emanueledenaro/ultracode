@@ -1,0 +1,53 @@
+{
+  "schema_version": 1,
+  "generated_by": "ultracode-edit",
+  "entries": [
+    {
+      "path": ".ultracode/config.json",
+      "mode": "file",
+      "sha256": "db30d48452e883dd9b88c5d38b9a8670fecaf49b7112b46183b0ac3925d8c0a0"
+    },
+    {
+      "path": "AGENTS.md",
+      "mode": "block",
+      "start": "<!-- ultracode:project:start -->",
+      "end": "<!-- ultracode:project:end -->",
+      "sha256": "0c9c303aa2bc8d250bbc0d159f0762f942778a3944dc0a1de0086b35945479a2"
+    },
+    {
+      "path": ".agents/context/project.md",
+      "mode": "file",
+      "sha256": "68289bdf6305ccde7c26c94a41e35b64743293b5d3e84a670ffd2de5ad19861f"
+    },
+    {
+      "path": ".agents/rules/plugin-contract.md",
+      "mode": "file",
+      "sha256": "e56a16c1013d43200efaf3738caeda4eccd30c7bc4c17983ecd19e960e2faf8a"
+    },
+    {
+      "path": ".agents/reviewers/contract-reviewer.md",
+      "mode": "file",
+      "sha256": "6fc0595344e2ef1a6a4b72b3e17c730df6d71a4cf3253548e07cb9e0676b81cd"
+    },
+    {
+      "path": ".codex/agents/contract-reviewer.toml",
+      "mode": "file",
+      "sha256": "43e3cca679c0c1bf6618d36a40a52bd7586893e5125ef16aaa0fe65890193984"
+    },
+    {
+      "path": ".claude/CLAUDE.md",
+      "mode": "file",
+      "sha256": "7b50d15feae7b63b94d845b2fa6e19e3220527c5b0cac69303b7fc19bd7484a8"
+    },
+    {
+      "path": ".claude/rules/plugin-contract.md",
+      "mode": "file",
+      "sha256": "005a06d1283e334a5e99f31fb7bcb39fdbd0606ff8badde5cdbb5e2018bad243"
+    },
+    {
+      "path": ".claude/agents/contract-reviewer.md",
+      "mode": "file",
+      "sha256": "74b7e24481574ed130980e76679838e1482d517bb66ee785cc91162967a23829"
+    }
+  ]
+}

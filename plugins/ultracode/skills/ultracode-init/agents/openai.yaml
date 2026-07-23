@@ -1,6 +1,6 @@
 interface:
   display_name: "UltraCode Init"
   short_description: "Configure projects with guided control"
-  default_prompt: "Use $ultracode-init to configure this repository for transparent UltraCode work in Codex and Claude Code."
+  default_prompt: "Use $ultracode-init to explain and configure this repository safely, including objective-driven model and reasoning policy for Codex and Claude Code."
 policy:
   allow_implicit_invocation: false

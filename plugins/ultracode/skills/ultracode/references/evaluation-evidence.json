@@ -1,17 +1,19 @@
 {
   "schema_version": 2,
   "attestation_scope": "local-consistency-only",
-  "plugin_version_prefix": "0.2.0",
-  "evaluated_on": "2026-07-22",
+  "plugin_version_prefix": "0.5.0",
+  "evaluated_on": "2026-07-23",
   "skill_sha256": {
-    "ultracode": "231d5ac1a952f6daf58a778d92ddecc71b0a6dee8e9ec559daea4bd32bc8bf23",
-    "ultracode-init": "0bd558057cd05dad328f83cc39a7a5ee0f5c7026d3829935d286c2ae3e93256f",
-    "ultracode-edit": "a7f01190e06d0dbc58de0352be48c5b275d907e61f820be979eb48a94a39333a",
-    "ultracode-status": "a024a309bfaf4c4b5d719a04265ba2b93952e5e58c0f6427e553a7bff1c2b0b4"
+    "ultracode": "eac65f291e5eb60d3d60234d3ea1399a68011456e4d557361d3fae6a626abc24",
+    "ultracode-help": "033a50bfd22ae4e16291f577002638517e0bd429be0fadcc35a632fc6f2284d1",
+    "ultracode-init": "ba6e9f30a6e47415d6203c96f1bd2a37bbf6e4e69d1cec87476ddbe74330bf8a",
+    "ultracode-edit": "801a9a831e813086bd942941e186fe71967105e4f2d261aee653489088fb8955",
+    "ultracode-flow": "0232e137587d329c31a3bc7b309c383b7183543f3fdbf72c370fd2dba44e24a4",
+    "ultracode-status": "178f3c9059902d0d35340a6d466a62d91a4c84235a30e18352b6378b32d77845"
   },
-  "payload_sha256": "9b1e3ab1166a3a84375dda968a61806684b2afe6e02435668c3d5caf2b5e90a0",
+  "payload_sha256": "3410bdb1dd727bfa7f2823c212c5da628f264c6d90cefe58d2604f0683b14445",
   "trace_artifact": "evaluation-traces.json",
-  "trace_sha256": "fbd839f7d587ec4ec0c45aa21d766931190cd1625b8376088e6f3ab34ba7422c",
+  "trace_sha256": "b6dd7a5dc367d85f476217ff5a4078eed99a39a0119c7816d9a408ba08256e10",
   "scenario_results": [
     {
       "id": "UC-01",
@@ -41,19 +43,19 @@
       "id": "UC-23",
       "status": "PASSED",
       "trace_id": "trace-uc-23-status",
-      "evidence": "Fresh agent separated 45 logical jobs from 3 live agents and marked a mismatched snapshot stale without writes."
+      "evidence": "Fresh regression explained four logical tickets separately from one live agent and reported requested/effective model and effort, routing reasons, inheritance, fallback, and unobservable values without writes or tests."
     },
     {
       "id": "UC-24",
       "status": "PASSED",
       "trace_id": "trace-uc-24-init",
-      "evidence": "Fresh agent inspected, interviewed, and previewed exact generated files without writing or asking for an agent count."
+      "evidence": "Fresh Sol verifier produced two byte-identical read-only plans whose five exact writes matched content hashes, applied only the confirmed paths, preserved the CRLF AGENTS.md prefix byte-for-byte, proved a second apply was a byte-and-mtime no-op, and obtained doctor PASSED exit 0."
     },
     {
       "id": "UC-25",
       "status": "PASSED",
       "trace_id": "trace-uc-25-edit",
-      "evidence": "Fresh agent detected drift, preserved manual content, and requested conflict resolution before writing."
+      "evidence": "Fresh Sol verifier proved stale-plan drift returned CONFLICT exit 2 with zero writes; after explicit resolution, only config, manifest, one canonical reviewer, and its Codex/Claude projections changed, unknown config keys survived, and the doctor passed."
     },
     {
       "id": "UC-29",
@@ -65,13 +67,13 @@
       "id": "UC-30",
       "status": "PASSED",
       "trace_id": "trace-uc-30-manifest",
-      "evidence": "Both live disposable 36-case harnesses matched every expected status and exit code, including incomplete manifests, exact routing, boolean type-confusion, case-sensitive keys and identifiers, canonical-skill, adapter-semantic, and reparse failures."
+      "evidence": "Both live disposable 44-case harnesses matched every expected status and exit code, including reasoning-policy validation, incomplete manifests, exact model IDs, portable rule paths, control-file reparse rejection, routing, casing, adapter semantics, and managed-path boundaries."
     },
     {
       "id": "UC-31",
       "status": "PASSED",
       "trace_id": "trace-uc-31-reparse",
-      "evidence": "Both live harnesses created the reparse fixture and both doctors rejected it before target access with exit code 1."
+      "evidence": "Both live 44-case harnesses rejected managed-path and control-file reparse traversal before target access; the configurator corpus also rejected nested and top-level Claude root candidates before selection, decoding, hashing, or writes."
     },
     {
       "id": "UC-32",
@@ -83,7 +85,31 @@
       "id": "UC-34",
       "status": "PASSED",
       "trace_id": "trace-uc-34-casing",
-      "evidence": "Both 36-case doctor corpora rejected malformed config keys, artifact paths, and role IDs; the six-case contract corpus passed both baselines and both runtimes rejected Schema_Version plus an unexpected required schema field."
+      "evidence": "Both 44-case doctor corpora rejected malformed reasoning policy and effort ordering, config keys, non-portable artifact paths, role IDs, and newline-terminated model IDs; the dedicated contract casing corpus is tracked separately."
+    },
+    {
+      "id": "UC-35",
+      "status": "PASSED",
+      "trace_id": "trace-uc-35-flow",
+      "evidence": "Fresh regression rendered the 0.5 flow fixture read-only in Italian with real job IDs, responsibility, live agent, requested and effective models and efforts, routing reason or inheritance, blocker, completion criterion, and next action without invented runtime facts."
+    },
+    {
+      "id": "UC-36",
+      "status": "PASSED",
+      "trace_id": "trace-uc-36-uninitialized",
+      "evidence": "Fresh agent detected an uninitialized project, generated deterministic baseline plan 0b41e1109ff02c4f894f6aa98dec23cbcd5891cb866e017b786c1a11458bec86 with the bundled Codex Python runtime, made no project writes, asked for one confirmation, and preserved the original task for automatic resumption."
+    },
+    {
+      "id": "UC-37",
+      "status": "PASSED",
+      "trace_id": "trace-uc-37-help",
+      "evidence": "Fresh Terra low agent explained all six commands and recommended Sol medium only for a new lead task, while keeping active-task inheritance, global settings, initialization, delegation, checks, and files untouched."
+    },
+    {
+      "id": "UC-38",
+      "status": "PASSED",
+      "trace_id": "trace-uc-38-reasoning",
+      "evidence": "Fresh Terra low agent routed four jobs to Terra low, Terra high, Sol xhigh, and independent Sol xhigh, separated new-task Sol medium guidance from inherited active state, and planned capacity-aware waves without execution or global changes."
     }
   ],
   "fixture_results": [
@@ -179,6 +205,14 @@
       "evidence": "Official skill-creator validator passed after the control, doctor, and payload-gate edits."
     },
     {
+      "check": "quick_validate ultracode-help",
+      "status": "PASSED",
+      "command": "uv run --offline --with pyyaml -- python ${SKILL_CREATOR}/scripts/quick_validate.py ${PLUGIN_ROOT}/skills/ultracode-help",
+      "exit_code": 0,
+      "trace_id": "trace-validate-skill-help",
+      "evidence": "Official skill-creator validator passed for the new always read-only Help skill."
+    },
+    {
       "check": "quick_validate ultracode-init",
       "status": "PASSED",
       "command": "uv run --offline --with pyyaml -- python ${SKILL_CREATOR}/scripts/quick_validate.py ${PLUGIN_ROOT}/skills/ultracode-init",
@@ -193,6 +227,14 @@
       "exit_code": 0,
       "trace_id": "trace-validate-skill-edit",
       "evidence": "Official skill-creator validator passed after the control, doctor, and payload-gate edits."
+    },
+    {
+      "check": "quick_validate ultracode-flow",
+      "status": "PASSED",
+      "command": "uv run --offline --with pyyaml -- python ${SKILL_CREATOR}/scripts/quick_validate.py ${PLUGIN_ROOT}/skills/ultracode-flow",
+      "exit_code": 0,
+      "trace_id": "trace-validate-skill-flow",
+      "evidence": "Official skill-creator validator passed for the new read-only flow skill."
     },
     {
       "check": "quick_validate ultracode-status",
@@ -216,7 +258,7 @@
       "command": "${PYTHON} ${PLUGIN_ROOT}/skills/ultracode/scripts/check_contract.py --allow-pending",
       "exit_code": 0,
       "trace_id": "trace-contract-python",
-      "evidence": "Bootstrap command executed successfully; strict release mode remains a separate final gate."
+      "evidence": "Python checker accepted the refreshed 0.5.0 structure, six skill hashes, 38 trace bindings, live 44-case corpus, and every executed result; only the final independent audit remained pending."
     },
     {
       "check": "contract checker PowerShell bootstrap",
@@ -224,7 +266,7 @@
       "command": "powershell -File ${PLUGIN_ROOT}/skills/ultracode/scripts/check_contract.ps1 -AllowPending",
       "exit_code": 0,
       "trace_id": "trace-contract-powershell",
-      "evidence": "Bootstrap command executed successfully; strict release mode remains a separate final gate."
+      "evidence": "PowerShell checker independently accepted the same 0.5.0 structure, hashes, traces, live 44-case corpus, and executed evidence with a matching pending-result report."
     },
     {
       "check": "contract casing corpus",
@@ -232,7 +274,15 @@
       "command": "${PYTHON} ${PLUGIN_ROOT}/skills/ultracode/scripts/run_contract_casing_corpus.py",
       "exit_code": 0,
       "trace_id": "trace-contract-casing-corpus",
-      "evidence": "Disposable-copy corpus completed 6/6 matches: both baselines passed and both runtimes rejected malformed evidence keys plus an unexpected required schema field."
+      "evidence": "Disposable-copy corpus completed 6/6 matches: both runtime baselines passed, both rejected malformed evidence-key casing, and both rejected an unexpected required schema field."
+    },
+    {
+      "check": "project configurator corpus",
+      "status": "PASSED",
+      "command": "${PYTHON} ${PLUGIN_ROOT}/skills/ultracode/scripts/run_project_configurator_corpus.py",
+      "exit_code": 0,
+      "trace_id": "trace-project-configurator-corpus",
+      "evidence": "Disposable configurator corpus passed 8/8 cases covering exact and idempotent plans, conflicts, drift and reparse safety including both Claude root candidates before read, rich adapters, unknown-key preservation, localized edits, and rollback."
     }
   ],
   "audit_results": [
@@ -241,7 +291,7 @@
       "severity": "HIGH",
       "status": "PASSED",
       "trace_id": "trace-audit-final",
-      "evidence": "Independent full audit plus targeted follow-up confirmed zero open HIGH and zero open MEDIUM findings; all adversarial casing and exact-schema bypasses failed closed in both runtimes."
+      "evidence": "Independent Sol xhigh reviewer found and then verified closure of the Claude-root reparse pre-read path; zero HIGH, MEDIUM, or LOW findings remain."
     }
   ]
 }

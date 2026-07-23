@@ -103,7 +103,8 @@
         "synthesis_agents",
         "concurrency",
         "hard_safety_cap",
-        "model_policy"
+        "model_policy",
+        "reasoning_policy"
       ],
       "properties": {
         "decomposition": { "const": "data-driven" },
@@ -122,17 +123,29 @@
           "required": ["lead", "bounded_agents", "verifiers", "fallback"],
           "properties": {
             "lead": {
-              "enum": ["strongest-available", "balanced-available", "inherit"]
+              "$ref": "#/$defs/modelSelector"
             },
             "bounded_agents": {
-              "enum": ["strongest-available", "balanced-available", "inherit"]
+              "$ref": "#/$defs/modelSelector"
             },
             "verifiers": {
-              "enum": ["strongest-available", "balanced-available", "inherit"]
+              "$ref": "#/$defs/modelSelector"
             },
             "fallback": { "const": "inherit" }
           },
           "additionalProperties": true
+        },
+        "reasoning_policy": {
+          "type": "object",
+          "required": ["mode", "bounded_default", "material_verifier_minimum", "critical_minimum", "maximum"],
+          "properties": {
+            "mode": { "const": "objective-driven" },
+            "bounded_default": { "$ref": "#/$defs/reasoningEffort" },
+            "material_verifier_minimum": { "$ref": "#/$defs/reasoningEffort" },
+            "critical_minimum": { "$ref": "#/$defs/reasoningEffort" },
+            "maximum": { "$ref": "#/$defs/reasoningEffort" }
+          },
+          "additionalProperties": false
         }
       },
       "not": {
@@ -155,7 +168,7 @@
     },
     "artifacts": {
       "type": "object",
-      "required": ["context", "rules", "skills"],
+      "required": ["context", "rules", "rule_paths", "skills"],
       "properties": {
         "context": {
           "type": "array",
@@ -173,6 +186,21 @@
             "pattern": "^\\.agents/rules/[a-z0-9]+(?:-[a-z0-9]+)*\\.md$"
           },
           "uniqueItems": true
+        },
+        "rule_paths": {
+          "type": "object",
+          "propertyNames": {
+            "pattern": "^\\.agents/rules/[a-z0-9]+(?:-[a-z0-9]+)*\\.md$"
+          },
+          "additionalProperties": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "string",
+              "pattern": "^(?!/)(?![A-Za-z]:)(?!~)(?!.*(?:^|/)\\.{1,2}(?:/|$))[A-Za-z0-9._*?-]+(?:/[A-Za-z0-9._*?-]+)*(?![\\s\\S])"
+            },
+            "uniqueItems": true
+          }
         },
         "skills": {
           "type": "array",
@@ -239,6 +267,20 @@
     }
   },
   "$defs": {
+    "modelSelector": {
+      "anyOf": [
+        {
+          "enum": ["strongest-available", "balanced-available", "inherit"]
+        },
+        {
+          "type": "string",
+          "pattern": "^[a-z0-9][a-z0-9._-]{2,}(?![\\s\\S])"
+        }
+      ]
+    },
+    "reasoningEffort": {
+      "enum": ["low", "medium", "high", "xhigh", "max", "ultra"]
+    },
     "commandList": {
       "type": "array",
       "items": {

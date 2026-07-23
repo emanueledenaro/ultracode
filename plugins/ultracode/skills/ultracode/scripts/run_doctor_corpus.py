@@ -41,12 +41,20 @@ CASES: tuple[tuple[str, str, int], ...] = (
     ("duplicate-claude-role-key", "FAILED", 1),
     ("extra-claude-role-key", "FAILED", 1),
     ("reparse", "FAILED", 1),
+    ("control-reparse", "FAILED", 1),
+    ("rule-path-portability", "FAILED", 1),
     ("missing-config-route", "FAILED", 1),
     ("boolean-control-plan", "FAILED", 1),
     ("boolean-authority", "FAILED", 1),
     ("boolean-decomposition", "FAILED", 1),
     ("boolean-concurrency", "FAILED", 1),
     ("boolean-model-policy", "FAILED", 1),
+    ("boolean-reasoning-policy", "FAILED", 1),
+    ("reasoning-effort-invalid", "FAILED", 1),
+    ("reasoning-order-invalid", "FAILED", 1),
+    ("explicit-model-ids", "PASSED", 0),
+    ("model-id-trailing-newline", "FAILED", 1),
+    ("rule-path-mismatch", "FAILED", 1),
     ("boolean-command-evidence", "FAILED", 1),
     ("boolean-completion-review", "FAILED", 1),
     ("boolean-generated-by", "FAILED", 1),
@@ -153,6 +161,13 @@ def base_config(*, rule: bool = False, skill: bool = False, role: bool = False) 
                         "verifiers": "strongest-available",
                         "fallback": "inherit",
                     },
+                    "reasoning_policy": {
+                        "mode": "objective-driven",
+                        "bounded_default": "low",
+                        "material_verifier_minimum": "high",
+                        "critical_minimum": "xhigh",
+                        "maximum": "ultra",
+                    },
                 },
             ),
             ("adapters", {"codex": True, "claude": True}),
@@ -161,6 +176,7 @@ def base_config(*, rule: bool = False, skill: bool = False, role: bool = False) 
                 {
                     "context": [CONTEXT],
                     "rules": [RULE] if rule else [],
+                    "rule_paths": {RULE: ["**/*"]} if rule else {},
                     "skills": [SKILL] if skill else [],
                 },
             ),
@@ -329,7 +345,31 @@ def create_reparse(root: Path, external: Path) -> tuple[bool, str]:
         if command.returncode == 0:
             return True, "created Windows directory junction"
         detail = (command.stderr or command.stdout).strip()
-        return False, f"cannot create symlink ({first_error}) or junction ({detail})"
+    return False, f"cannot create symlink ({first_error}) or junction ({detail})"
+
+
+def create_control_reparse(root: Path, external: Path) -> tuple[bool, str]:
+    control_dir = root / ".ultracode"
+    external.parent.mkdir(parents=True, exist_ok=True)
+    shutil.move(str(control_dir), str(external))
+    write_text(external / "config.json", "{ malformed config\n")
+    write_text(external / "managed.json", "{ malformed manifest\n")
+    try:
+        os.symlink(external, control_dir, target_is_directory=True)
+        return True, "created control-directory symlink"
+    except OSError as first_error:
+        if os.name != "nt":
+            return False, f"cannot create control-directory symlink: {first_error}"
+        command = subprocess.run(
+            ["cmd.exe", "/d", "/c", "mklink", "/J", str(control_dir), str(external)],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        if command.returncode == 0:
+            return True, "created control-directory junction"
+        detail = (command.stderr or command.stdout).strip()
+        return False, f"cannot create control symlink ({first_error}) or junction ({detail})"
 
 
 def prepare_case(case_id: str, root: Path, temp_root: Path) -> tuple[bool, str]:
@@ -434,6 +474,24 @@ def prepare_case(case_id: str, root: Path, temp_root: Path) -> tuple[bool, str]:
     elif case_id == "reparse":
         build_fixture(root)
         return create_reparse(root, temp_root / "external" / case_id / "context")
+    elif case_id == "control-reparse":
+        build_fixture(root)
+        return create_control_reparse(root, temp_root / "external" / case_id / ".ultracode")
+    elif case_id == "rule-path-portability":
+        paths = build_fixture(root, rule=True)
+        unsafe_rule_path = "C:/Users/example/project/**"
+        config = read_json(root / ".ultracode/config.json")
+        config["artifacts"]["rule_paths"][RULE] = [unsafe_rule_path]
+        write_json(root / ".ultracode/config.json", config)
+        write_text(
+            root / ".claude/rules/no-deploy.md",
+            (
+                f"---\npaths:\n  - {json.dumps(unsafe_rule_path)}\n---\n"
+                f"<!-- ultracode-canonical: {RULE} -->\n\n"
+                f"Read and follow the canonical rule at `{RULE}` completely before applying this adapter.\n"
+            ),
+        )
+        write_manifest(root, paths)
     elif case_id == "missing-config-route":
         paths = build_fixture(root)
         write_text(root / "AGENTS.md", agents_text([CONTEXT]))
@@ -466,6 +524,48 @@ def prepare_case(case_id: str, root: Path, temp_root: Path) -> tuple[bool, str]:
         paths = build_fixture(root)
         config = read_json(root / ".ultracode/config.json")
         config["swarm"]["model_policy"]["lead"] = True
+        write_json(root / ".ultracode/config.json", config)
+        write_manifest(root, paths)
+    elif case_id == "boolean-reasoning-policy":
+        paths = build_fixture(root)
+        config = read_json(root / ".ultracode/config.json")
+        config["swarm"]["reasoning_policy"]["bounded_default"] = True
+        write_json(root / ".ultracode/config.json", config)
+        write_manifest(root, paths)
+    elif case_id == "reasoning-effort-invalid":
+        paths = build_fixture(root)
+        config = read_json(root / ".ultracode/config.json")
+        config["swarm"]["reasoning_policy"]["critical_minimum"] = "extreme"
+        write_json(root / ".ultracode/config.json", config)
+        write_manifest(root, paths)
+    elif case_id == "reasoning-order-invalid":
+        paths = build_fixture(root)
+        config = read_json(root / ".ultracode/config.json")
+        config["swarm"]["reasoning_policy"]["maximum"] = "medium"
+        write_json(root / ".ultracode/config.json", config)
+        write_manifest(root, paths)
+    elif case_id == "explicit-model-ids":
+        paths = build_fixture(root)
+        config = read_json(root / ".ultracode/config.json")
+        config["swarm"]["model_policy"].update(
+            {
+                "lead": "gpt-5.6-sol",
+                "bounded_agents": "gpt-5.6-terra",
+                "verifiers": "gpt-5.6-sol",
+            }
+        )
+        write_json(root / ".ultracode/config.json", config)
+        write_manifest(root, paths)
+    elif case_id == "model-id-trailing-newline":
+        paths = build_fixture(root)
+        config = read_json(root / ".ultracode/config.json")
+        config["swarm"]["model_policy"]["lead"] = "gpt-5.6-sol\n"
+        write_json(root / ".ultracode/config.json", config)
+        write_manifest(root, paths)
+    elif case_id == "rule-path-mismatch":
+        paths = build_fixture(root, rule=True)
+        config = read_json(root / ".ultracode/config.json")
+        config["artifacts"]["rule_paths"][RULE] = ["src/**"]
         write_json(root / ".ultracode/config.json", config)
         write_manifest(root, paths)
     elif case_id == "boolean-command-evidence":
@@ -618,6 +718,21 @@ def main() -> int:
                         if actual_status == expected_status and actual_exit == expected_exit
                         else "MISMATCH"
                     )
+                    if case_id == "control-reparse":
+                        required = (
+                            ".ultracode/config.json traverses a symlink, junction, or reparse point",
+                            ".ultracode/managed.json traverses a symlink, junction, or reparse point",
+                        )
+                        if any(not any(value in item for item in diagnostics) for value in required):
+                            outcome = "MISMATCH"
+                            diagnostics.append(
+                                "harness: control files were not both rejected at the reparse boundary"
+                            )
+                        if any("cannot read JSON" in item for item in diagnostics):
+                            outcome = "MISMATCH"
+                            diagnostics.append(
+                                "harness: doctor read a control-file target before rejecting its reparse path"
+                            )
             except Exception as exc:  # deterministic harness boundary
                 actual_status = "HARNESS_ERROR"
                 actual_exit = None

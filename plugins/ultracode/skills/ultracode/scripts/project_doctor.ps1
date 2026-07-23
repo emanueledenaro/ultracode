@@ -38,9 +38,12 @@ $script:requiredTopLevel = @(
 $script:commandKeys = @('install', 'format', 'lint', 'typecheck', 'test', 'build', 'run', 'health')
 $script:evidenceStates = @('VERIFIED', 'INFERRED', 'UNKNOWN')
 $script:modelPolicies = @('strongest-available', 'balanced-available', 'inherit')
+$script:modelSelectorPattern = '^[a-z0-9][a-z0-9._-]{2,}\z'
+$script:reasoningEfforts = @('low', 'medium', 'high', 'xhigh', 'max', 'ultra')
 $script:statusPattern = '^\.ultracode/[A-Za-z0-9._-]+(?:/[A-Za-z0-9._-]+)*$'
 $script:contextPattern = '^\.agents/context/[A-Za-z0-9._-]+(?:/[A-Za-z0-9._-]+)*\.md$'
 $script:rulePattern = '^\.agents/rules/[a-z0-9]+(?:-[a-z0-9]+)*\.md$'
+$script:ruleScopePattern = '^(?!/)(?![A-Za-z]:)(?!~)(?!.*(?:^|/)\.{1,2}(?:/|$))[A-Za-z0-9._*?-]+(?:/[A-Za-z0-9._*?-]+)*\z'
 $script:skillPattern = '^\.agents/skills/[a-z0-9]+(?:-[a-z0-9]+)*/SKILL\.md$'
 $script:managedPathPattern = '^[A-Za-z0-9._-]+(?:/[A-Za-z0-9._-]+)*$'
 $script:managedStartPattern = '^<!-- ultracode:([a-z0-9]+(?:-[a-z0-9]+)*):start -->$'
@@ -998,12 +1001,85 @@ function Test-DoctorConfig {
     }
     else {
         foreach ($key in @('lead', 'bounded_agents', 'verifiers')) {
-            if (-not (Test-DoctorExactStringIn (Get-ObjectProperty $modelPolicy $key) $script:modelPolicies)) {
+            $selector = Get-ObjectProperty $modelPolicy $key
+            if (-not (Test-DoctorExactStringIn $selector $script:modelPolicies) -and -not (Test-DoctorRegex $selector $script:modelSelectorPattern)) {
                 Add-DoctorError "swarm.model_policy.$key is invalid"
             }
         }
         if (-not (Test-DoctorExactString (Get-ObjectProperty $modelPolicy 'fallback') 'inherit')) {
             Add-DoctorError 'swarm.model_policy.fallback must be inherit'
+        }
+    }
+    $reasoningPolicy = Get-ObjectProperty $swarm 'reasoning_policy'
+    if (-not (Test-DoctorObject $reasoningPolicy)) {
+        Add-DoctorError 'swarm.reasoning_policy must be an object'
+    }
+    else {
+        $requiredReasoningKeys = @(
+            'mode',
+            'bounded_default',
+            'material_verifier_minimum',
+            'critical_minimum',
+            'maximum'
+        )
+        $actualReasoningKeys = @($reasoningPolicy.PSObject.Properties.Name)
+        if ($reasoningPolicy -is [System.Collections.IDictionary]) {
+            $actualReasoningKeys = @($reasoningPolicy.Keys)
+        }
+        $actualReasoningSet = New-Object 'System.Collections.Generic.HashSet[string]' ([System.StringComparer]::Ordinal)
+        foreach ($key in $actualReasoningKeys) {
+            if ($key -is [string]) { [void]$actualReasoningSet.Add($key) }
+        }
+        $requiredReasoningSet = New-Object 'System.Collections.Generic.HashSet[string]' ([System.StringComparer]::Ordinal)
+        foreach ($key in $requiredReasoningKeys) { [void]$requiredReasoningSet.Add($key) }
+        if (-not $actualReasoningSet.SetEquals($requiredReasoningSet)) {
+            Add-DoctorError 'swarm.reasoning_policy must be an exact object'
+        }
+        if (-not (Test-DoctorExactString (Get-ObjectProperty $reasoningPolicy 'mode') 'objective-driven')) {
+            Add-DoctorError 'swarm.reasoning_policy.mode must be objective-driven'
+        }
+        $reasoningIndexes = @{}
+        foreach ($key in @('bounded_default', 'material_verifier_minimum', 'critical_minimum', 'maximum')) {
+            $effort = Get-ObjectProperty $reasoningPolicy $key
+            $effortIndex = if ($effort -is [string]) {
+                [array]::IndexOf([string[]]$script:reasoningEfforts, [string]$effort)
+            }
+            else {
+                -1
+            }
+            if ($effortIndex -lt 0) {
+                Add-DoctorError "swarm.reasoning_policy.$key is invalid"
+            }
+            else {
+                $reasoningIndexes[$key] = $effortIndex
+            }
+        }
+        $highIndex = [array]::IndexOf([string[]]$script:reasoningEfforts, 'high')
+        $xhighIndex = [array]::IndexOf([string[]]$script:reasoningEfforts, 'xhigh')
+        if (
+            $reasoningIndexes.ContainsKey('material_verifier_minimum') -and
+            $reasoningIndexes['material_verifier_minimum'] -lt $highIndex
+        ) {
+            Add-DoctorError 'swarm.reasoning_policy.material_verifier_minimum must be at least high'
+        }
+        if (
+            $reasoningIndexes.ContainsKey('critical_minimum') -and
+            $reasoningIndexes['critical_minimum'] -lt $xhighIndex
+        ) {
+            Add-DoctorError 'swarm.reasoning_policy.critical_minimum must be at least xhigh'
+        }
+        if (
+            $reasoningIndexes.ContainsKey('bounded_default') -and
+            $reasoningIndexes.ContainsKey('material_verifier_minimum') -and
+            $reasoningIndexes.ContainsKey('critical_minimum') -and
+            $reasoningIndexes.ContainsKey('maximum') -and
+            -not (
+                $reasoningIndexes['bounded_default'] -le $reasoningIndexes['material_verifier_minimum'] -and
+                $reasoningIndexes['material_verifier_minimum'] -le $reasoningIndexes['critical_minimum'] -and
+                $reasoningIndexes['critical_minimum'] -le $reasoningIndexes['maximum']
+            )
+        ) {
+            Add-DoctorError 'swarm.reasoning_policy efforts must be ordered through maximum'
         }
     }
 
@@ -1032,6 +1108,30 @@ function Test-DoctorConfig {
     $artifacts = Require-DoctorObject $Config 'artifacts'
     $contexts = @(Get-DoctorStringList (Get-ObjectProperty $artifacts 'context') 'artifacts.context' 1 $script:contextPattern)
     $rules = @(Get-DoctorStringList (Get-ObjectProperty $artifacts 'rules') 'artifacts.rules' 0 $script:rulePattern)
+    $rulePathsObject = Get-ObjectProperty $artifacts 'rule_paths'
+    $rulePaths = @{}
+    if (-not (Test-DoctorObject $rulePathsObject)) {
+        Add-DoctorError 'artifacts.rule_paths must be an object'
+    }
+    else {
+        $rulePathKeys = if ($rulePathsObject -is [System.Collections.IDictionary]) {
+            @($rulePathsObject.Keys | ForEach-Object { [string]$_ } | Sort-Object)
+        }
+        else {
+            @($rulePathsObject.PSObject.Properties.Name | Sort-Object)
+        }
+        $sortedRules = @($rules | Sort-Object)
+        if (($rulePathKeys -join "`n") -cne ($sortedRules -join "`n")) {
+            Add-DoctorError 'artifacts.rule_paths keys must exactly match artifacts.rules'
+        }
+        foreach ($raw in $rules) {
+            $rulePaths[$raw] = @(
+                Get-DoctorStringList (
+                    Get-ObjectProperty $rulePathsObject $raw
+                ) "artifacts.rule_paths['$raw']" 1 $script:ruleScopePattern
+            )
+        }
+    }
     $skills = @(Get-DoctorStringList (Get-ObjectProperty $artifacts 'skills') 'artifacts.skills' 0 $script:skillPattern)
     $canonicalArtifacts = @($contexts) + @($rules) + @($skills)
     $canonicalFiles = New-Object 'System.Collections.Generic.Dictionary[string,string]' ([System.StringComparer]::Ordinal)
@@ -1118,6 +1218,10 @@ function Test-DoctorConfig {
                         foreach ($pathValue in $paths) { [void]$uniquePaths.Add($pathValue) }
                         if ($uniquePaths.Count -ne $paths.Count) {
                             Add-DoctorError "$adapterRaw.paths contains duplicates"
+                        }
+                        $configuredPaths = if ($rulePaths.ContainsKey($raw)) { @($rulePaths[$raw]) } else { @() }
+                        if (($paths -join "`n") -cne ($configuredPaths -join "`n")) {
+                            Add-DoctorError "$adapterRaw.paths must exactly match artifacts.rule_paths['$raw']"
                         }
                         $expectedFrontmatter = 'paths:'
                         foreach ($pathValue in $paths) {
@@ -1446,7 +1550,12 @@ try {
         throw 'not a directory'
     }
     $root = $rootItem.FullName
-    $rootIsDirectory = $true
+    if (($rootItem.Attributes -band [System.IO.FileAttributes]::ReparsePoint) -ne 0) {
+        Add-DoctorError "project root traverses a symlink, junction, or reparse point: $root"
+    }
+    else {
+        $rootIsDirectory = $true
+    }
 }
 catch {
     try {
@@ -1459,8 +1568,10 @@ catch {
 }
 
 if ($rootIsDirectory) {
-    $config = Read-DoctorJson (Join-Path $root '.ultracode\config.json')
-    $manifest = Read-DoctorJson (Join-Path $root '.ultracode\managed.json')
+    $configPath = Resolve-DoctorPath $root '.ultracode/config.json' '.ultracode/config.json'
+    $manifestPath = Resolve-DoctorPath $root '.ultracode/managed.json' '.ultracode/managed.json'
+    $config = if ($null -ne $configPath) { Read-DoctorJson $configPath } else { $null }
+    $manifest = if ($null -ne $manifestPath) { Read-DoctorJson $manifestPath } else { $null }
     $configResult = $null
     if ($null -ne $config) {
         $configResult = Test-DoctorConfig $config $root

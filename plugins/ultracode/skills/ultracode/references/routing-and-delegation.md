@@ -1,20 +1,25 @@
 # Routing and delegation
 
-Read this reference for Focused, Deep, or Critical execution after reading `swarm-protocol.md` for delegated Deep or Critical work.
+Read this reference for Focused, Deep, or Critical execution after reading `swarm-protocol.md` for
+delegated Deep or Critical work. Read `reasoning-routing.md` before selecting a subagent model,
+reasoning effort, or context mode.
 
 ## Route by bounded responsibility
 
-| Need | Preferred execution | Write access | Model policy |
+| Need | Preferred execution | Write access | Model and effort policy |
 | --- | --- | --- | --- |
-| Locate entry points or explain architecture | explorer | Read-only | balanced available or inherit |
-| Inspect one real data unit | explorer | Read-only | balanced available or inherit |
-| Cover an orthogonal risk lens | specialist explorer or reviewer | Read-only | strongest justified by ambiguity |
-| Implement one independent component | worker | Exclusive workspace scope | balanced or strongest by risk |
-| Verify one material finding | fresh adversarial verifier | Read-only | strongest available or inherit |
-| Review an integrated diff | fresh review-specialized agent | Read-only | strongest available or inherit |
-| Synthesize final evidence | exactly one lead or synthesizer | Lead-owned | strongest available or inherit |
+| Locate entry points or explain architecture | explorer | Read-only | Terra; score the bounded question, normally `low` |
+| Inspect one real data unit | explorer | Read-only | Terra; score the unit, normally `low` |
+| Cover an orthogonal risk lens | specialist explorer or reviewer | Read-only | Terra or Sol by impact; objective-driven effort |
+| Implement one independent component | worker | Exclusive workspace scope | Terra; raise effort by coupling and risk |
+| Verify one material finding | fresh adversarial verifier | Read-only | Sol; at least the configured verifier minimum |
+| Review an integrated diff | fresh review-specialized agent | Read-only | Sol for material changes; objective-driven effort |
+| Synthesize final evidence | exactly one lead or synthesizer | Lead-owned | inherit the active chat unless a fresh synthesizer is explicitly selected |
 
-Use configured role classes, not brittle model identifiers. Select a model only when the platform exposes the requested policy reliably; otherwise inherit.
+Use configured role classes by default. Preserve an exact model identifier when the user explicitly
+supplies it, select it only when the platform exposes that identifier reliably, and otherwise apply
+the configured fallback while reporting the effective model. Record requested and effective
+reasoning effort separately. Do not treat a project default as proof of a live runtime value.
 
 ## Delegation gates
 
@@ -26,6 +31,8 @@ Delegate only when all are true:
 4. Parallel execution cannot create overlapping writes.
 5. The lead can verify the result from files, logs, tests, captures, or cited evidence.
 6. The job adds coverage, independence, or useful context isolation.
+7. The requested model and reasoning effort follow `reasoning-routing.md`, and the chosen context
+   mode can actually apply those overrides.
 
 Do not delegate the final authority decision, destructive or external action, two writes to the same files, a vague request such as "fix everything," or a truth claim with no verification path.
 

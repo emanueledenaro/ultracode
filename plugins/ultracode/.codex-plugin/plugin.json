@@ -1,7 +1,7 @@
 {
   "name": "ultracode",
-  "version": "0.2.0+codex.20260722195636",
-  "description": "Transparent, adaptive multi-agent software engineering orchestration for Codex.",
+  "version": "0.5.0+codex.20260723134028",
+  "description": "Transparent, adaptive engineering orchestration for Codex with read-only command Help.",
   "author": {
     "name": "Emanuele Denaro"
   },
@@ -19,8 +19,8 @@
   "skills": "./skills/",
   "interface": {
     "displayName": "UltraCode",
-    "shortDescription": "Transparent adaptive engineering workflow.",
-    "longDescription": "Keeps the user in control while it inspects, decomposes, delegates, verifies, implements, validates, and synthesizes complex engineering work. Includes guided project initialization, safe configuration editing, live status, Codex and Claude Code adapters, and data-driven swarms whose size follows the problem rather than a preset number.",
+    "shortDescription": "Transparent engineering workflow with command Help.",
+    "longDescription": "Keeps the user in control while it inspects, decomposes, delegates, verifies, implements, validates, and synthesizes complex engineering work. Includes read-only Help for choosing commands, guided initialization, safe configuration editing, a plain-language live flow, detailed status, Codex and Claude Code adapters, and data-driven swarms whose size follows the problem rather than a preset number.",
     "developerName": "Emanuele Denaro",
     "category": "Productivity",
     "websiteURL": "https://github.com/emanueledenaro/ultracode",
@@ -33,9 +33,12 @@
       "Write"
     ],
     "defaultPrompt": [
-      "Use $ultracode-init to configure this repository.",
-      "Use $ultracode to execute this task end to end.",
-      "Use $ultracode-status to show the live work state."
+      "Use $ultracode-help to explain every UltraCode command and recommend the right one.",
+      "Use $ultracode-init to explain and configure this repository.",
+      "Use $ultracode-edit to explain and safely change the project configuration.",
+      "Use $ultracode to execute this task end to end, initialize project control safely if missing, and show visible progress.",
+      "Use $ultracode-flow to explain active tickets, agents, models, blockers, and next actions.",
+      "Use $ultracode-status to show the complete diagnostic state and evidence."
     ]
   }
 }
