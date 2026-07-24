@@ -2,6 +2,25 @@
 
 All notable changes to UltraCode are documented here.
 
+## [0.6.0] - 2026-07-24
+
+### Added
+
+- `$ultracode-verify`, a seventh public skill for durable feature-level functional verification.
+- A closed JSON verification-plan schema with append-only scenario histories and exactly
+  `planned`, `passed`, `failed`, `not-run`, and `not-applicable` statuses.
+- Main UltraCode, Help, Flow, and Status integration for verification-plan creation, coverage,
+  evidence, derived outcomes, blockers, and drift.
+
+### Safety
+
+- Passed and failed results require direct status-consistent evidence; skipped and inapplicable
+  results require reasons and cannot contain execution evidence.
+- Incomplete, contradictory, stale, duplicated, or orphaned plan content fails closed instead of
+  being normalized or overwritten.
+- Verification-plan authority never implies Git, publishing, external requests, dependencies,
+  destructive actions, production writes, or deployment.
+
 ## [0.5.3] - 2026-07-24
 
 ### Fixed

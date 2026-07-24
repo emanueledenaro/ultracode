@@ -19,6 +19,8 @@ Do not write a status file, run a write-producing build or test, regenerate adap
 Read `../ultracode/references/command-interface.md` and
 `../ultracode/references/control-and-status.md` completely. Read
 `../ultracode/references/swarm-protocol.md` when delegated jobs or findings exist.
+Read `../ultracode/references/feature-verification.md` when a durable feature verification plan
+exists or is referenced by the task.
 
 Status is the detailed diagnostic view; Flow is the concise live control view. When the user
 explicitly invokes `$ultracode-status`, stay in the detailed view. For an unqualified request for
@@ -51,6 +53,8 @@ Lead with the objective and phase. Then show, at the requested detail level:
 - files changed or currently owned by writers;
 - validation states translated into the user's language, with `PASSED`, `FAILED`, `BLOCKED`,
   `NOT AVAILABLE`, or `NOT RUN` retained only as secondary diagnostic detail;
+- durable feature verification plan validity, scope, acceptance-criterion coverage, latest scenario
+  statuses, evidence sources, derived outcome, drift, and gaps when such a plan is in scope;
 - blockers, authorization waits, unresolved `UNKNOWN` findings, and the next concrete action.
 
 For every active or blocked ticket, explain why it exists, its assigned agent, requested and
@@ -60,3 +64,10 @@ action. Define ticket, agent, logical job, wave, barrier, drift, fallback, and e
 when the reader would otherwise have to infer their meaning.
 
 Never invent percentages, agent counts, test results, or ETAs. Do not dump raw agent transcripts. If no task is active, state that directly and show the last persisted outcome only when one exists.
+
+For a verification plan, remain read-only and fail closed: explain malformed or unknown fields,
+duplicated or orphaned IDs, missing evidence, status/evidence contradictions, and stale history
+instead of normalizing or repairing them. Keep the plan's exact lower-case scenario statuses
+`planned`, `passed`, `failed`, `not-run`, and `not-applicable` distinct from UltraCode task and
+check states. Never report the feature as verified unless every applicable latest result passed and
+every acceptance criterion has latest passed coverage.

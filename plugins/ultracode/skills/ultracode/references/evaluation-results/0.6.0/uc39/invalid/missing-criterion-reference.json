@@ -1,0 +1,110 @@
+{
+  "schema_version": 1,
+  "plan_id": "verify-local-preference",
+  "feature": "Disposable local preference storage",
+  "objective": "Verify that a valid display preference can be saved and read, invalid input is rejected without overwriting prior state, and persistence behavior is explicitly tracked.",
+  "scope": [
+    "disposable local JSON state under the UC-39 fixture",
+    "display preference values light and dark",
+    "local read, validation, and persistence observations only"
+  ],
+  "acceptance_criteria": [
+    {
+      "id": "AC-001",
+      "statement": "A valid display preference can be saved and read back unchanged."
+    },
+    {
+      "id": "AC-002",
+      "statement": "An invalid display preference is rejected with exit code 1 and does not replace the last valid value."
+    },
+    {
+      "id": "AC-003",
+      "statement": "The last valid display preference remains available to a later local reader."
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "FV-001",
+      "title": "Valid preference succeeds",
+      "criterion_ids": [
+        "AC-999"
+      ],
+      "procedure": [
+        "Run the sample feature in a disposable directory to set dark.",
+        "Run a separate sample-feature process to read the value back.",
+        "Capture both command results and the exact persisted bytes."
+      ],
+      "expected": "The read value is dark.",
+      "results": [
+        {
+          "status": "planned",
+          "recorded_at": "2026-07-24T12:00:00Z",
+          "reason": null,
+          "evidence": []
+        }
+      ]
+    },
+    {
+      "id": "FV-002",
+      "title": "Invalid preference is rejected",
+      "criterion_ids": [
+        "AC-002"
+      ],
+      "procedure": [
+        "Start with the persisted valid value dark.",
+        "Run the sample feature with the invalid value ultraviolet.",
+        "Capture the exit code, streams, and state hashes before and after."
+      ],
+      "expected": "The invalid value exits 1, emits an invalid-preference diagnostic, and leaves the stored value dark.",
+      "results": [
+        {
+          "status": "planned",
+          "recorded_at": "2026-07-24T12:00:00Z",
+          "reason": null,
+          "evidence": []
+        }
+      ]
+    },
+    {
+      "id": "FV-003",
+      "title": "Preference persists for a later reader",
+      "criterion_ids": [
+        "AC-003"
+      ],
+      "procedure": [
+        "Stop the fixture and retain its state file.",
+        "Restart the fixture in a later execution and read the saved preference."
+      ],
+      "expected": "The restarted fixture loads the last valid value.",
+      "results": [
+        {
+          "status": "planned",
+          "recorded_at": "2026-07-24T12:00:00Z",
+          "reason": null,
+          "evidence": []
+        }
+      ]
+    },
+    {
+      "id": "FV-004",
+      "title": "Platform keychain persistence",
+      "criterion_ids": [
+        "AC-003"
+      ],
+      "procedure": [
+        "Attempt to load the preference through an operating-system keychain."
+      ],
+      "expected": "The keychain exposes the last valid preference.",
+      "results": [
+        {
+          "status": "planned",
+          "recorded_at": "2026-07-24T12:00:00Z",
+          "reason": null,
+          "evidence": []
+        }
+      ]
+    }
+  ],
+  "created_at": "2026-07-24T12:00:00Z",
+  "updated_at": "2026-07-24T12:00:00Z"
+}

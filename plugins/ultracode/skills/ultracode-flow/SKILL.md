@@ -23,6 +23,8 @@ Read these resources completely:
 - `../ultracode/references/control-and-status.md`
 
 Read `../ultracode/references/swarm-protocol.md` when delegated jobs, findings, or waves exist.
+Read `../ultracode/references/feature-verification.md` when a durable feature verification plan is
+active or in scope.
 
 ## Reconstruct current truth
 
@@ -79,6 +81,12 @@ Start with:
 Then render every active or blocked ticket using the shared command interface. Summarize recently
 completed tickets in one line each. End with decisions required, if any, and the next overall
 action.
+
+When a feature verification plan is active, also show its path and freshness, derived outcome,
+counts by latest `planned`, `passed`, `failed`, `not-run`, and `not-applicable` status, current or
+next scenario, blocker, and next verification action. Do not treat `not-applicable` as passed
+criterion coverage, do not hide incomplete or inconsistent evidence, and do not modify or rerun the
+plan merely to refresh Flow.
 
 Do not add a generic summary section that repeats the ticket cards. Do not invent percentages or
 ETAs. Do not dump transcripts.

@@ -1,0 +1,194 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ultracode.local/schemas/feature-verification-plan.schema.json",
+  "title": "UltraCode feature verification plan",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "plan_id",
+    "feature",
+    "objective",
+    "scope",
+    "acceptance_criteria",
+    "scenarios",
+    "created_at",
+    "updated_at"
+  ],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "plan_id": { "type": "string", "pattern": "^verify-[a-z0-9][a-z0-9-]*$" },
+    "feature": { "type": "string", "minLength": 1 },
+    "objective": { "type": "string", "minLength": 1 },
+    "scope": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "acceptance_criteria": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/criterion" }
+    },
+    "scenarios": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/scenario" }
+    },
+    "created_at": { "$ref": "#/$defs/timestamp" },
+    "updated_at": { "$ref": "#/$defs/timestamp" }
+  },
+  "$defs": {
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(?:Z|[+-][0-9]{2}:[0-9]{2})$"
+    },
+    "criterion": {
+      "type": "object",
+      "required": ["id", "statement"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^AC-[0-9]{3}$" },
+        "statement": { "type": "string", "minLength": 1 }
+      },
+      "additionalProperties": false
+    },
+    "scenario": {
+      "type": "object",
+      "required": ["id", "title", "criterion_ids", "procedure", "expected", "results"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^FV-[0-9]{3}$" },
+        "title": { "type": "string", "minLength": 1 },
+        "criterion_ids": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "type": "string", "pattern": "^AC-[0-9]{3}$" }
+        },
+        "procedure": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "expected": { "type": "string", "minLength": 1 },
+        "results": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/result" }
+        }
+      },
+      "additionalProperties": false
+    },
+    "result": {
+      "oneOf": [
+        { "$ref": "#/$defs/plannedResult" },
+        { "$ref": "#/$defs/passedResult" },
+        { "$ref": "#/$defs/failedResult" },
+        { "$ref": "#/$defs/notRunResult" },
+        { "$ref": "#/$defs/notApplicableResult" }
+      ]
+    },
+    "plannedResult": {
+      "type": "object",
+      "required": ["status", "recorded_at", "reason", "evidence"],
+      "properties": {
+        "status": { "const": "planned" },
+        "recorded_at": { "$ref": "#/$defs/timestamp" },
+        "reason": { "type": "null" },
+        "evidence": { "type": "array", "maxItems": 0 }
+      },
+      "additionalProperties": false
+    },
+    "passedResult": {
+      "type": "object",
+      "required": ["status", "recorded_at", "reason", "evidence"],
+      "properties": {
+        "status": { "const": "passed" },
+        "recorded_at": { "$ref": "#/$defs/timestamp" },
+        "reason": { "type": "null" },
+        "evidence": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/supportingEvidence" }
+        }
+      },
+      "additionalProperties": false
+    },
+    "failedResult": {
+      "type": "object",
+      "required": ["status", "recorded_at", "reason", "evidence"],
+      "properties": {
+        "status": { "const": "failed" },
+        "recorded_at": { "$ref": "#/$defs/timestamp" },
+        "reason": { "type": "null" },
+        "evidence": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/contradictingEvidence" }
+        }
+      },
+      "additionalProperties": false
+    },
+    "notRunResult": {
+      "type": "object",
+      "required": ["status", "recorded_at", "reason", "evidence"],
+      "properties": {
+        "status": { "const": "not-run" },
+        "recorded_at": { "$ref": "#/$defs/timestamp" },
+        "reason": { "type": "string", "minLength": 1 },
+        "evidence": { "type": "array", "maxItems": 0 }
+      },
+      "additionalProperties": false
+    },
+    "notApplicableResult": {
+      "type": "object",
+      "required": ["status", "recorded_at", "reason", "evidence"],
+      "properties": {
+        "status": { "const": "not-applicable" },
+        "recorded_at": { "$ref": "#/$defs/timestamp" },
+        "reason": { "type": "string", "minLength": 1 },
+        "evidence": { "type": "array", "maxItems": 0 }
+      },
+      "additionalProperties": false
+    },
+    "evidenceBase": {
+      "type": "object",
+      "required": ["kind", "source", "observed", "outcome", "captured_at"],
+      "properties": {
+        "kind": {
+          "type": "string",
+          "enum": ["command", "assertion", "observation", "artifact", "manual"]
+        },
+        "source": { "type": "string", "minLength": 1 },
+        "observed": { "type": "string", "minLength": 1 },
+        "outcome": {
+          "type": "string",
+          "enum": ["supports", "contradicts"]
+        },
+        "captured_at": { "$ref": "#/$defs/timestamp" }
+      },
+      "additionalProperties": false
+    },
+    "supportingEvidence": {
+      "allOf": [
+        { "$ref": "#/$defs/evidenceBase" },
+        {
+          "type": "object",
+          "required": ["outcome"],
+          "properties": { "outcome": { "const": "supports" } }
+        }
+      ]
+    },
+    "contradictingEvidence": {
+      "allOf": [
+        { "$ref": "#/$defs/evidenceBase" },
+        {
+          "type": "object",
+          "required": ["outcome"],
+          "properties": { "outcome": { "const": "contradicts" } }
+        }
+      ]
+    }
+  },
+  "additionalProperties": false
+}

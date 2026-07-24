@@ -22,6 +22,13 @@ COMMAND_GUIDE_PATH = (
     PLUGIN_ROOT / "skills" / "ultracode" / "references" / "command-guide.md"
 )
 HELP_METADATA_PATH = PLUGIN_ROOT / "skills" / "ultracode-help" / "agents" / "openai.yaml"
+FEATURE_SCHEMA_PATH = (
+    PLUGIN_ROOT
+    / "skills"
+    / "ultracode"
+    / "references"
+    / "feature-verification-plan.schema.json"
+)
 EXPECTED_REPOSITORY = "https://github.com/emanueledenaro/ultracode"
 REQUIRED_DOCS = (
     "README.md",
@@ -34,6 +41,7 @@ REQUIRED_DOCS = (
 REQUIRED_SKILLS = (
     "ultracode",
     "ultracode-help",
+    "ultracode-verify",
     "ultracode-init",
     "ultracode-edit",
     "ultracode-flow",
@@ -49,10 +57,12 @@ FLOW_REQUIRED_TEXT = (
     "Completion criterion",
     "$ultracode-flow full",
     "$ultracode-flow agents",
+    "../ultracode/references/feature-verification.md",
+    "`planned`, `passed`, `failed`, `not-run`, and `not-applicable`",
 )
 HELP_REQUIRED_ORDER = (
     "1. **Scelta rapida:**",
-    "2. **Sei comandi:**",
+    "2. **Sette comandi:**",
     "3. **Progetto non configurato:**",
     "4. **Modelli ed effort:**",
     "5. **Ticket e agenti:**",
@@ -61,7 +71,7 @@ HELP_REQUIRED_ORDER = (
 HELP_GUIDE_SECTIONS = (
     "## Response contract",
     "## Quick choice",
-    "## The six commands",
+    "## The seven commands",
     "## Unconfigured projects",
     "## Models and reasoning effort",
     "## Tickets and agents",
@@ -70,6 +80,7 @@ HELP_GUIDE_SECTIONS = (
 HELP_COMMANDS = (
     ("ultracode-help", "Help"),
     ("ultracode", "UltraCode"),
+    ("ultracode-verify", "Verify"),
     ("ultracode-init", "Init"),
     ("ultracode-edit", "Edit"),
     ("ultracode-flow", "Flow"),
@@ -109,7 +120,7 @@ HELP_METADATA_PROMPT_REQUIREMENTS = (
     "comparison tables",
     "H3 command sections",
     "inline blockquote examples",
-    "If I provide a command, models, flow, or examples, answer only that topic",
+    "If I provide a command, models, flow, verify, or examples, answer only that topic",
     "compact wording only when I explicitly say breve or sintetico",
 )
 HELP_MANIFEST_PROMPT_REQUIREMENTS = (
@@ -121,12 +132,14 @@ HELP_MANIFEST_PROMPT_REQUIREMENTS = (
     "comparison tables",
     "H3 command sections",
     "inline blockquote examples",
-    "focus on one command, models, flow, or examples only when named",
+    "focus on one command, models, flow, verify, or examples only when named",
     "compact wording only for an explicit breve or sintetico request",
 )
 COMMAND_REQUIRED_TEXT = {
     "ultracode": (
         "references/command-interface.md",
+        "references/feature-verification.md",
+        "$ultracode-verify",
         "Explain each active ticket",
         "Handle an uninitialized project",
     ),
@@ -151,6 +164,15 @@ COMMAND_REQUIRED_TEXT = {
         "Do not collect examples into a repeated section at the end",
         "Do not finish the response until every semantic item required by the selected mode is covered.",
     ),
+    "ultracode-verify": (
+        "../ultracode/references/feature-verification.md",
+        "../ultracode/references/feature-verification-plan.schema.json",
+        "append-only",
+        "`planned`, `passed`, `failed`, `not-run`, and `not-applicable`",
+        "Fail closed",
+        "Do not automatically fix product code",
+        "../ultracode/references/command-interface.md",
+    ),
     "ultracode-init": (
         "../ultracode/references/command-interface.md",
         "Explain the proposal in plain language",
@@ -168,6 +190,8 @@ COMMAND_REQUIRED_TEXT = {
     ),
     "ultracode-status": (
         "../ultracode/references/command-interface.md",
+        "../ultracode/references/feature-verification.md",
+        "`planned`, `passed`, `failed`, `not-run`, and `not-applicable`",
         "Status is the detailed diagnostic view",
     ),
 }
@@ -244,7 +268,7 @@ def validate_help_guide(text: str) -> None:
         fail("command guide must keep inline examples with commands, not in a repeated footer")
 
     quick_start = text.index("## Quick choice")
-    quick_end = text.index("## The six commands", quick_start)
+    quick_end = text.index("## The seven commands", quick_start)
     quick_section = text[quick_start:quick_end]
     if "| Need | Use |" not in quick_section or "| --- | --- |" not in quick_section:
         fail("command guide Quick choice must use a two-column Markdown table")
@@ -252,14 +276,14 @@ def validate_help_guide(text: str) -> None:
         if f"`${command}`" not in quick_section:
             fail(f"command guide Quick choice table is missing ${command}")
 
-    commands_start = text.index("## The six commands")
+    commands_start = text.index("## The seven commands")
     commands_end = text.index("## Unconfigured projects", commands_start)
     command_headings = [f"### `${command}`" for command, _ in HELP_COMMANDS]
     command_positions = [
         text.find(heading, commands_start, commands_end) for heading in command_headings
     ]
     if any(position < 0 for position in command_positions):
-        fail("command guide must contain all six command sections")
+        fail("command guide must contain all seven command sections")
     if command_positions != sorted(command_positions):
         fail("command guide command sections are out of order")
     for index, (command, _) in enumerate(HELP_COMMANDS):
@@ -314,6 +338,185 @@ def validate_help_prompt(prompt: str, requirements: tuple[str, ...], label: str)
     for required in requirements:
         if required not in normalized:
             fail(f"{label} is missing Help mode semantics: {required}")
+
+
+def validate_feature_schema(schema: dict[str, Any]) -> None:
+    def exact_integer(value: Any, expected: int) -> bool:
+        return type(value) is int and value == expected
+
+    def exact_string_set(value: Any, expected: set[str]) -> bool:
+        return (
+            isinstance(value, list)
+            and len(value) == len(expected)
+            and all(isinstance(item, str) for item in value)
+            and set(value) == expected
+        )
+
+    def exact_object(value: Any, keys: set[str]) -> bool:
+        return isinstance(value, dict) and set(value) == keys
+
+    root_fields = {
+        "schema_version",
+        "plan_id",
+        "feature",
+        "objective",
+        "scope",
+        "acceptance_criteria",
+        "scenarios",
+        "created_at",
+        "updated_at",
+    }
+    if (
+        schema.get("type") != "object"
+        or schema.get("additionalProperties") is not False
+        or not exact_string_set(schema.get("required"), root_fields)
+        or not exact_object(schema.get("properties"), root_fields)
+    ):
+        fail("feature verification schema must close and require the exact plan root")
+    definitions = schema.get("$defs")
+    if not isinstance(definitions, dict):
+        fail("feature verification schema must define closed result variants")
+    result_definition = definitions.get("result")
+    if not exact_object(result_definition, {"oneOf"}):
+        fail("feature verification result union must contain only oneOf")
+    result_refs = result_definition["oneOf"]
+    expected_refs = [
+        "#/$defs/plannedResult",
+        "#/$defs/passedResult",
+        "#/$defs/failedResult",
+        "#/$defs/notRunResult",
+        "#/$defs/notApplicableResult",
+    ]
+    if (
+        not isinstance(result_refs, list)
+        or len(result_refs) != len(expected_refs)
+        or any(not exact_object(item, {"$ref"}) for item in result_refs)
+        or [item["$ref"] for item in result_refs] != expected_refs
+    ):
+        fail("feature verification schema must expose exactly five result variants")
+    expectations = {
+        "plannedResult": ("planned", "empty", "null"),
+        "passedResult": ("passed", "supporting", "null"),
+        "failedResult": ("failed", "contradicting", "null"),
+        "notRunResult": ("not-run", "empty", "reason"),
+        "notApplicableResult": ("not-applicable", "empty", "reason"),
+    }
+    for name, (status, evidence_mode, reason_mode) in expectations.items():
+        definition = definitions.get(name)
+        result_fields = {"status", "recorded_at", "reason", "evidence"}
+        if not exact_object(
+            definition, {"type", "required", "properties", "additionalProperties"}
+        ):
+            fail(f"feature verification schema result contract is invalid for {status}")
+        properties = definition["properties"]
+        if (
+            definition.get("type") != "object"
+            or definition.get("additionalProperties") is not False
+            or not exact_string_set(definition.get("required"), result_fields)
+            or not exact_object(properties, result_fields)
+            or not exact_object(properties.get("status"), {"const"})
+            or properties["status"].get("const") != status
+            or not exact_object(properties.get("recorded_at"), {"$ref"})
+            or properties["recorded_at"].get("$ref") != "#/$defs/timestamp"
+        ):
+            fail(f"feature verification schema result contract is invalid for {status}")
+        evidence = properties.get("evidence", {})
+        reason = properties.get("reason", {})
+        if evidence_mode == "empty":
+            if (
+                not exact_object(evidence, {"type", "maxItems"})
+                or evidence.get("type") != "array"
+                or not exact_integer(evidence.get("maxItems"), 0)
+            ):
+                fail(f"feature verification status {status} must forbid execution evidence")
+        else:
+            expected_ref = (
+                "#/$defs/supportingEvidence"
+                if evidence_mode == "supporting"
+                else "#/$defs/contradictingEvidence"
+            )
+            if (
+                not exact_object(evidence, {"type", "minItems", "items"})
+                or evidence.get("type") != "array"
+                or not exact_integer(evidence.get("minItems"), 1)
+                or not exact_object(evidence.get("items"), {"$ref"})
+                or evidence["items"].get("$ref") != expected_ref
+            ):
+                fail(f"feature verification status {status} must require matching evidence")
+        if reason_mode == "null":
+            if not exact_object(reason, {"type"}) or reason.get("type") != "null":
+                fail(f"feature verification status {status} must use a null reason")
+        elif (
+            not exact_object(reason, {"type", "minLength"})
+            or reason.get("type") != "string"
+            or not exact_integer(reason.get("minLength"), 1)
+        ):
+            fail(f"feature verification status {status} must require a reason")
+
+    evidence_fields = {"kind", "source", "observed", "outcome", "captured_at"}
+    evidence_base = definitions.get("evidenceBase")
+    if (
+        not exact_object(
+            evidence_base, {"type", "required", "properties", "additionalProperties"}
+        )
+        or evidence_base.get("type") != "object"
+        or evidence_base.get("additionalProperties") is not False
+        or not exact_string_set(evidence_base.get("required"), evidence_fields)
+        or not exact_object(evidence_base.get("properties"), evidence_fields)
+    ):
+        fail("feature verification evidence must close and require the exact fields")
+    evidence_properties = evidence_base["properties"]
+    expected_kinds = {"command", "assertion", "observation", "artifact", "manual"}
+    if (
+        not exact_object(evidence_properties.get("kind"), {"type", "enum"})
+        or evidence_properties["kind"].get("type") != "string"
+        or not exact_string_set(evidence_properties["kind"].get("enum"), expected_kinds)
+    ):
+        fail("feature verification evidence kinds must be exact")
+    for field in ("source", "observed"):
+        definition = evidence_properties.get(field)
+        if (
+            not exact_object(definition, {"type", "minLength"})
+            or definition.get("type") != "string"
+            or not exact_integer(definition.get("minLength"), 1)
+        ):
+            fail(f"feature verification evidence {field} must be a non-empty string")
+    expected_outcomes = {"supports", "contradicts"}
+    if (
+        not exact_object(evidence_properties.get("outcome"), {"type", "enum"})
+        or evidence_properties["outcome"].get("type") != "string"
+        or not exact_string_set(
+            evidence_properties["outcome"].get("enum"), expected_outcomes
+        )
+    ):
+        fail("feature verification evidence outcomes must be exact")
+    if (
+        not exact_object(evidence_properties.get("captured_at"), {"$ref"})
+        or evidence_properties["captured_at"].get("$ref") != "#/$defs/timestamp"
+    ):
+        fail("feature verification evidence captured_at must use the canonical timestamp")
+
+    for name, outcome in (
+        ("supportingEvidence", "supports"),
+        ("contradictingEvidence", "contradicts"),
+    ):
+        wrapper = definitions.get(name)
+        if not exact_object(wrapper, {"allOf"}):
+            fail(f"feature verification {name} must contain only allOf")
+        branches = wrapper["allOf"]
+        if (
+            not isinstance(branches, list)
+            or len(branches) != 2
+            or not exact_object(branches[0], {"$ref"})
+            or branches[0].get("$ref") != "#/$defs/evidenceBase"
+            or not exact_object(branches[1], {"type", "required", "properties"})
+            or branches[1].get("type") != "object"
+            or not exact_string_set(branches[1].get("required"), {"outcome"})
+            or not exact_object(branches[1].get("properties"), {"outcome"})
+            or not exact_object(branches[1]["properties"].get("outcome"), {"const"})
+            or branches[1]["properties"]["outcome"].get("const") != outcome
+        ):
+            fail(f"feature verification {name} must pin outcome {outcome}")
 
 
 def parse_help_metadata_prompt(text: str) -> str:
@@ -416,6 +619,9 @@ def validate_repository() -> None:
 
     if not COMMAND_INTERFACE_PATH.is_file() or COMMAND_INTERFACE_PATH.is_symlink():
         fail("missing shared command-interface.md contract")
+    if not FEATURE_SCHEMA_PATH.is_file() or FEATURE_SCHEMA_PATH.is_symlink():
+        fail("missing regular feature-verification-plan.schema.json")
+    validate_feature_schema(load_object(FEATURE_SCHEMA_PATH))
     flow_text = (
         PLUGIN_ROOT / "skills" / "ultracode-flow" / "SKILL.md"
     ).read_text(encoding="utf-8")

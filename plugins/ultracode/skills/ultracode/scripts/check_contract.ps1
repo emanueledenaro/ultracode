@@ -426,7 +426,7 @@ $skillsRoot = Split-Path -Parent $coreRoot
 $pluginRoot = Split-Path -Parent $skillsRoot
 $referenceRoot = Join-Path $coreRoot 'references'
 $manifestPath = Join-Path $pluginRoot '.codex-plugin\plugin.json'
-$skillNames = @('ultracode','ultracode-help','ultracode-init','ultracode-edit','ultracode-flow','ultracode-status')
+$skillNames = @('ultracode','ultracode-help','ultracode-verify','ultracode-init','ultracode-edit','ultracode-flow','ultracode-status')
 $validStatuses = @('PASSED','FAILED','DRIFT','PENDING','NOT_AVAILABLE')
 
 if ($PrintPayloadHash) {
@@ -475,7 +475,9 @@ $requiredCoreClauses = @(
     'Treat staging, committing, pushing, deploying, publishing',
     'Handle an uninitialized project',
     'objective-driven',
-    'reasoning-routing.md'
+    'reasoning-routing.md',
+    'feature-verification.md',
+    '$ultracode-verify'
 )
 foreach ($clause in $requiredCoreClauses) {
     if (-not $coreText.Contains($clause)) { Stop-ContractCheck "missing core contract clause: $clause" }
@@ -490,6 +492,7 @@ $references = @(
     'command-interface.md',
     'command-guide.md',
     'reasoning-routing.md',
+    'feature-verification.md',
     'behavioral-contract.md',
     'eval-prompts.md'
 )
@@ -503,6 +506,7 @@ $resources = @(
     'references\project-config.schema.json',
     'references\managed-manifest.schema.json',
     'references\evaluation-evidence.schema.json',
+    'references\feature-verification-plan.schema.json',
     'references\evaluation-traces.json',
     'references\evaluation-evidence.json',
     'scripts\project_doctor.py',
@@ -521,7 +525,7 @@ foreach ($relative in $resources) {
 if (-not $SkipLiveCorpus) {
     Invoke-LivePowerShellCorpus $coreRoot
 }
-foreach ($schemaName in @('project-config.schema.json','managed-manifest.schema.json','evaluation-evidence.schema.json')) {
+foreach ($schemaName in @('project-config.schema.json','managed-manifest.schema.json','evaluation-evidence.schema.json','feature-verification-plan.schema.json')) {
     [void](Read-JsonFile (Join-Path $referenceRoot $schemaName) $schemaName)
 }
 $projectSchema = Read-JsonFile (Join-Path $referenceRoot 'project-config.schema.json') 'project config schema'
@@ -562,10 +566,191 @@ if (-not (Test-ContractExactString $rulePathPattern '^(?!/)(?![A-Za-z]:)(?!~)(?!
     Stop-ContractCheck 'project config schema must enforce portable relative rule-path selectors'
 }
 
+$featureSchema = Read-JsonFile (Join-Path $referenceRoot 'feature-verification-plan.schema.json') 'feature verification plan schema'
+$featureRootFields = @(
+    'schema_version','plan_id','feature','objective','scope','acceptance_criteria','scenarios',
+    'created_at','updated_at'
+)
+if (
+    -not (Test-ContractExactString (Get-ExactPropertyValue $featureSchema 'type' 'feature verification schema') 'object') -or
+    -not (Test-ContractExactBoolean (Get-ExactPropertyValue $featureSchema 'additionalProperties' 'feature verification schema') $false)
+) {
+    Stop-ContractCheck 'feature verification schema must close the plan root'
+}
+Assert-ExactSet @(Get-ExactPropertyValue $featureSchema 'required' 'feature verification schema') $featureRootFields 'feature verification schema required fields'
+$featureProperties = Get-ExactPropertyValue $featureSchema 'properties' 'feature verification schema'
+Assert-ExactSet (Get-PropertyNames $featureProperties) $featureRootFields 'feature verification schema property fields'
+$featureDefinitions = Get-ExactPropertyValue $featureSchema '$defs' 'feature verification schema'
+$resultDefinition = Get-ExactPropertyValue $featureDefinitions 'result' 'feature verification schema.$defs'
+Assert-ExactProperties $resultDefinition @('oneOf') 'feature verification schema.$defs.result'
+$resultVariantsValue = Get-ExactPropertyValue $resultDefinition 'oneOf' 'feature verification schema.$defs.result'
+if ($resultVariantsValue -isnot [System.Array]) {
+    Stop-ContractCheck 'feature verification schema result oneOf must be an array'
+}
+$resultVariants = @($resultVariantsValue)
+$expectedResultRefs = @(
+    '#/$defs/plannedResult',
+    '#/$defs/passedResult',
+    '#/$defs/failedResult',
+    '#/$defs/notRunResult',
+    '#/$defs/notApplicableResult'
+)
+if ($resultVariants.Count -ne $expectedResultRefs.Count) {
+    Stop-ContractCheck 'feature verification schema must expose exactly five result variants'
+}
+for ($index = 0; $index -lt $expectedResultRefs.Count; $index++) {
+    Assert-ExactProperties $resultVariants[$index] @('$ref') "feature verification result variant $index"
+    if (-not (Test-ContractExactString (Get-ExactPropertyValue $resultVariants[$index] '$ref' "feature verification result variant $index") $expectedResultRefs[$index])) {
+        Stop-ContractCheck 'feature verification schema result variants are missing or out of order'
+    }
+}
+$featureResultContracts = @(
+    [pscustomobject]@{ Name = 'plannedResult'; Status = 'planned'; Evidence = 'empty'; Reason = 'null' },
+    [pscustomobject]@{ Name = 'passedResult'; Status = 'passed'; Evidence = 'supporting'; Reason = 'null' },
+    [pscustomobject]@{ Name = 'failedResult'; Status = 'failed'; Evidence = 'contradicting'; Reason = 'null' },
+    [pscustomobject]@{ Name = 'notRunResult'; Status = 'not-run'; Evidence = 'empty'; Reason = 'required' },
+    [pscustomobject]@{ Name = 'notApplicableResult'; Status = 'not-applicable'; Evidence = 'empty'; Reason = 'required' }
+)
+foreach ($contract in $featureResultContracts) {
+    $definition = Get-ExactPropertyValue $featureDefinitions $contract.Name 'feature verification schema.$defs'
+    Assert-ExactProperties $definition @('type','required','properties','additionalProperties') "feature verification $($contract.Status)"
+    if (
+        -not (Test-ContractExactString (Get-ExactPropertyValue $definition 'type' "feature verification $($contract.Status)") 'object') -or
+        -not (Test-ContractExactBoolean (Get-ExactPropertyValue $definition 'additionalProperties' "feature verification $($contract.Status)") $false)
+    ) {
+        Stop-ContractCheck "feature verification status $($contract.Status) must reject unknown fields"
+    }
+    Assert-ExactSet @(Get-ExactPropertyValue $definition 'required' "feature verification $($contract.Status)") @('status','recorded_at','reason','evidence') "feature verification $($contract.Status) required fields"
+    $properties = Get-ExactPropertyValue $definition 'properties' "feature verification $($contract.Status)"
+    Assert-ExactProperties $properties @('status','recorded_at','reason','evidence') "feature verification $($contract.Status) properties"
+    $statusDefinition = Get-ExactPropertyValue $properties 'status' "feature verification $($contract.Status) properties"
+    Assert-ExactProperties $statusDefinition @('const') "feature verification $($contract.Status) status"
+    if (-not (Test-ContractExactString (Get-ExactPropertyValue $statusDefinition 'const' "feature verification $($contract.Status) status") $contract.Status)) {
+        Stop-ContractCheck "feature verification result contract is invalid for $($contract.Status)"
+    }
+    $recordedAtDefinition = Get-ExactPropertyValue $properties 'recorded_at' "feature verification $($contract.Status) properties"
+    Assert-ExactProperties $recordedAtDefinition @('$ref') "feature verification $($contract.Status) recorded_at"
+    if (-not (Test-ContractExactString (Get-ExactPropertyValue $recordedAtDefinition '$ref' "feature verification $($contract.Status) recorded_at") '#/$defs/timestamp')) {
+        Stop-ContractCheck "feature verification status $($contract.Status) must use the canonical timestamp"
+    }
+    $evidenceDefinition = Get-ExactPropertyValue $properties 'evidence' "feature verification $($contract.Status) properties"
+    if (Test-ContractExactString $contract.Evidence 'empty') {
+        Assert-ExactProperties $evidenceDefinition @('type','maxItems') "feature verification $($contract.Status) evidence"
+        if (
+            -not (Test-ContractExactString (Get-ExactPropertyValue $evidenceDefinition 'type' "feature verification $($contract.Status) evidence") 'array') -or
+            -not (Test-ContractIntegerEqual (Get-ExactPropertyValue $evidenceDefinition 'maxItems' "feature verification $($contract.Status) evidence") 0)
+        ) {
+            Stop-ContractCheck "feature verification status $($contract.Status) must forbid execution evidence"
+        }
+    }
+    else {
+        $expectedEvidenceRef = if (Test-ContractExactString $contract.Evidence 'supporting') {
+            '#/$defs/supportingEvidence'
+        } else {
+            '#/$defs/contradictingEvidence'
+        }
+        Assert-ExactProperties $evidenceDefinition @('type','minItems','items') "feature verification $($contract.Status) evidence"
+        $evidenceItems = Get-ExactPropertyValue $evidenceDefinition 'items' "feature verification $($contract.Status) evidence"
+        Assert-ExactProperties $evidenceItems @('$ref') "feature verification $($contract.Status) evidence items"
+        if (
+            -not (Test-ContractExactString (Get-ExactPropertyValue $evidenceDefinition 'type' "feature verification $($contract.Status) evidence") 'array') -or
+            -not (Test-ContractIntegerEqual (Get-ExactPropertyValue $evidenceDefinition 'minItems' "feature verification $($contract.Status) evidence") 1) -or
+            -not (Test-ContractExactString (Get-ExactPropertyValue $evidenceItems '$ref' "feature verification $($contract.Status) evidence") $expectedEvidenceRef)
+        ) {
+            Stop-ContractCheck "feature verification status $($contract.Status) must require matching evidence"
+        }
+    }
+    $reasonDefinition = Get-ExactPropertyValue $properties 'reason' "feature verification $($contract.Status) properties"
+    if (Test-ContractExactString $contract.Reason 'null') {
+        Assert-ExactProperties $reasonDefinition @('type') "feature verification $($contract.Status) reason"
+        if (-not (Test-ContractExactString (Get-ExactPropertyValue $reasonDefinition 'type' "feature verification $($contract.Status) reason") 'null')) {
+            Stop-ContractCheck "feature verification status $($contract.Status) must use a null reason"
+        }
+    }
+    else {
+        Assert-ExactProperties $reasonDefinition @('type','minLength') "feature verification $($contract.Status) reason"
+        if (
+            -not (Test-ContractExactString (Get-ExactPropertyValue $reasonDefinition 'type' "feature verification $($contract.Status) reason") 'string') -or
+            -not (Test-ContractIntegerEqual (Get-ExactPropertyValue $reasonDefinition 'minLength' "feature verification $($contract.Status) reason") 1)
+        ) {
+            Stop-ContractCheck "feature verification status $($contract.Status) must require a reason"
+        }
+    }
+}
+$evidenceBase = Get-ExactPropertyValue $featureDefinitions 'evidenceBase' 'feature verification schema.$defs'
+Assert-ExactProperties $evidenceBase @('type','required','properties','additionalProperties') 'feature verification evidence'
+if (
+    -not (Test-ContractExactString (Get-ExactPropertyValue $evidenceBase 'type' 'feature verification evidence') 'object') -or
+    -not (Test-ContractExactBoolean (Get-ExactPropertyValue $evidenceBase 'additionalProperties' 'feature verification evidence') $false)
+) {
+    Stop-ContractCheck 'feature verification evidence must be a closed object'
+}
+Assert-ExactSet @(Get-ExactPropertyValue $evidenceBase 'required' 'feature verification evidence') @('kind','source','observed','outcome','captured_at') 'feature verification evidence required fields'
+$evidenceBaseProperties = Get-ExactPropertyValue $evidenceBase 'properties' 'feature verification evidence'
+Assert-ExactProperties $evidenceBaseProperties @('kind','source','observed','outcome','captured_at') 'feature verification evidence properties'
+$evidenceOutcome = Get-ExactPropertyValue $evidenceBaseProperties 'outcome' 'feature verification evidence properties'
+$evidenceKind = Get-ExactPropertyValue $evidenceBaseProperties 'kind' 'feature verification evidence properties'
+Assert-ExactProperties $evidenceOutcome @('type','enum') 'feature verification evidence outcome'
+Assert-ExactProperties $evidenceKind @('type','enum') 'feature verification evidence kind'
+if (
+    -not (Test-ContractExactString (Get-ExactPropertyValue $evidenceOutcome 'type' 'feature verification evidence outcome') 'string') -or
+    -not (Test-ContractExactString (Get-ExactPropertyValue $evidenceKind 'type' 'feature verification evidence kind') 'string')
+) {
+    Stop-ContractCheck 'feature verification evidence outcome and kind must be strings'
+}
+Assert-ExactSet @(Get-ExactPropertyValue $evidenceOutcome 'enum' 'feature verification evidence outcome') @('supports','contradicts') 'feature verification evidence outcomes'
+Assert-ExactSet @(Get-ExactPropertyValue $evidenceKind 'enum' 'feature verification evidence kind') @('command','assertion','observation','artifact','manual') 'feature verification evidence kinds'
+foreach ($field in @('source','observed')) {
+    $fieldDefinition = Get-ExactPropertyValue $evidenceBaseProperties $field 'feature verification evidence properties'
+    Assert-ExactProperties $fieldDefinition @('type','minLength') "feature verification evidence $field"
+    if (
+        -not (Test-ContractExactString (Get-ExactPropertyValue $fieldDefinition 'type' "feature verification evidence $field") 'string') -or
+        -not (Test-ContractIntegerEqual (Get-ExactPropertyValue $fieldDefinition 'minLength' "feature verification evidence $field") 1)
+    ) {
+        Stop-ContractCheck "feature verification evidence $field must be a non-empty string"
+    }
+}
+$capturedAtDefinition = Get-ExactPropertyValue $evidenceBaseProperties 'captured_at' 'feature verification evidence properties'
+Assert-ExactProperties $capturedAtDefinition @('$ref') 'feature verification evidence captured_at'
+if (-not (Test-ContractExactString (Get-ExactPropertyValue $capturedAtDefinition '$ref' 'feature verification evidence captured_at') '#/$defs/timestamp')) {
+    Stop-ContractCheck 'feature verification evidence captured_at must use the canonical timestamp'
+}
+foreach ($wrapperContract in @(
+    [pscustomobject]@{ Name = 'supportingEvidence'; Outcome = 'supports' },
+    [pscustomobject]@{ Name = 'contradictingEvidence'; Outcome = 'contradicts' }
+)) {
+    $wrapper = Get-ExactPropertyValue $featureDefinitions $wrapperContract.Name 'feature verification schema.$defs'
+    Assert-ExactProperties $wrapper @('allOf') "feature verification $($wrapperContract.Name)"
+    $branchesValue = Get-ExactPropertyValue $wrapper 'allOf' "feature verification $($wrapperContract.Name)"
+    if ($branchesValue -isnot [System.Array]) {
+        Stop-ContractCheck "feature verification $($wrapperContract.Name) allOf must be an array"
+    }
+    $branches = @($branchesValue)
+    if ($branches.Count -ne 2) {
+        Stop-ContractCheck "feature verification $($wrapperContract.Name) must have exactly two allOf branches"
+    }
+    Assert-ExactProperties $branches[0] @('$ref') "feature verification $($wrapperContract.Name) base branch"
+    if (-not (Test-ContractExactString (Get-ExactPropertyValue $branches[0] '$ref' "feature verification $($wrapperContract.Name) base branch") '#/$defs/evidenceBase')) {
+        Stop-ContractCheck "feature verification $($wrapperContract.Name) must extend evidenceBase"
+    }
+    Assert-ExactProperties $branches[1] @('type','required','properties') "feature verification $($wrapperContract.Name) outcome branch"
+    if (-not (Test-ContractExactString (Get-ExactPropertyValue $branches[1] 'type' "feature verification $($wrapperContract.Name) outcome branch") 'object')) {
+        Stop-ContractCheck "feature verification $($wrapperContract.Name) outcome branch must be an object"
+    }
+    Assert-ExactSet @(Get-ExactPropertyValue $branches[1] 'required' "feature verification $($wrapperContract.Name) outcome branch") @('outcome') "feature verification $($wrapperContract.Name) outcome required fields"
+    $wrapperProperties = Get-ExactPropertyValue $branches[1] 'properties' "feature verification $($wrapperContract.Name) outcome branch"
+    Assert-ExactProperties $wrapperProperties @('outcome') "feature verification $($wrapperContract.Name) outcome properties"
+    $wrapperOutcome = Get-ExactPropertyValue $wrapperProperties 'outcome' "feature verification $($wrapperContract.Name) outcome properties"
+    Assert-ExactProperties $wrapperOutcome @('const') "feature verification $($wrapperContract.Name) outcome"
+    if (-not (Test-ContractExactString (Get-ExactPropertyValue $wrapperOutcome 'const' "feature verification $($wrapperContract.Name) outcome") $wrapperContract.Outcome)) {
+        Stop-ContractCheck "feature verification $($wrapperContract.Name) must pin outcome $($wrapperContract.Outcome)"
+    }
+}
+
 $helpText = Get-Content -Raw -Encoding UTF8 -LiteralPath (Join-Path $skillsRoot 'ultracode-help\SKILL.md')
 $helpRequiredOrder = @(
     '1. **Scelta rapida:**',
-    '2. **Sei comandi:**',
+    '2. **Sette comandi:**',
     '3. **Progetto non configurato:**',
     '4. **Modelli ed effort:**',
     '5. **Ticket e agenti:**',
@@ -606,7 +791,7 @@ $commandGuideText = Get-Content -Raw -Encoding UTF8 -LiteralPath (Join-Path $ref
 $helpGuideSections = @(
     '## Response contract',
     '## Quick choice',
-    '## The six commands',
+    '## The seven commands',
     '## Unconfigured projects',
     '## Models and reasoning effort',
     '## Tickets and agents',
@@ -628,12 +813,12 @@ if ($commandGuideText.Contains('## Copyable examples') -or $commandGuideText.Con
     Stop-ContractCheck 'command guide must keep inline examples with commands, not in a repeated footer'
 }
 $quickStart = $commandGuideText.IndexOf('## Quick choice', [StringComparison]::Ordinal)
-$quickEnd = $commandGuideText.IndexOf('## The six commands', $quickStart, [StringComparison]::Ordinal)
+$quickEnd = $commandGuideText.IndexOf('## The seven commands', $quickStart, [StringComparison]::Ordinal)
 $quickSection = $commandGuideText.Substring($quickStart, $quickEnd - $quickStart)
 if (-not $quickSection.Contains('| Need | Use |') -or -not $quickSection.Contains('| --- | --- |')) {
     Stop-ContractCheck 'command guide Quick choice must use a two-column Markdown table'
 }
-$helpCommands = @('ultracode-help','ultracode','ultracode-init','ultracode-edit','ultracode-flow','ultracode-status')
+$helpCommands = @('ultracode-help','ultracode','ultracode-verify','ultracode-init','ultracode-edit','ultracode-flow','ultracode-status')
 foreach ($command in $helpCommands) {
     if (-not $quickSection.Contains('$' + $command)) {
         Stop-ContractCheck "command guide Quick choice table is missing `$$command"
@@ -645,7 +830,7 @@ $helpFieldMarkers = @(
     '**Can it write?:**',
     '**When confirmation is required:**'
 )
-$commandsStart = $commandGuideText.IndexOf('## The six commands', [StringComparison]::Ordinal)
+$commandsStart = $commandGuideText.IndexOf('## The seven commands', [StringComparison]::Ordinal)
 $commandsEnd = $commandGuideText.IndexOf('## Unconfigured projects', $commandsStart, [StringComparison]::Ordinal)
 $commandPositions = [Collections.Generic.List[int]]::new()
 foreach ($command in $helpCommands) {
@@ -760,13 +945,26 @@ $helpMetadataRequirements = @(
     'comparison tables',
     'H3 command sections',
     'inline blockquote examples',
-    'If I provide a command, models, flow, or examples, answer only that topic',
+    'If I provide a command, models, flow, verify, or examples, answer only that topic',
     'compact wording only when I explicitly say breve or sintetico'
 )
 foreach ($required in $helpMetadataRequirements) {
     if (-not $normalizedHelpMetadata.Contains($required)) {
         Stop-ContractCheck "ultracode-help agents/openai.yaml is missing Help mode semantics: $required"
     }
+}
+$verifyText = Get-Content -Raw -Encoding UTF8 -LiteralPath (Join-Path $skillsRoot 'ultracode-verify\SKILL.md')
+foreach ($required in @(
+    '../ultracode/references/feature-verification.md',
+    '../ultracode/references/feature-verification-plan.schema.json',
+    '../ultracode/references/command-interface.md',
+    'append-only',
+    '`planned`, `passed`, `failed`, `not-run`, and `not-applicable`',
+    'Fail closed',
+    'Do not automatically fix product code',
+    'Git staging, commits, pushes, pull requests, package publishing, deployment, external'
+)) {
+    if (-not $verifyText.Contains($required)) { Stop-ContractCheck "ultracode-verify is missing: $required" }
 }
 $initText = Get-Content -Raw -Encoding UTF8 -LiteralPath (Join-Path $skillsRoot 'ultracode-init\SKILL.md')
 foreach ($required in @(
@@ -811,7 +1009,9 @@ foreach ($required in @(
     'Completion criterion',
     '$ultracode-flow full',
     '$ultracode-flow agents',
-    '../ultracode/references/command-interface.md'
+    '../ultracode/references/command-interface.md',
+    '../ultracode/references/feature-verification.md',
+    '`planned`, `passed`, `failed`, `not-run`, and `not-applicable`'
 )) {
     if (-not $flowText.Contains($required)) { Stop-ContractCheck "ultracode-flow is missing: $required" }
 }
@@ -824,12 +1024,15 @@ foreach ($required in @(
     'logical jobs versus currently live agent instances',
     'Never invent percentages',
     '../ultracode/references/command-interface.md',
-    'Status is the detailed diagnostic view'
+    'Status is the detailed diagnostic view',
+    '../ultracode/references/feature-verification.md',
+    '`planned`, `passed`, `failed`, `not-run`, and `not-applicable`'
 )) {
     if (-not $statusText.Contains($required)) { Stop-ContractCheck "ultracode-status is missing: $required" }
 }
 $helpPrecedenceSkills = @(
     [pscustomobject]@{ Name = 'ultracode'; Text = $coreText },
+    [pscustomobject]@{ Name = 'ultracode-verify'; Text = $verifyText },
     [pscustomobject]@{ Name = 'ultracode-init'; Text = $initText },
     [pscustomobject]@{ Name = 'ultracode-edit'; Text = $editText },
     [pscustomobject]@{ Name = 'ultracode-flow'; Text = $flowText },
@@ -848,7 +1051,7 @@ foreach ($skill in $helpPrecedenceSkills) {
 }
 
 $contractText = Get-Content -Raw -Encoding UTF8 -LiteralPath (Join-Path $referenceRoot 'behavioral-contract.md')
-foreach ($index in 1..38) {
+foreach ($index in 1..39) {
     $scenario = 'UC-{0:D2}' -f $index
     if (-not $contractText.Contains($scenario)) { Stop-ContractCheck "missing behavioral scenario: $scenario" }
 }
@@ -856,7 +1059,7 @@ $promptText = Get-Content -Raw -Encoding UTF8 -LiteralPath (Join-Path $reference
 $requiredPrompts = @(
     'UC-01','UC-03','UC-04','UC-06','UC-08','UC-10','UC-14','UC-18','UC-19',
     'UC-20','UC-23','UC-24','UC-25','UC-26','UC-29','UC-30','UC-31','UC-32','UC-33','UC-34','UC-35','UC-36',
-    'UC-37','UC-38'
+    'UC-37','UC-38','UC-39'
 )
 foreach ($scenario in $requiredPrompts) {
     if (-not $promptText.Contains($scenario)) { Stop-ContractCheck "missing forward-test prompt: $scenario" }
@@ -893,7 +1096,7 @@ $helpManifestPromptRequirements = @(
     'comparison tables',
     'H3 command sections',
     'inline blockquote examples',
-    'focus on one command, models, flow, or examples only when named',
+    'focus on one command, models, flow, verify, or examples only when named',
     'compact wording only for an explicit breve or sintetico request'
 )
 foreach ($required in $helpManifestPromptRequirements) {
@@ -929,9 +1132,9 @@ if (-not (Test-ContractExactString (Get-ExactPropertyValue $traceArtifactDefinit
     Stop-ContractCheck 'evaluation evidence schema must pin the trace artifact name'
 }
 $expectedSchemaCounts = ConvertTo-OrdinalDictionary ([ordered]@{
-    scenario_results = 16
+    scenario_results = 17
     fixture_results = 10
-    validation_results = 11
+    validation_results = 12
     audit_results = 1
 }) 'evaluation schema result count'
 foreach ($field in $expectedSchemaCounts.Keys) {
@@ -1067,9 +1270,10 @@ foreach ($traceId in $records.Keys) {
 }
 
 $pending = [Collections.Generic.List[string]]::new()
+$unavailableResults = [Collections.Generic.List[string]]::new()
 $referenced = [Collections.Generic.HashSet[string]]::new([StringComparer]::Ordinal)
 
-$requiredEvidenceScenarios = @('UC-01','UC-03','UC-04','UC-19','UC-23','UC-24','UC-25','UC-29','UC-30','UC-31','UC-32','UC-34','UC-35','UC-36','UC-37','UC-38')
+$requiredEvidenceScenarios = @('UC-01','UC-03','UC-04','UC-19','UC-23','UC-24','UC-25','UC-29','UC-30','UC-31','UC-32','UC-34','UC-35','UC-36','UC-37','UC-38','UC-39')
 $scenarios = ConvertTo-UniqueMap (Get-ExactPropertyValue $evidence 'scenario_results' 'evaluation evidence') 'id' 'scenario_results'
 Assert-ExactSet @($scenarios.Keys) $requiredEvidenceScenarios 'scenario_results'
 foreach ($scenarioId in $scenarios.Keys) {
@@ -1130,6 +1334,7 @@ foreach ($check in $fixtures.Keys) {
 $expectedValidationCommands = ConvertTo-OrdinalDictionary ([ordered]@{
     'quick_validate ultracode' = 'uv run --offline --with pyyaml -- python ${SKILL_CREATOR}/scripts/quick_validate.py ${PLUGIN_ROOT}/skills/ultracode'
     'quick_validate ultracode-help' = 'uv run --offline --with pyyaml -- python ${SKILL_CREATOR}/scripts/quick_validate.py ${PLUGIN_ROOT}/skills/ultracode-help'
+    'quick_validate ultracode-verify' = 'uv run --offline --with pyyaml -- python ${SKILL_CREATOR}/scripts/quick_validate.py ${PLUGIN_ROOT}/skills/ultracode-verify'
     'quick_validate ultracode-init' = 'uv run --offline --with pyyaml -- python ${SKILL_CREATOR}/scripts/quick_validate.py ${PLUGIN_ROOT}/skills/ultracode-init'
     'quick_validate ultracode-edit' = 'uv run --offline --with pyyaml -- python ${SKILL_CREATOR}/scripts/quick_validate.py ${PLUGIN_ROOT}/skills/ultracode-edit'
     'quick_validate ultracode-flow' = 'uv run --offline --with pyyaml -- python ${SKILL_CREATOR}/scripts/quick_validate.py ${PLUGIN_ROOT}/skills/ultracode-flow'
@@ -1155,6 +1360,7 @@ foreach ($check in $validations.Keys) {
         Stop-ContractCheck "validation $check command does not match the required command"
     }
     if (Test-ContractExactString $itemStatus 'PENDING') { [void]$pending.Add("validation:$check") }
+    elseif (Test-ContractExactString $itemStatus 'NOT_AVAILABLE') { [void]$unavailableResults.Add("validation:$check") }
     elseif (-not (Test-ContractExactString $itemStatus 'PASSED') -or -not (Test-ContractIntegerEqual $itemExitCode 0)) {
         Stop-ContractCheck "release validation $check must pass with exit code 0"
     }
@@ -1175,13 +1381,16 @@ foreach ($check in $audits.Keys) {
 
 Assert-ExactSet @($referenced) @($records.Keys) 'referenced evaluation trace IDs'
 
-if ($pending.Count -ne 0) {
-    $summary = (@($pending) | Sort-Object) -join ', '
+if ($pending.Count -ne 0 -or $unavailableResults.Count -ne 0) {
+    $incompleteResults = [Collections.Generic.List[string]]::new()
+    foreach ($item in $pending) { [void]$incompleteResults.Add("PENDING $item") }
+    foreach ($item in $unavailableResults) { [void]$incompleteResults.Add("NOT_AVAILABLE $item") }
+    $summary = (@($incompleteResults) | Sort-Object) -join ', '
     if (-not $AllowPending) {
-        Write-Output "PENDING: release evidence is incomplete: $summary"
+        Write-Output "INCOMPLETE: release evidence is not release-passing: $summary"
         exit 2
     }
-    Write-Output "UltraCode contract structure passed with pending release evidence: $summary"
+    Write-Output "UltraCode contract structure passed with unresolved release evidence: $summary"
     exit 0
 }
 

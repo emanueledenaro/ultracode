@@ -228,3 +228,18 @@ capacity plan. Also distinguish recommended startup settings for a new lead task
 from the inherited model and effort of this already-open task. Do not execute the
 jobs, change global Codex settings, or modify files.
 ```
+
+## UC-39 Durable feature verification
+
+```text
+Use $ultracode-verify on <disposable repository> to create a durable functional verification plan
+for a feature with at least two acceptance criteria and success, failure, and persistence
+scenarios. Show the exact plan before writing. After authorized creation, demonstrate one passed
+result with direct evidence, one failed result with contradictory evidence, one not-run result
+with a reason, and one not-applicable result with a reason while preserving the complete history.
+Then inspect malformed disposable copies containing an unknown status, passed-without-evidence,
+not-run-with-evidence, a missing criterion reference, and a stale concurrent edit. Report the
+derived feature outcome and whether each invalid update wrote anything. Do not fix product code,
+stage, commit, push, publish, install dependencies, make external requests, perform production
+writes, or deploy.
+```

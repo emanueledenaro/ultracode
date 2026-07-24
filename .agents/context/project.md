@@ -10,7 +10,7 @@ UltraCode does not require accounts, API keys, MCP servers, background services,
 
 - `.agents/plugins/marketplace.json` is the public Codex marketplace entry.
 - `plugins/ultracode/.codex-plugin/plugin.json` is the installable plugin manifest.
-- `plugins/ultracode/skills/` contains the six public skills and their agent metadata.
+- `plugins/ultracode/skills/` contains the seven public skills and their agent metadata.
 - `plugins/ultracode/skills/ultracode/references/` contains the canonical orchestration protocol, schemas, evaluation prompts, evidence, and traces.
 - `plugins/ultracode/skills/ultracode/scripts/` contains mirrored Python and PowerShell doctors and contract validators.
 - `scripts/validate_repository.py` validates the public repository structure and packaging.

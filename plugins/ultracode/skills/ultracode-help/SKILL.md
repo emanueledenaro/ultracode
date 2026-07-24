@@ -1,6 +1,6 @@
 ---
 name: ultracode-help
-description: Explain and help choose UltraCode commands without changing the task or repository. Use when the user invokes `$ultracode-help` or `ultracode-help`, asks how UltraCode works or which command fits, or asks about UltraCode initialization, control, tickets, agents, models, reasoning effort, safety, validation, or examples. Support focused command and model topics plus an explicitly brief or synthetic mode.
+description: Explain and help choose UltraCode commands without changing the task or repository. Use when the user invokes `$ultracode-help` or `ultracode-help`, asks how UltraCode works or which command fits, or asks about UltraCode initialization, feature verification, control, tickets, agents, models, reasoning effort, safety, validation, or examples. Support focused command and model topics plus an explicitly brief or synthetic mode.
 ---
 
 # UltraCode Help
@@ -16,8 +16,9 @@ question about model or effort selection.
 
 First remove the invocation token `$ultracode-help` or `ultracode-help` from the request.
 The invocation token is never itself the `help` topic. Only the remaining words can select a mode.
-Normalize remaining topics with or without `$`: `ultracode`, `init`, `edit`, `flow`, `status`,
-`help`, `models`, and `examples`. Accept complete command names such as `ultracode-status`.
+Normalize remaining topics with or without `$`: `ultracode`, `verify`, `init`, `edit`, `flow`,
+`status`, `help`, `models`, and `examples`. Accept complete command names such as
+`ultracode-verify`.
 An explicit Help invocation has precedence over every command name in the remaining words:
 `$ultracode-help flow` explains Flow and must never execute `$ultracode-flow`.
 
@@ -38,10 +39,10 @@ language while preserving this Markdown hierarchy and semantic order:
 
 1. **Scelta rapida:** an H2 section containing a two-column GitHub-flavored Markdown table that maps
    user intent to the right command.
-2. **Sei comandi:** explain `$ultracode-help`, `$ultracode`, `$ultracode-init`,
-   `$ultracode-edit`, `$ultracode-flow`, and `$ultracode-status` under one H2 section. Give each
-   command its own H3 subsection, the four bold fields below, and one copyable example in a
-   blockquote directly inside that subsection.
+2. **Sette comandi:** explain `$ultracode-help`, `$ultracode`, `$ultracode-verify`,
+   `$ultracode-init`, `$ultracode-edit`, `$ultracode-flow`, and `$ultracode-status` under one H2
+   section. Give each command its own H3 subsection, the four bold fields below, and one copyable
+   example in a blockquote directly inside that subsection.
 3. **Progetto non configurato:** explain that read-only use works without `.ultracode`; change work
    preserves the original objective, enters the read-only Init preflight, and requires confirmation
    before initialization writes.
@@ -57,7 +58,7 @@ language while preserving this Markdown hierarchy and semantic order:
 
 Use one H1 title at the top, H2 headings for the six content areas, and H3 headings only for the
 commands. Use a compact Markdown table for model routing and another for ticket versus agent. Keep
-paragraphs short. Do not collect examples into a repeated section at the end and do not put the six
+paragraphs short. Do not collect examples into a repeated section at the end and do not put the seven
 examples in separate fenced code blocks.
 
 For each command explanation, cover all four required fields even in compact mode:
@@ -88,7 +89,7 @@ Internally verify the response without printing this checklist:
 
 - correct mode selected;
 - read-only boundary preserved;
-- no-topic overview contains all six content areas in order;
+- no-topic overview contains all six content areas and all seven commands in order;
 - the overview uses one H1, H2 sections, a quick-choice table, H3 command sections, inline
   blockquote examples, a model table, and a ticket-versus-agent table;
 - every described command includes when, result, write capability, and confirmation trigger;

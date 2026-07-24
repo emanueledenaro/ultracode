@@ -1,0 +1,6 @@
+interface:
+  display_name: "UltraCode Verify"
+  short_description: "Prove feature behavior with durable evidence"
+  default_prompt: "Use $ultracode-verify to create or maintain a durable feature verification plan, use exactly planned, passed, failed, not-run, and not-applicable statuses, and fail closed on incomplete or inconsistent evidence."
+policy:
+  allow_implicit_invocation: true

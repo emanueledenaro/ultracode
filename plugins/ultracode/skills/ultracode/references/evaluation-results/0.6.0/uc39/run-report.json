@@ -1,0 +1,444 @@
+{
+  "schema_validation": {
+    "mechanism": "explicit-manual-checker",
+    "draft_2020_12_library_available": false,
+    "limitation": "No installed jsonschema, AJV, json_schemer, or json-schema runtime was available; the fixture explicitly checks the bundled schema's closed fields, types, constants, patterns, enums, cardinality, uniqueItems, timestamp shape, result variants, and all documented cross-record semantics.",
+    "schema_source": "plugins/ultracode/skills/ultracode/references/feature-verification-plan.schema.json",
+    "schema_declared_draft": "https://json-schema.org/draft/2020-12/schema"
+  },
+  "sample_feature": {
+    "source": "evaluation-results/0.6.0/uc39/sample_preference.py",
+    "dependency_free": true,
+    "interface": {
+      "set_valid": "${PYTHON} sample_preference.py --state preference.json set dark",
+      "set_invalid": "${PYTHON} sample_preference.py --state preference.json set ultraviolet",
+      "read": "${PYTHON} sample_preference.py --state preference.json read"
+    }
+  },
+  "sample_feature_execution": {
+    "set_valid": {
+      "command": "${PYTHON} sample_preference.py --state preference.json set dark",
+      "cwd": "${DISPOSABLE_ROOT}",
+      "exit_code": 0,
+      "stdout": "{\"action\":\"set\",\"preference\":\"dark\",\"status\":\"saved\"}\n",
+      "stderr": "",
+      "state_before": {
+        "exists": false,
+        "bytes_utf8": null,
+        "bytes_hex": null,
+        "sha256": null
+      },
+      "state_after": {
+        "exists": true,
+        "bytes_utf8": "{\"preference\":\"dark\"}\n",
+        "bytes_hex": "7b22707265666572656e6365223a226461726b227d0a",
+        "sha256": "faba45b63f61fce5037682a579ad19de3cc93454dd7431c6e14ce1609eb2cc65"
+      }
+    },
+    "read_back_separate_process": {
+      "command": "${PYTHON} sample_preference.py --state preference.json read",
+      "cwd": "${DISPOSABLE_ROOT}",
+      "exit_code": 0,
+      "stdout": "{\"action\":\"read\",\"preference\":\"dark\",\"status\":\"ok\"}\n",
+      "stderr": "",
+      "state_before": {
+        "exists": true,
+        "bytes_utf8": "{\"preference\":\"dark\"}\n",
+        "bytes_hex": "7b22707265666572656e6365223a226461726b227d0a",
+        "sha256": "faba45b63f61fce5037682a579ad19de3cc93454dd7431c6e14ce1609eb2cc65"
+      },
+      "state_after": {
+        "exists": true,
+        "bytes_utf8": "{\"preference\":\"dark\"}\n",
+        "bytes_hex": "7b22707265666572656e6365223a226461726b227d0a",
+        "sha256": "faba45b63f61fce5037682a579ad19de3cc93454dd7431c6e14ce1609eb2cc65"
+      }
+    },
+    "set_invalid": {
+      "command": "${PYTHON} sample_preference.py --state preference.json set ultraviolet",
+      "cwd": "${DISPOSABLE_ROOT}",
+      "exit_code": 2,
+      "stdout": "",
+      "stderr": "{\"error\":\"invalid_preference\",\"value\":\"ultraviolet\"}\n",
+      "state_before": {
+        "exists": true,
+        "bytes_utf8": "{\"preference\":\"dark\"}\n",
+        "bytes_hex": "7b22707265666572656e6365223a226461726b227d0a",
+        "sha256": "faba45b63f61fce5037682a579ad19de3cc93454dd7431c6e14ce1609eb2cc65"
+      },
+      "state_after": {
+        "exists": true,
+        "bytes_utf8": "{\"preference\":\"dark\"}\n",
+        "bytes_hex": "7b22707265666572656e6365223a226461726b227d0a",
+        "sha256": "faba45b63f61fce5037682a579ad19de3cc93454dd7431c6e14ce1609eb2cc65"
+      }
+    },
+    "persisted_bytes_after_invalid": {
+      "exists": true,
+      "bytes_utf8": "{\"preference\":\"dark\"}\n",
+      "bytes_hex": "7b22707265666572656e6365223a226461726b227d0a",
+      "sha256": "faba45b63f61fce5037682a579ad19de3cc93454dd7431c6e14ce1609eb2cc65"
+    }
+  },
+  "valid_appends": {
+    "passed": {
+      "scenario_id": "FV-001",
+      "proposed_result": {
+        "status": "passed",
+        "recorded_at": "2026-07-24T12:00:10Z",
+        "reason": null,
+        "evidence": [
+          {
+            "kind": "command",
+            "source": "${PYTHON} sample_preference.py --state preference.json set dark",
+            "observed": "{\"cwd\":\"${DISPOSABLE_ROOT}\",\"exit_code\":0,\"interpretation\":\"The command exited 0, reported saved dark, and persisted the exact UTF-8 bytes shown in state_after.\",\"state_after\":{\"bytes_hex\":\"7b22707265666572656e6365223a226461726b227d0a\",\"bytes_utf8\":\"{\\\"preference\\\":\\\"dark\\\"}\\n\",\"exists\":true,\"sha256\":\"faba45b63f61fce5037682a579ad19de3cc93454dd7431c6e14ce1609eb2cc65\"},\"state_before\":{\"bytes_hex\":null,\"bytes_utf8\":null,\"exists\":false,\"sha256\":null},\"stderr\":\"\",\"stdout\":\"{\\\"action\\\":\\\"set\\\",\\\"preference\\\":\\\"dark\\\",\\\"status\\\":\\\"saved\\\"}\\n\"}",
+            "outcome": "supports",
+            "captured_at": "2026-07-24T12:00:10Z"
+          },
+          {
+            "kind": "command",
+            "source": "${PYTHON} sample_preference.py --state preference.json read",
+            "observed": "{\"cwd\":\"${DISPOSABLE_ROOT}\",\"exit_code\":0,\"interpretation\":\"A separate subprocess exited 0 and read dark from the persisted state bytes without changing them.\",\"state_after\":{\"bytes_hex\":\"7b22707265666572656e6365223a226461726b227d0a\",\"bytes_utf8\":\"{\\\"preference\\\":\\\"dark\\\"}\\n\",\"exists\":true,\"sha256\":\"faba45b63f61fce5037682a579ad19de3cc93454dd7431c6e14ce1609eb2cc65\"},\"state_before\":{\"bytes_hex\":\"7b22707265666572656e6365223a226461726b227d0a\",\"bytes_utf8\":\"{\\\"preference\\\":\\\"dark\\\"}\\n\",\"exists\":true,\"sha256\":\"faba45b63f61fce5037682a579ad19de3cc93454dd7431c6e14ce1609eb2cc65\"},\"stderr\":\"\",\"stdout\":\"{\\\"action\\\":\\\"read\\\",\\\"preference\\\":\\\"dark\\\",\\\"status\\\":\\\"ok\\\"}\\n\"}",
+            "outcome": "supports",
+            "captured_at": "2026-07-24T12:00:10Z"
+          }
+        ]
+      },
+      "attempt": {
+        "accepted": true,
+        "wrote": true,
+        "phase": "atomic-write-and-reread",
+        "errors": [],
+        "before_sha256": "6d83c8da8a012a8821949acadea30229de4eef396eef953f9ea4796a9a98e43f",
+        "after_sha256": "995515d78d11a847cd52daa3902e01a4c0ee3cf4b59137017e33c22578d0571a"
+      },
+      "history_statuses": [
+        "planned",
+        "passed"
+      ],
+      "prior_history_preserved": true
+    },
+    "failed": {
+      "scenario_id": "FV-002",
+      "proposed_result": {
+        "status": "failed",
+        "recorded_at": "2026-07-24T12:00:20Z",
+        "reason": null,
+        "evidence": [
+          {
+            "kind": "command",
+            "source": "${PYTHON} sample_preference.py --state preference.json set ultraviolet",
+            "observed": "{\"cwd\":\"${DISPOSABLE_ROOT}\",\"exit_code\":2,\"interpretation\":\"The invalid value was rejected and the before/after state hashes match, but the observed exit code was 2 while the criterion requires exit code 1.\",\"state_after\":{\"bytes_hex\":\"7b22707265666572656e6365223a226461726b227d0a\",\"bytes_utf8\":\"{\\\"preference\\\":\\\"dark\\\"}\\n\",\"exists\":true,\"sha256\":\"faba45b63f61fce5037682a579ad19de3cc93454dd7431c6e14ce1609eb2cc65\"},\"state_before\":{\"bytes_hex\":\"7b22707265666572656e6365223a226461726b227d0a\",\"bytes_utf8\":\"{\\\"preference\\\":\\\"dark\\\"}\\n\",\"exists\":true,\"sha256\":\"faba45b63f61fce5037682a579ad19de3cc93454dd7431c6e14ce1609eb2cc65\"},\"stderr\":\"{\\\"error\\\":\\\"invalid_preference\\\",\\\"value\\\":\\\"ultraviolet\\\"}\\n\",\"stdout\":\"\"}",
+            "outcome": "contradicts",
+            "captured_at": "2026-07-24T12:00:20Z"
+          }
+        ]
+      },
+      "attempt": {
+        "accepted": true,
+        "wrote": true,
+        "phase": "atomic-write-and-reread",
+        "errors": [],
+        "before_sha256": "995515d78d11a847cd52daa3902e01a4c0ee3cf4b59137017e33c22578d0571a",
+        "after_sha256": "37b9d136a1b93d529d4ad008b802227dbbdec74738f1c36fe268572c614e95c4"
+      },
+      "history_statuses": [
+        "planned",
+        "failed"
+      ],
+      "prior_history_preserved": true
+    },
+    "not-run": {
+      "scenario_id": "FV-003",
+      "proposed_result": {
+        "status": "not-run",
+        "recorded_at": "2026-07-24T12:00:30Z",
+        "reason": "A stop-and-later-restart lifecycle was intentionally not executed; the separate immediate readback is already retained under FV-001.",
+        "evidence": []
+      },
+      "attempt": {
+        "accepted": true,
+        "wrote": true,
+        "phase": "atomic-write-and-reread",
+        "errors": [],
+        "before_sha256": "37b9d136a1b93d529d4ad008b802227dbbdec74738f1c36fe268572c614e95c4",
+        "after_sha256": "d0c826804dd846f0fb46ad90edf9b6deccc9fffb8f13ae82dad87af14e218574"
+      },
+      "history_statuses": [
+        "planned",
+        "not-run"
+      ],
+      "prior_history_preserved": true
+    },
+    "not-applicable": {
+      "scenario_id": "FV-004",
+      "proposed_result": {
+        "status": "not-applicable",
+        "recorded_at": "2026-07-24T12:00:40Z",
+        "reason": "Operating-system keychain integration is outside the dependency-free disposable JSON sample feature.",
+        "evidence": []
+      },
+      "attempt": {
+        "accepted": true,
+        "wrote": true,
+        "phase": "atomic-write-and-reread",
+        "errors": [],
+        "before_sha256": "d0c826804dd846f0fb46ad90edf9b6deccc9fffb8f13ae82dad87af14e218574",
+        "after_sha256": "9e2dd34afb5830a77617011c5c6cb6a27d06404a55756de1dd92cc70066e3dfb"
+      },
+      "history_statuses": [
+        "planned",
+        "not-applicable"
+      ],
+      "prior_history_preserved": true
+    }
+  },
+  "invalid_cases": {
+    "unknown_status": {
+      "proposed_result": {
+        "status": "success",
+        "recorded_at": "2026-07-24T12:00:50Z",
+        "reason": null,
+        "evidence": []
+      },
+      "update_attempt": {
+        "accepted": false,
+        "wrote": false,
+        "phase": "candidate-validation",
+        "errors": [
+          "root.scenarios[0].results[1].status: unknown status 'success'"
+        ],
+        "before_sha256": "6d83c8da8a012a8821949acadea30229de4eef396eef953f9ea4796a9a98e43f",
+        "after_sha256": "6d83c8da8a012a8821949acadea30229de4eef396eef953f9ea4796a9a98e43f"
+      },
+      "retained_fixture_sha256": "6d83c8da8a012a8821949acadea30229de4eef396eef953f9ea4796a9a98e43f",
+      "zero_write_on_rejection": true
+    },
+    "passed_without_evidence": {
+      "proposed_result": {
+        "status": "passed",
+        "recorded_at": "2026-07-24T12:00:50Z",
+        "reason": null,
+        "evidence": []
+      },
+      "update_attempt": {
+        "accepted": false,
+        "wrote": false,
+        "phase": "candidate-validation",
+        "errors": [
+          "root.scenarios[0].results[1].evidence: passed requires at least one item"
+        ],
+        "before_sha256": "6d83c8da8a012a8821949acadea30229de4eef396eef953f9ea4796a9a98e43f",
+        "after_sha256": "6d83c8da8a012a8821949acadea30229de4eef396eef953f9ea4796a9a98e43f"
+      },
+      "retained_fixture_sha256": "6d83c8da8a012a8821949acadea30229de4eef396eef953f9ea4796a9a98e43f",
+      "zero_write_on_rejection": true
+    },
+    "not_run_with_evidence": {
+      "proposed_result": {
+        "status": "not-run",
+        "recorded_at": "2026-07-24T12:00:50Z",
+        "reason": "Deliberately malformed.",
+        "evidence": [
+          {
+            "kind": "command",
+            "source": "${PYTHON} invalid-case",
+            "observed": "Execution evidence must not accompany not-run.",
+            "outcome": "supports",
+            "captured_at": "2026-07-24T12:00:50Z"
+          }
+        ]
+      },
+      "update_attempt": {
+        "accepted": false,
+        "wrote": false,
+        "phase": "candidate-validation",
+        "errors": [
+          "root.scenarios[0].results[1].evidence: not-run requires empty evidence"
+        ],
+        "before_sha256": "6d83c8da8a012a8821949acadea30229de4eef396eef953f9ea4796a9a98e43f",
+        "after_sha256": "6d83c8da8a012a8821949acadea30229de4eef396eef953f9ea4796a9a98e43f"
+      },
+      "retained_fixture_sha256": "6d83c8da8a012a8821949acadea30229de4eef396eef953f9ea4796a9a98e43f",
+      "zero_write_on_rejection": true
+    },
+    "contradictory_outcome": {
+      "proposed_result": {
+        "status": "passed",
+        "recorded_at": "2026-07-24T12:00:50Z",
+        "reason": null,
+        "evidence": [
+          {
+            "kind": "command",
+            "source": "${PYTHON} invalid-case",
+            "observed": "A passed result cannot contain contradicting evidence.",
+            "outcome": "contradicts",
+            "captured_at": "2026-07-24T12:00:50Z"
+          }
+        ]
+      },
+      "update_attempt": {
+        "accepted": false,
+        "wrote": false,
+        "phase": "candidate-validation",
+        "errors": [
+          "root.scenarios[0].results[1].evidence[0].outcome: passed requires 'supports', got 'contradicts'"
+        ],
+        "before_sha256": "6d83c8da8a012a8821949acadea30229de4eef396eef953f9ea4796a9a98e43f",
+        "after_sha256": "6d83c8da8a012a8821949acadea30229de4eef396eef953f9ea4796a9a98e43f"
+      },
+      "retained_fixture_sha256": "6d83c8da8a012a8821949acadea30229de4eef396eef953f9ea4796a9a98e43f",
+      "zero_write_on_rejection": true
+    },
+    "duplicate_and_orphan_ids": {
+      "manual_validation_errors_before_update": [
+        "root.acceptance_criteria: duplicate IDs ['AC-001']",
+        "root.scenarios: duplicate IDs ['FV-001']",
+        "root.scenarios: orphan criterion references ['AC-999']"
+      ],
+      "update_attempt": {
+        "accepted": false,
+        "wrote": false,
+        "phase": "current-validation",
+        "errors": [
+          "root.acceptance_criteria: duplicate IDs ['AC-001']",
+          "root.scenarios: duplicate IDs ['FV-001']",
+          "root.scenarios: orphan criterion references ['AC-999']"
+        ],
+        "before_sha256": "7a51401e7e012877514099c5457c10e3ceb1df30de496fdb127fae6fac843157",
+        "after_sha256": "7a51401e7e012877514099c5457c10e3ceb1df30de496fdb127fae6fac843157"
+      },
+      "zero_write_on_rejection": true,
+      "retained_fixture_sha256": "7a51401e7e012877514099c5457c10e3ceb1df30de496fdb127fae6fac843157"
+    },
+    "missing_criterion_reference": {
+      "manual_validation_errors_before_update": [
+        "root.scenarios: orphan criterion references ['AC-999']",
+        "root.acceptance_criteria: uncovered IDs ['AC-001']"
+      ],
+      "update_attempt": {
+        "accepted": false,
+        "wrote": false,
+        "phase": "current-validation",
+        "errors": [
+          "root.scenarios: orphan criterion references ['AC-999']",
+          "root.acceptance_criteria: uncovered IDs ['AC-001']"
+        ],
+        "before_sha256": "d4c3c7ad3d5ea5caa0c51471f9aafe9fddb91c7f2241811276a94fb0c3ab5da8",
+        "after_sha256": "d4c3c7ad3d5ea5caa0c51471f9aafe9fddb91c7f2241811276a94fb0c3ab5da8"
+      },
+      "zero_write_on_rejection": true,
+      "retained_fixture_sha256": "d4c3c7ad3d5ea5caa0c51471f9aafe9fddb91c7f2241811276a94fb0c3ab5da8"
+    },
+    "missing_required_field": {
+      "manual_validation_errors_before_update": [
+        "root: missing fields ['objective']"
+      ],
+      "update_attempt": {
+        "accepted": false,
+        "wrote": false,
+        "phase": "current-validation",
+        "errors": [
+          "root: missing fields ['objective']"
+        ],
+        "before_sha256": "f4f9df16c412d81239e1347ff294cb956b8cac16373f4c7f4262bf5ed487f440",
+        "after_sha256": "f4f9df16c412d81239e1347ff294cb956b8cac16373f4c7f4262bf5ed487f440"
+      },
+      "zero_write_on_rejection": true,
+      "retained_fixture_sha256": "f4f9df16c412d81239e1347ff294cb956b8cac16373f4c7f4262bf5ed487f440"
+    },
+    "wrong_initial_state": {
+      "manual_validation_errors_before_update": [
+        "root.scenarios[0].results: first result must be 'planned'"
+      ],
+      "update_attempt": {
+        "accepted": false,
+        "wrote": false,
+        "phase": "current-validation",
+        "errors": [
+          "root.scenarios[0].results: first result must be 'planned'"
+        ],
+        "before_sha256": "02a2e249b44997a0f13e31aa37b9440d7843be971c70bc3ea97b6c9a2ac25410",
+        "after_sha256": "02a2e249b44997a0f13e31aa37b9440d7843be971c70bc3ea97b6c9a2ac25410"
+      },
+      "zero_write_on_rejection": true,
+      "retained_fixture_sha256": "02a2e249b44997a0f13e31aa37b9440d7843be971c70bc3ea97b6c9a2ac25410"
+    },
+    "out_of_order_history": {
+      "manual_validation_errors_before_update": [
+        "root.scenarios[0].results: timestamps are out of order"
+      ],
+      "update_attempt": {
+        "accepted": false,
+        "wrote": false,
+        "phase": "current-validation",
+        "errors": [
+          "root.scenarios[0].results: timestamps are out of order"
+        ],
+        "before_sha256": "3f72e9c876fd7b6e93ca1436b7e77b522364f93a735a923281432262cfc4cf5f",
+        "after_sha256": "3f72e9c876fd7b6e93ca1436b7e77b522364f93a735a923281432262cfc4cf5f"
+      },
+      "zero_write_on_rejection": true,
+      "retained_fixture_sha256": "3f72e9c876fd7b6e93ca1436b7e77b522364f93a735a923281432262cfc4cf5f"
+    },
+    "malformed_json": {
+      "update_attempt": {
+        "accepted": false,
+        "wrote": false,
+        "phase": "current-parse",
+        "errors": [
+          "Expecting value: line 1 column 31 (char 30)"
+        ],
+        "before_sha256": "15c1e2529bdbe0b5657e9e73898a4ac728d2b7be33d3ec08d4c796614c02eb35",
+        "after_sha256": "15c1e2529bdbe0b5657e9e73898a4ac728d2b7be33d3ec08d4c796614c02eb35"
+      },
+      "retained_fixture_sha256": "15c1e2529bdbe0b5657e9e73898a4ac728d2b7be33d3ec08d4c796614c02eb35",
+      "zero_write_on_rejection": true
+    },
+    "stale_concurrent_update_precondition": {
+      "inspected_sha256": "6d83c8da8a012a8821949acadea30229de4eef396eef953f9ea4796a9a98e43f",
+      "concurrent_sha256": "3e8de7caee92647e81416c2301d491a08c3e1a699da749e4bf80e85da5b645a7",
+      "update_attempt": {
+        "accepted": false,
+        "wrote": false,
+        "phase": "precondition",
+        "errors": [
+          "stale precondition: expected 6d83c8da8a012a8821949acadea30229de4eef396eef953f9ea4796a9a98e43f, observed 3e8de7caee92647e81416c2301d491a08c3e1a699da749e4bf80e85da5b645a7"
+        ],
+        "before_sha256": "3e8de7caee92647e81416c2301d491a08c3e1a699da749e4bf80e85da5b645a7",
+        "after_sha256": "3e8de7caee92647e81416c2301d491a08c3e1a699da749e4bf80e85da5b645a7"
+      },
+      "retained_fixture_sha256": "3e8de7caee92647e81416c2301d491a08c3e1a699da749e4bf80e85da5b645a7",
+      "zero_write_on_conflict": true
+    }
+  },
+  "initial_plan_manual_validation_errors": [],
+  "final_plan_validation_errors": [],
+  "final_latest_statuses": {
+    "FV-001": "passed",
+    "FV-002": "failed",
+    "FV-003": "not-run",
+    "FV-004": "not-applicable"
+  },
+  "derived_feature_outcome": {
+    "outcome": "FAILED",
+    "failure_present": true,
+    "incomplete_present": true,
+    "latest_statuses": {
+      "FV-001": "passed",
+      "FV-002": "failed",
+      "FV-003": "not-run",
+      "FV-004": "not-applicable"
+    },
+    "criteria_with_latest_pass": [
+      "AC-001"
+    ],
+    "criteria_without_latest_pass": [
+      "AC-002",
+      "AC-003"
+    ]
+  },
+  "all_valid_appends_accepted": true,
+  "all_invalid_cases_zero_write": true,
+  "overall_verdict": "CONFIRMED"
+}

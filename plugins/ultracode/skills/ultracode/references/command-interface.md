@@ -112,10 +112,16 @@ Translate every visible label into the user's language and explain `INFERRED`, `
   `$ultracode-init` baseline preflight, and publishes compact updates at phase or barrier changes.
 - `$ultracode-init` discovers a project and explains a reviewable configuration proposal before writing.
 - `$ultracode-edit` explains the requested configuration delta, drift, preservation, and regeneration.
+- `$ultracode-verify` creates or maintains a durable feature-level verification plan and records
+  append-only, evidence-backed scenario results.
 - `$ultracode-flow` gives a concise live control view with fully explained active tickets.
 - `$ultracode-status` gives the detailed diagnostic view, including history, files, checks, and findings.
 - `$ultracode-help` explains how UltraCode works, which command to choose, models, reasoning effort,
   examples, and safety boundaries without changing the project.
 
-All six commands use the same vocabulary and truth sources. They differ in depth and purpose, not
+All seven commands use the same vocabulary and truth sources. They differ in depth and purpose, not
 in the meaning of states, tickets, agents, models, evidence, or blockers.
+
+Feature verification scenario statuses form a separate exact set: `planned`, `passed`, `failed`,
+`not-run`, and `not-applicable`. Do not reuse them as task states or check states, and do not map
+`not-run` to `NOT RUN` without explaining which artifact the label belongs to.

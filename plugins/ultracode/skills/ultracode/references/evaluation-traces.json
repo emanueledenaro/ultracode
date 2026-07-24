@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "attestation_scope": "local-consistency-only",
-  "plugin_version_prefix": "0.5.3",
+  "plugin_version_prefix": "0.6.0",
   "generated_on": "2026-07-24",
   "records": [
     {
@@ -152,7 +152,7 @@
       "source_type": "fresh-agent-result",
       "command": null,
       "exit_code": null,
-      "facts": ["Fresh 0.5.2 bare and brief Terra low contexts rendered the required chat hierarchy and semantic content read-only.", "A raw `$ultracode-help flow` context selected Flow and reconstructed live state; the source contract was repaired so every non-Help skill defers an explicit Help invocation before action.", "A new fresh source context returned only focused Flow help with four labeled fields, an inline blockquote example, and the nearest comparison; it did not inspect or invent live state.", "After the H1 gate changed the prompt text, a final fresh context received the exact current default prompt and produced exactly one H1, six ordered H2 areas, six H3 command sections, quick-choice/model/ticket tables, four fields and one blockquote per command, preflight behavior, and authority boundaries.", "No successful Help evaluation initialized, delegated, ran project checks, changed global settings, or wrote files."]
+      "facts": ["The retained raw results are evaluation-results/0.6.0/uc37-help-bare.md at SHA-256 1175973ffda7b1ab8f15fc3e151d6c25230137cf2347758e301d5dc93141373c, evaluation-results/0.6.0/uc37-help-flow.md at SHA-256 8897db3bd69eb711baefbf92db9fb296ca4d882de39f8ef3857ad53e5b98898e, and evaluation-results/0.6.0/uc37-help-breve.md at SHA-256 1ca857ee20679d9675d0db856840c22631338f4aa9e85bd858a4d807d86c38dc.", "All three worktree-backed contexts passed against the current seven-command source payload with no writes, delegation, project checks, or settings changes; the installed 0.5.3 cache remained stale as expected and was not treated as current-source evidence."]
     },
     {
       "trace_id": "trace-uc-38-reasoning",
@@ -163,6 +163,16 @@
       "command": null,
       "exit_code": null,
       "facts": ["Fresh Terra low task independently routed the four fixture jobs to Terra low, Terra high, Sol xhigh, and independent Sol xhigh from their ambiguity, coupling, evidence, and consequence.", "It distinguished Sol medium pre-task startup guidance from the inherited active lead, changed no global setting, separated requested from effective model and effort, explained context and fallback constraints, and executed no work."]
+    },
+    {
+      "trace_id": "trace-uc-39-feature-verification",
+      "category": "scenario",
+      "subject": "UC-39",
+      "status": "PASSED",
+      "source_type": "fresh-agent-result",
+      "command": null,
+      "exit_code": null,
+      "facts": ["The retained 17-file directory evaluation-results/0.6.0/uc39 has manifest SHA-256 e31c9253345919bcc297988ead78af190f6ac6ce1b2ce537cfad6bc3b89b954f, computed from lexicographically ordered SHA-256 and relative-path lines including README.md.", "Key retained files are evaluation-results/0.6.0/uc39/README.md at SHA-256 58f56f6ec12276759d7590ff74153fa75f2f3e03088fd606a5608b44de134d94, evaluation-results/0.6.0/uc39/sample_preference.py at SHA-256 fa5270be413dfdf69b3cdffaa9d7fd2b8bfda59ad2dbcd6e57cd7417417aa53d, evaluation-results/0.6.0/uc39/uc39_forward.py at SHA-256 921587e620e89986501ba2c896b63b5114026ea973c649f74261e6bdfbdda301, evaluation-results/0.6.0/uc39/run-report.json at SHA-256 5ea0d59fe0f91cd4eec6e84b37afda4e15b33f79eb546252f6d65596b7f380be, and evaluation-results/0.6.0/uc39/final-plan.json at SHA-256 9e2dd34afb5830a77617011c5c6cb6a27d06404a55756de1dd92cc70066e3dfb; README.md binds the initial plan and all eleven invalid or stale fixtures.", "The runner executed the dependency-free sample feature through disposable subprocesses and retained exact portable commands, exit codes, stdout, stderr, persisted UTF-8 and hex bytes, state hashes, and separate-process readback.", "The fixture preserved four append-only status-consistent histories, derived FAILED with incomplete coverage, and rejected every malformed or stale update with zero writes."]
     },
     {
       "trace_id": "trace-fixture-valid",
@@ -285,6 +295,16 @@
       "facts": ["Official skill-creator validator returned Skill is valid for the chat-friendly Help layout and explicit command-precedence contract."]
     },
     {
+      "trace_id": "trace-validate-skill-verify",
+      "category": "validation",
+      "subject": "quick_validate ultracode-verify",
+      "status": "PASSED",
+      "source_type": "command-result",
+      "command": "uv run --offline --with pyyaml -- python ${SKILL_CREATOR}/scripts/quick_validate.py ${PLUGIN_ROOT}/skills/ultracode-verify",
+      "exit_code": 0,
+      "facts": ["Official skill-creator validator returned Skill is valid in offline mode after PyYAML was cached in an isolated uv environment."]
+    },
+    {
       "trace_id": "trace-validate-skill-init",
       "category": "validation",
       "subject": "quick_validate ultracode-init",
@@ -342,7 +362,7 @@
       "source_type": "command-result",
       "command": "${PYTHON} ${PLUGIN_ROOT}/skills/ultracode/scripts/check_contract.py --allow-pending",
       "exit_code": 0,
-      "facts": ["Python accepted the 0.5.2 chat layout, per-command structure, table headers, inline blockquotes, explicit Help precedence in all five non-Help skills, semantic routing, prompt values, skill hashes, payload hash, and trace bindings.", "It completed the live doctor corpus and returned exit 0 with only the independent audit pending."]
+      "facts": ["The changed Python checker completed its live 44-case doctor corpus and validated the exact Verify result union, result shapes, evidenceBase fields, status-specific evidence references, and supporting and contradicting outcome consts.", "Its bootstrap rerun validated the current skill, payload, and trace bindings and returned exit code 0 with complete release evidence."]
     },
     {
       "trace_id": "trace-contract-powershell",
@@ -352,7 +372,7 @@
       "source_type": "command-result",
       "command": "powershell -File ${PLUGIN_ROOT}/skills/ultracode/scripts/check_contract.ps1 -AllowPending",
       "exit_code": 0,
-      "facts": ["PowerShell independently enforced the same 0.5.2 layout, precedence, semantic, prompt-value, hash, and trace gates.", "It completed its live doctor corpus and returned exit 0 with only the independent audit pending."]
+      "facts": ["Official PowerShell 7.6.4 arm64 runtime executed from an isolated temporary directory.", "The changed PowerShell checker completed its live doctor corpus, validated the current Verify schema and release bindings, and returned exit code 0."]
     },
     {
       "trace_id": "trace-contract-casing-corpus",
@@ -362,7 +382,7 @@
       "source_type": "command-result",
       "command": "${PYTHON} ${PLUGIN_ROOT}/skills/ultracode/scripts/run_contract_casing_corpus.py",
       "exit_code": 0,
-      "facts": ["The expanded disposable-copy corpus completed 34/34 matches with zero mismatches and zero unavailable runtimes.", "Python and PowerShell passed the baseline and rejected evidence casing, schema expansion, a demoted H1, missing command fields, missing inline prompt tokens, broken quick/model/ticket tables, flattened blockquotes, removed Flow Help precedence, routing semantics, Init preflight, and weakened metadata or manifest prompt values.", "The metadata mutation kept all required phrases only in a YAML comment while reducing the actual default_prompt to a generic invocation; both validators still rejected it."]
+      "facts": ["The expanded disposable-copy corpus completed all 50 Python and PowerShell cases with 50 matches, zero mismatches, and zero unavailable cases.", "Both runtimes rejected evidence casing, schema expansion, Help layout and routing regressions, plus eight paired Verify mutations covering the status set, passed evidence minimum, closed evidence fields, exact oneOf length and entry type, evidenceBase required fields, and both status-specific outcome consts."]
     },
     {
       "trace_id": "trace-project-configurator-corpus",
@@ -382,7 +402,7 @@
       "source_type": "independent-audit-result",
       "command": null,
       "exit_code": null,
-      "facts": ["Independent Sol xhigh review found one material evidence gap: UC-37 required one H1, but the three validators and adversarial corpus did not enforce it.", "The repair added a canonical one-H1 gate to the repository, Python, and PowerShell validators, changed both default prompts to request one H1 explicitly, and added paired adversarial H1 cases.", "Re-audit verified repository validation exit 0, Python and PowerShell bootstrap checks exit 0, Python AST and PowerShell parser success, both project doctors exit 0, git diff check exit 0, 34/34 adversarial cases, exact current default-prompt behavior, explicit Help precedence, 6/6 skill hashes, payload and trace bindings, and 38 result-to-trace bindings.", "No HIGH, MEDIUM, or LOW findings remain."]
+      "facts": ["Fresh independent audit found no confirmed HIGH or CRITICAL defect in the stable worktree snapshot.", "The audit independently recomputed all seven skill hashes, the plugin payload hash, the trace hash, all three UC-37 hashes, and the 17-file UC-39 directory binding.", "Repository validation, the 9/9 configurator corpus, the 25/25 available Python adversarial cases, the bootstrap checker, AST parsing, and git diff checks passed; PowerShell execution remained the only environmental limitation at audit time."]
     }
   ]
 }

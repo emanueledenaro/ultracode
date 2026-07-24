@@ -13,7 +13,7 @@ An explicit Help invocation has precedence over any command name that follows it
 `$ultracode-help flow` explains Flow read-only and must never reconstruct live Flow state.
 
 1. quick choice as a two-column Markdown table;
-2. all six commands, each with four labeled fields and an inline blockquote example;
+2. all seven commands, each with four labeled fields and an inline blockquote example;
 3. unconfigured-project and Init preflight behavior;
 4. models and reasoning effort as a compact table plus honest runtime notes;
 5. tickets versus agents as a compact comparison table;
@@ -26,7 +26,7 @@ missing.
 
 The chat layout is part of the contract. Start with one H1 title. Use H2 headings for the content
 areas, H3 headings for individual commands, short labeled paragraphs, GitHub-flavored Markdown
-tables, and inline blockquote examples. Do not move all examples to the end or render them as six
+tables, and inline blockquote examples. Do not move all examples to the end or render them as seven
 separate fenced code blocks.
 
 ## Quick choice
@@ -35,6 +35,7 @@ separate fenced code blocks.
 | --- | --- |
 | An explanation, comparison, or example | `$ultracode-help` |
 | Engineering work investigated, built, fixed, or run | `$ultracode` |
+| Durable proof that a feature works | `$ultracode-verify` |
 | UltraCode project control added | `$ultracode-init` |
 | Existing UltraCode control changed or drift repaired | `$ultracode-edit` |
 | A quick view of work in progress | `$ultracode-flow` |
@@ -43,7 +44,7 @@ separate fenced code blocks.
 Recommend the least powerful command that satisfies the outcome. Help explains; Flow and Status
 observe; Init configures; Edit changes that configuration; UltraCode performs engineering work.
 
-## The six commands
+## The seven commands
 
 ### `$ultracode-help`
 
@@ -58,7 +59,7 @@ state refresh.
 **When confirmation is required:** Never. Help has no write path and also works without
 `.ultracode`.
 
-> **Example:** `Use $ultracode-help to explain all six commands and recommend where I should start.`
+> **Example:** `Use $ultracode-help to explain all seven commands and recommend where I should start.`
 
 ### `$ultracode`
 
@@ -76,6 +77,25 @@ dependencies, external actions, destructive operations, and deployment each requ
 explicit authority.
 
 > **Example:** `Use $ultracode to fix the failing payment webhook tests. Do not commit, deploy, or install dependencies.`
+
+### `$ultracode-verify`
+
+**When to use it:** Choose it to define feature-level acceptance scenarios, prove behavior through
+direct evidence, preserve repeated verification attempts, or diagnose why functional coverage is
+incomplete.
+
+**What you get:** A durable, closed JSON plan with acceptance criteria, append-only scenario
+results, exact evidence sources, and a derived verified, failed, or incomplete outcome.
+
+**Can it write?:** Inspecting and summarizing are read-only. Creating a plan or appending a result
+writes only the authorized plan artifact; it does not initialize project control or change product
+code automatically.
+
+**When confirmation is required:** The current request and project plan gate must authorize plan
+writes. Git, publishing, external requests, deployment, dependencies, destructive operations, and
+production actions always require separate explicit authority.
+
+> **Example:** `Use $ultracode-verify to create a durable verification plan for checkout recovery. Do not deploy, publish, or make external requests.`
 
 ### `$ultracode-init`
 
@@ -144,6 +164,10 @@ refresh the report.
 Read-only Help, Flow, Status, answers, reviews, audits, and diagnoses can work without
 `.ultracode`. Missing persistent project control must not trigger initialization merely for
 inspection.
+
+`$ultracode-verify` can inspect an existing plan without initialized project control. When the user
+authorizes creation, its default `.ultracode/verification/<feature-slug>.json` artifact does not
+create config or managed manifests and does not count as project-control initialization.
 
 For requested change work, `$ultracode` preserves the original objective and enters the read-only
 `$ultracode-init` baseline preflight. It derives conservative defaults from repository evidence,

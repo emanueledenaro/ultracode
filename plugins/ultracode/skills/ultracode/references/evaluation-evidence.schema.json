@@ -27,10 +27,11 @@
     "evaluated_on": { "type": "string", "format": "date" },
     "skill_sha256": {
       "type": "object",
-      "required": ["ultracode", "ultracode-help", "ultracode-init", "ultracode-edit", "ultracode-flow", "ultracode-status"],
+      "required": ["ultracode", "ultracode-help", "ultracode-verify", "ultracode-init", "ultracode-edit", "ultracode-flow", "ultracode-status"],
       "properties": {
         "ultracode": { "$ref": "#/$defs/sha256" },
         "ultracode-help": { "$ref": "#/$defs/sha256" },
+        "ultracode-verify": { "$ref": "#/$defs/sha256" },
         "ultracode-init": { "$ref": "#/$defs/sha256" },
         "ultracode-edit": { "$ref": "#/$defs/sha256" },
         "ultracode-flow": { "$ref": "#/$defs/sha256" },
@@ -46,8 +47,8 @@
     "trace_sha256": { "$ref": "#/$defs/sha256" },
     "scenario_results": {
       "type": "array",
-      "minItems": 16,
-      "maxItems": 16,
+      "minItems": 17,
+      "maxItems": 17,
       "uniqueItems": true,
       "items": { "$ref": "#/$defs/scenarioResult" }
     },
@@ -60,8 +61,8 @@
     },
     "validation_results": {
       "type": "array",
-      "minItems": 11,
-      "maxItems": 11,
+      "minItems": 12,
+      "maxItems": 12,
       "uniqueItems": true,
       "items": { "$ref": "#/$defs/executableResult" }
     },

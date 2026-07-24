@@ -41,6 +41,7 @@ body:
         - ultracode-help
         - ultracode-init
         - ultracode-edit
+        - ultracode-verify
         - ultracode-flow
         - ultracode-status
         - project doctor

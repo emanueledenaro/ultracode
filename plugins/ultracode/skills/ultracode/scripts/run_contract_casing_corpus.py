@@ -14,7 +14,7 @@ import sys
 import tempfile
 from collections import OrderedDict
 from pathlib import Path
-from typing import Any
+from typing import Any, Callable
 
 
 def find_powershell() -> str | None:
@@ -208,8 +208,8 @@ def replace_once(path: Path, old: str, new: str) -> None:
 def remove_help_field(plugin_root: Path) -> None:
     guide = plugin_root / "skills" / "ultracode" / "references" / "command-guide.md"
     text = guide.read_text(encoding="utf-8")
-    if text.count("**What you get:**") != 6:
-        raise RuntimeError("command guide does not contain six result fields")
+    if text.count("**What you get:**") != 7:
+        raise RuntimeError("command guide does not contain seven result fields")
     guide.write_text(
         text.replace("**What you get:**", "**Outcome:**", 1),
         encoding="utf-8",
@@ -253,8 +253,8 @@ def remove_help_ticket_table(plugin_root: Path) -> None:
 def flatten_help_example(plugin_root: Path) -> None:
     guide = plugin_root / "skills" / "ultracode" / "references" / "command-guide.md"
     text = guide.read_text(encoding="utf-8")
-    if text.count("> **Example:**") != 6:
-        raise RuntimeError("command guide does not contain six inline blockquote examples")
+    if text.count("> **Example:**") != 7:
+        raise RuntimeError("command guide does not contain seven inline blockquote examples")
     guide.write_text(
         text.replace("> **Example:**", "**Example:**", 1),
         encoding="utf-8",
@@ -325,7 +325,7 @@ def weaken_help_metadata_prompt(plugin_root: Path) -> None:
         "# With no explicit topic, request the complete ordered UltraCode overview. "
         "Use a chat-friendly Markdown layout with one H1 title, comparison tables, "
         "H3 command sections, and inline blockquote examples. "
-        "If I provide a command, models, flow, or examples, answer only that topic. "
+        "If I provide a command, models, flow, verify, or examples, answer only that topic. "
         "Use compact wording only when I explicitly say breve or sintetico.\n"
     )
     metadata.write_text(mutated, encoding="utf-8", newline="\n")
@@ -351,6 +351,87 @@ def weaken_help_manifest_prompt(plugin_root: Path) -> None:
         handle.write("\n")
 
 
+def mutate_feature_schema(
+    plugin_root: Path,
+    mutation: Callable[[dict[str, Any]], None],
+) -> None:
+    schema_path = (
+        plugin_root
+        / "skills"
+        / "ultracode"
+        / "references"
+        / "feature-verification-plan.schema.json"
+    )
+    with schema_path.open("r", encoding="utf-8") as handle:
+        schema = json.load(handle, object_pairs_hook=OrderedDict)
+    mutation(schema)
+    with schema_path.open("w", encoding="utf-8", newline="\n") as handle:
+        json.dump(schema, handle, indent=2, ensure_ascii=False)
+        handle.write("\n")
+
+
+def replace_feature_status(plugin_root: Path) -> None:
+    def mutation(schema: dict[str, Any]) -> None:
+        schema["$defs"]["plannedResult"]["properties"]["status"]["const"] = "queued"
+
+    mutate_feature_schema(plugin_root, mutation)
+
+
+def weaken_passed_evidence(plugin_root: Path) -> None:
+    def mutation(schema: dict[str, Any]) -> None:
+        schema["$defs"]["passedResult"]["properties"]["evidence"]["minItems"] = 0
+
+    mutate_feature_schema(plugin_root, mutation)
+
+
+def allow_unknown_evidence_fields(plugin_root: Path) -> None:
+    def mutation(schema: dict[str, Any]) -> None:
+        schema["$defs"]["evidenceBase"]["additionalProperties"] = True
+
+    mutate_feature_schema(plugin_root, mutation)
+
+
+def add_result_union_variant(plugin_root: Path) -> None:
+    def mutation(schema: dict[str, Any]) -> None:
+        schema["$defs"]["result"]["oneOf"].append(
+            {"$ref": "#/$defs/plannedResult"}
+        )
+
+    mutate_feature_schema(plugin_root, mutation)
+
+
+def replace_result_union_variant_with_scalar(plugin_root: Path) -> None:
+    def mutation(schema: dict[str, Any]) -> None:
+        schema["$defs"]["result"]["oneOf"][0] = "#/$defs/plannedResult"
+
+    mutate_feature_schema(plugin_root, mutation)
+
+
+def omit_evidence_required_field(plugin_root: Path) -> None:
+    def mutation(schema: dict[str, Any]) -> None:
+        schema["$defs"]["evidenceBase"]["required"].remove("captured_at")
+
+    mutate_feature_schema(plugin_root, mutation)
+
+
+def weaken_supporting_outcome(plugin_root: Path) -> None:
+    def mutation(schema: dict[str, Any]) -> None:
+        schema["$defs"]["supportingEvidence"]["allOf"][1]["properties"]["outcome"][
+            "const"
+        ] = "contradicts"
+
+    mutate_feature_schema(plugin_root, mutation)
+
+
+def weaken_contradicting_outcome(plugin_root: Path) -> None:
+    def mutation(schema: dict[str, Any]) -> None:
+        schema["$defs"]["contradictingEvidence"]["allOf"][1]["properties"]["outcome"][
+            "const"
+        ] = "supports"
+
+    mutate_feature_schema(plugin_root, mutation)
+
+
 def main() -> int:
     plugin_root = Path(__file__).resolve().parents[3]
     with tempfile.TemporaryDirectory(prefix="ultracode-contract-casing-") as temporary:
@@ -373,6 +454,14 @@ def main() -> int:
             ("help-init-preflight-missing", remove_init_preflight_semantics),
             ("help-metadata-prompt-weakened", weaken_help_metadata_prompt),
             ("help-manifest-prompt-weakened", weaken_help_manifest_prompt),
+            ("verify-status-set-weakened", replace_feature_status),
+            ("verify-passed-evidence-weakened", weaken_passed_evidence),
+            ("verify-evidence-fields-open", allow_unknown_evidence_fields),
+            ("verify-result-oneof-extra", add_result_union_variant),
+            ("verify-result-oneof-scalar", replace_result_union_variant_with_scalar),
+            ("verify-evidence-required-missing", omit_evidence_required_field),
+            ("verify-supporting-outcome-weakened", weaken_supporting_outcome),
+            ("verify-contradicting-outcome-weakened", weaken_contradicting_outcome),
         )
         shutil.copytree(plugin_root, baseline_root)
         shutil.copytree(plugin_root, malformed_evidence_root)

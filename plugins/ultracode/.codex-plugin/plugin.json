@@ -1,7 +1,7 @@
 {
   "name": "ultracode",
-  "version": "0.5.3+codex.20260724011735",
-  "description": "Transparent, adaptive engineering orchestration for Codex with read-only command Help.",
+  "version": "0.6.0+codex.20260724065223",
+  "description": "Transparent engineering orchestration with durable feature verification.",
   "author": {
     "name": "Emanuele Denaro"
   },
@@ -19,8 +19,8 @@
   "skills": "./skills/",
   "interface": {
     "displayName": "UltraCode",
-    "shortDescription": "Transparent engineering workflow with command Help.",
-    "longDescription": "Keeps the user in control while it inspects, decomposes, delegates, verifies, implements, validates, and synthesizes complex engineering work. Includes read-only Help for choosing commands, guided initialization, safe configuration editing, a plain-language live flow, detailed status, Codex and Claude Code adapters, and data-driven swarms whose size follows the problem rather than a preset number.",
+    "shortDescription": "Engineering workflow with durable verification.",
+    "longDescription": "Keeps the user in control while it inspects, decomposes, delegates, verifies, implements, validates, and synthesizes complex engineering work. Includes durable feature-level verification plans, read-only Help for choosing commands, guided initialization, safe configuration editing, a plain-language live flow, detailed status, Codex and Claude Code adapters, and data-driven swarms whose size follows the problem rather than a preset number.",
     "developerName": "Emanuele Denaro",
     "category": "Productivity",
     "websiteURL": "https://github.com/emanueledenaro/ultracode",
@@ -33,10 +33,11 @@
       "Write"
     ],
     "defaultPrompt": [
-      "Use $ultracode-help. With no explicit topic, return the complete ordered overview in a chat-friendly Markdown layout with one H1 title, comparison tables, H3 command sections, and inline blockquote examples; focus on one command, models, flow, or examples only when named; use compact wording only for an explicit breve or sintetico request.",
+      "Use $ultracode-help. With no explicit topic, return the complete ordered overview in a chat-friendly Markdown layout with one H1 title, comparison tables, H3 command sections, and inline blockquote examples; focus on one command, models, flow, verify, or examples only when named; use compact wording only for an explicit breve or sintetico request.",
       "Use $ultracode-init to explain and configure this repository.",
       "Use $ultracode-edit to explain and safely change the project configuration.",
       "Use $ultracode to execute this task end to end, initialize project control safely if missing, and show visible progress.",
+      "Use $ultracode-verify to create or maintain a durable feature verification plan with evidence-backed results.",
       "Use $ultracode-flow to explain active tickets, agents, models, blockers, and next actions.",
       "Use $ultracode-status to show the complete diagnostic state and evidence."
     ]

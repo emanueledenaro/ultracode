@@ -65,6 +65,9 @@ Read [command-interface.md](references/command-interface.md) before presenting p
 work, blockers, or final results. Use its vocabulary consistently across every update.
 Read [command-guide.md](references/command-guide.md) when explaining which UltraCode command to use
 or handing work between commands.
+Read [feature-verification.md](references/feature-verification.md) when a feature verification plan
+exists, the user asks to prove feature behavior, or completion depends on persistent functional
+evidence.
 
 Publish a compact progress snapshot in commentary at intake, after decomposition, after each fan-out or verification barrier, before an authorization gate, after validation, and before handoff. During long work, do not leave the user without a useful update for more than the active environment permits; target 60 seconds.
 
@@ -136,9 +139,11 @@ Before implementation:
 3. Identify in-scope files, components, systems, side effects, and protected boundaries.
 4. Inspect Git status when available and record pre-existing dirty paths as user-owned.
 5. Define acceptance criteria and the strongest available verification path.
-6. Separate confirmed facts, reversible assumptions, and unresolved blockers.
-7. Create a plan for three or more meaningful steps, multiple components, or non-trivial validation; keep one lead-plan item in progress.
-8. Respect repository rules requiring explanation or confirmation before edits.
+6. Detect any in-scope durable feature verification plan. Validate it before relying on it and route
+   creation, result recording, or reconciliation through `$ultracode-verify`.
+7. Separate confirmed facts, reversible assumptions, and unresolved blockers.
+8. Create a plan for three or more meaningful steps, multiple components, or non-trivial validation; keep one lead-plan item in progress.
+9. Respect repository rules requiring explanation or confirmation before edits.
 
 Ask only when a missing decision materially changes the result or needs new authority. Otherwise make a reversible scoped assumption and state it when relevant.
 
@@ -176,6 +181,12 @@ Use an independent read-only reviewer after material or high-risk changes. If a 
 
 Fix confirmed in-scope defects and rerun invalidated checks. Limit the automatic fix-review loop to two iterations; if the same material issue remains, stop and report `BLOCKED`. Read [validation-and-review.md](references/validation-and-review.md) for Deep or Critical work.
 
+When a durable feature verification plan is in scope, validate its schema and cross-record
+semantics, reconcile every scenario's latest result, and preserve prior result history. Do not
+claim the feature verified while any required scenario is `planned`, `not-run`, `failed`,
+inconsistent, or lacks passed acceptance-criterion coverage. Do not automatically fix product code
+or run protected scenarios merely because the verification plan records a failure.
+
 ## Complete honestly
 
 Finish only when the requested outcome or analysis is complete, relevant checks actually support it, the final diff is scoped, no live job can change the conclusion, and remaining assumptions or blockers are visible. Lead with the outcome and cite concrete files and checks.
@@ -186,6 +197,8 @@ Never call work perfect, production-ready, secure, or complete beyond the eviden
 
 - Use `$ultracode-init` to initialize a repository through a guided interview and reviewable proposal.
 - Use `$ultracode-edit` to change configuration or regenerate managed adapters without overwriting manual work.
+- Use `$ultracode-verify` to create or maintain durable feature-level acceptance scenarios and
+  evidence using exactly `planned`, `passed`, `failed`, `not-run`, and `not-applicable`.
 - Use `$ultracode-flow` for a concise, fully explained view of active tickets, agents, models, blockers, and next actions.
 - Use `$ultracode-status` to explain current state read-only.
 - Use `$ultracode-help` to explain every command, model and reasoning behavior, safety boundary, and
