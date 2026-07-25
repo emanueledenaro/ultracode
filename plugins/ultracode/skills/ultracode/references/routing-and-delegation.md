@@ -4,6 +4,11 @@ Read this reference for Focused, Deep, or Critical execution after reading `swar
 delegated Deep or Critical work. Read `reasoning-routing.md` before selecting a subagent model,
 reasoning effort, or context mode.
 
+The role classes, gates, templates, and protocols here are runtime-neutral: they say what a job is
+and what must be true before it is delegated, not which API creates the agent. On Claude Code, read
+[the Claude Code runtime adapter](claude-code-runtime.md) for the concrete mechanism, and the
+"Delegate on Claude Code" section below for the mapping this reference depends on.
+
 ## Route by bounded responsibility
 
 | Need | Preferred execution | Write access | Model and effort policy |
@@ -20,6 +25,42 @@ Use configured role classes by default. Preserve an exact model identifier when 
 supplies it, select it only when the platform exposes that identifier reliably, and otherwise apply
 the configured fallback while reporting the effective model. Record requested and effective
 reasoning effort separately. Do not treat a project default as proof of a live runtime value.
+
+## Delegate on Claude Code
+
+Claude Code creates every subagent through the `Agent` tool (`Task` is an accepted alias). Map the
+row you selected above onto its parameters:
+
+| Row | `subagent_type` | Model | Isolation |
+| --- | --- | --- | --- |
+| explorer | `ultracode-explorer`, or built-in `Explore` | omit to inherit, or `sonnet` | none; read-only |
+| specialist explorer or reviewer | `ultracode-reviewer` | `opus` for material impact | none; read-only |
+| worker | `ultracode-worker` | omit to inherit, or `sonnet` | `worktree` only when workers would contend for paths |
+| fresh adversarial verifier | `ultracode-verifier` | `opus` | none; read-only |
+| fresh review-specialized agent | `ultracode-reviewer` | `opus` | none; read-only |
+| lead or synthesizer | not delegated | lead-owned | not applicable |
+
+Pass the scored value from `reasoning-routing.md` as `effort`, clamping `ultra` to `max`. Pass the
+full job template from this reference as `prompt`.
+
+Three properties of this runtime change how the templates must be written:
+
+1. **A subagent starts from a fresh context.** It does not inherit the lead's conversation. This is
+   what makes an `ultracode-verifier` verdict independent evidence rather than an echo. It also
+   means a brief that says "the finding above" or "the same scope" transfers nothing: inline the
+   claim and the raw evidence, or cite exact paths.
+2. **The subagent's final message is the return value.** It goes to the lead, not to the user. State
+   the required status payload in the brief instead of expecting a human-facing summary.
+3. **Concurrency comes from one message.** Several `Agent` calls in a single assistant message run
+   concurrently; the same calls split across messages serialize. Dispatch a whole wave at once.
+
+Claude Code publishes no fixed concurrency ceiling, and it varies by version and account. Do not
+state a number as fact — dispatch, observe what starts, and keep the remainder `QUEUED`.
+
+When a shipped role agent is unavailable, `general-purpose` with the identical brief is an
+acceptable substitute and `Explore` is an acceptable read-only substitute for discovery; record the
+substitution. Running the job in the lead context is not a substitute: disclose it and never promote
+that result to independent confirmation.
 
 ## Delegation gates
 
@@ -90,6 +131,10 @@ exact evidence. Do not rely on the discovering agent's conclusion.
 
 Use one verifier per deduplicated material finding. When a fresh agent is unavailable, disclose that the result is not independent and do not promote it to independent confirmation.
 
+On Claude Code a subagent never inherits the lead conversation, so `ultracode-verifier` is fresh by
+construction. That guarantee only holds if the brief carries its own evidence: a verifier that has
+to ask what the claim was cannot verify it.
+
 ## Independent integrated review template
 
 ```text
@@ -104,7 +149,8 @@ directly when no actionable finding is supported.
 
 1. Count all dependency-ready logical jobs.
 2. Inspect actual available agent capacity.
-3. Dispatch only what fits; keep every remainder visible as `QUEUED`.
+3. Dispatch only what fits; keep every remainder visible as `QUEUED`. On Claude Code, issue the
+   whole wave as parallel `Agent` calls in one message, or it will not run in parallel.
 4. Continue useful lead work while agents run.
 5. At each barrier, collect outcomes and inspect writes.
 6. Recompute the graph only from new evidence; explain added or cancelled jobs.

@@ -2,6 +2,39 @@
 
 All notable changes to UltraCode are documented here.
 
+## [Unreleased]
+
+### Added
+
+- Claude Code as a supported runtime alongside Codex: `.claude-plugin/marketplace.json` at the
+  repository root and `plugins/ultracode/.claude-plugin/plugin.json`, so the existing seven skills
+  install with `/plugin marketplace add` and `/plugin install`.
+- `references/claude-code-runtime.md`, the runtime adapter that maps role classes to Claude Code
+  models, maps the effort ladder, names the delegation tool and its parameters, and lists what stays
+  unobservable there.
+- Seven Claude Code slash commands (`/ultracode:help`, `:ultra`, `:verify`, `:init`, `:edit`,
+  `:flow`, `:status`) routing to the same skills.
+- Four Claude Code role agents — `ultracode-explorer`, `ultracode-verifier`, `ultracode-reviewer`,
+  and `ultracode-worker` — carrying the read-only, fail-closed, and exclusive-ownership contracts
+  the lead delegates against.
+
+### Changed
+
+- Model routing selects a role class first and resolves it per runtime; emitting a `gpt-5.6-*`
+  identifier into a Claude Code dispatch is now stated as a routing error, not a fallback.
+- A scored `ultra` effort is clamped to `max` on Claude Code and reported as clamped.
+- Delegation guidance names the concrete Claude Code mechanism: `Agent` tool parameters, fresh
+  subagent context as the source of verifier independence, whole-wave dispatch in a single message,
+  and `worktree` isolation for contending writers.
+- Help and the command interface recognize `$ultracode-*` and `/ultracode:*` as the same invocation
+  and emit the form belonging to the runtime the user is actually on.
+
+### Note
+
+- The 0.6.0 scenario evidence in `references/evaluation-evidence.json` predates these changes. Its
+  hashes were regenerated for local consistency; the evaluation suite in `references/eval-prompts.md`
+  should be re-run before this is released.
+
 ## [0.6.0] - 2026-07-24
 
 ### Added

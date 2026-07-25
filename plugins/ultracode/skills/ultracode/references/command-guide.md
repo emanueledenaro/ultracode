@@ -24,6 +24,14 @@ An explicit command, `models`, or `examples` selects a focused answer. The words
 overview still contains all six content areas. Do not end a response while a required semantic block is
 missing.
 
+Every command name in this guide is written in the Codex invocation form. That is the canonical
+spelling here, not the only valid one. On Claude Code the same commands are invoked as
+`/ultracode:ultracode-flow`, or through the short alias `/ultracode:flow`. Recognize both forms as
+the same request, apply Help precedence to both, and emit the form belonging to the runtime the user
+is actually on whenever you write an example they are meant to copy. See
+[the Claude Code runtime adapter](claude-code-runtime.md) and the invocation section of
+[the command interface](command-interface.md).
+
 The chat layout is part of the contract. Start with one H1 title. Use H2 headings for the content
 areas, H3 headings for individual commands, short labeled paragraphs, GitHub-flavored Markdown
 tables, and inline blockquote examples. Do not move all examples to the end or render them as seven

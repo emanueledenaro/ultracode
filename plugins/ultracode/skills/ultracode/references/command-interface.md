@@ -2,6 +2,29 @@
 
 Use this contract whenever an UltraCode command explains work to the user.
 
+## Speak the runtime's invocation syntax
+
+UltraCode runs on Codex and on Claude Code. The commands are identical; only the token that selects
+them differs.
+
+| Runtime | Invocation | Example |
+| --- | --- | --- |
+| Codex | `$ultracode-<command>` | `$ultracode-flow` |
+| Claude Code | `/ultracode:ultracode-<command>`, or the short alias `/ultracode:<command>` | `/ultracode:flow` |
+
+Detect the runtime before writing an example the user is meant to copy. Treat the runtime as Claude
+Code when the session exposes an `Agent` or `Task` delegation tool, plugin skills addressed as
+`/ultracode:<name>`, or a `CLAUDE.md` project memory file. Show that runtime's form. A `$` token
+handed to a Claude Code user, or a `/ultracode:` token handed to a Codex user, is an example that
+does not run.
+
+Recognition is broader than emission: accept `$ultracode-help`, `/ultracode:ultracode-help`,
+`/ultracode:help`, and bare `ultracode-help` as the same request, and apply Help precedence to all
+of them. When the runtime is genuinely ambiguous, name both forms once and continue.
+
+On Claude Code, read [the Claude Code runtime adapter](claude-code-runtime.md) before routing a
+model, an effort level, or a delegated job.
+
 ## Use plain language
 
 Write in the user's language. Prefer a concrete sentence over an internal label. Keep stable IDs for

@@ -7,7 +7,7 @@ description: Concise, read-only live control view for an UltraCode task. Use whe
 
 ## Respect explicit Help precedence
 
-If the request explicitly invokes `$ultracode-help` or `ultracode-help`, do not reconstruct live
+If the request explicitly invokes `$ultracode-help`, `/ultracode:ultracode-help`, `/ultracode:help`, or `ultracode-help`, do not reconstruct live
 state. Read `../ultracode-help/SKILL.md` and answer `flow` as a read-only Help topic.
 
 Show what is happening now in a form the user can understand in one pass and act on immediately.

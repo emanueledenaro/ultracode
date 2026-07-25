@@ -7,7 +7,7 @@ description: Detailed, read-only diagnosis of an UltraCode task. Use when the us
 
 ## Respect explicit Help precedence
 
-If the request explicitly invokes `$ultracode-help` or `ultracode-help`, do not inspect live state.
+If the request explicitly invokes `$ultracode-help`, `/ultracode:ultracode-help`, `/ultracode:help`, or `ultracode-help`, do not inspect live state.
 Read `../ultracode-help/SKILL.md` and answer `status` as a read-only Help topic.
 
 Explain the current state so the user can decide whether to continue, redirect, pause, or stop.

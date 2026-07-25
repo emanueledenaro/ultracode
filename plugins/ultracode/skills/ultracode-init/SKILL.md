@@ -7,7 +7,7 @@ description: Guided, safe initialization of UltraCode project control for Codex 
 
 ## Respect explicit Help precedence
 
-If the request explicitly invokes `$ultracode-help` or `ultracode-help`, stop before discovery or
+If the request explicitly invokes `$ultracode-help`, `/ultracode:ultracode-help`, `/ultracode:help`, or `ultracode-help`, stop before discovery or
 initialization. Read `../ultracode-help/SKILL.md` and answer `init` as a read-only Help topic.
 
 Initialize the current repository through inspection, a short interview, a reviewable proposal, and idempotent writes. Never clone another project's domain facts.

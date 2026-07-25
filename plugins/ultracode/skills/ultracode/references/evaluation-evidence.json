@@ -4,15 +4,15 @@
   "plugin_version_prefix": "0.6.0",
   "evaluated_on": "2026-07-24",
   "skill_sha256": {
-    "ultracode": "36ffe357802c1e4c0b003560c73c7d078522f1d9f604f16b6a215a290ced74ec",
-    "ultracode-help": "b9d750d444dcae14e1823537f225ea65b13c40908a789abfcd700310c14d176b",
-    "ultracode-verify": "ca248bccd5df763e12c754598facb1ab6f610cd33c1527bfa77182460736a0f1",
-    "ultracode-init": "1c6001a0b7b5285daffb11b12f258fc1b779122d3764f2b7181b3c7a136bb5e1",
-    "ultracode-edit": "30382f67e27302726509d89e2dce19694f8e618ce536cd58e57dd78bc12e2007",
-    "ultracode-flow": "910afddaf72438e8ea8442d83104615d97b7fb8ff72c1290f41b2c35f16d70ea",
-    "ultracode-status": "a00db0efdfb5b22b095529cf6d98da750c44172a2894584a6c84c3a9905bcff8"
+    "ultracode": "24433207dc838bed1c494509df8e9393ed96b1c51329f21ec1034dbe7f52bf52",
+    "ultracode-help": "fa107b04b6b9344ae4b58922b5e5e705c1e4a84382410c42dc7aae4383ed79a9",
+    "ultracode-verify": "94b2776a37cd4d2a142d56b957e17d14f1f292bd8174e3d47754d83d7609cff2",
+    "ultracode-init": "c0a0ef6120cdd8a8f1ff9d6ddf7c112d2974fc488bb2d58e785d002e0a4da1ba",
+    "ultracode-edit": "71ea71e28e0c107a9574d44710aa3dc5457a7969384bc9267db56f549bfbf4b7",
+    "ultracode-flow": "bf02e594e0b2cbade56c96f1c1c425419786e848b063e004f0c07d9d1847723f",
+    "ultracode-status": "f91595229427146cf492be7cf90b917534f69c6c854b30d8cee7f1faf7da16f4"
   },
-  "payload_sha256": "d0b7bcc529f97b03484f0941154b1c665e6e5535cad174710a8f6f85a375df3a",
+  "payload_sha256": "e12c10cdd3a4c51b9b1614e8a42d340ac51bc09de613f38e07df16aae2dcabe4",
   "trace_artifact": "evaluation-traces.json",
   "trace_sha256": "dabdbe60160490e3d06ab16e36a8ee2e0dfd6c78c86ccfbb33694bde0d1bd2b2",
   "scenario_results": [
@@ -191,8 +191,7 @@
       "exit_code": 1,
       "trace_id": "trace-fixture-semantic-adapter",
       "evidence": "Python doctor rejected the incorrect canonical marker despite a matching managed hash, with exit code 1."
-    }
-    ,
+    },
     {
       "check": "semantic adapter mismatch fixture PowerShell",
       "status": "FAILED",
