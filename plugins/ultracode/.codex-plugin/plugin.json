@@ -1,6 +1,6 @@
 {
   "name": "ultracode",
-  "version": "0.6.0+codex.20260724065223",
+  "version": "0.7.0-rc.1+codex.20260725132446",
   "description": "Transparent engineering orchestration with durable feature verification.",
   "author": {
     "name": "Emanuele Denaro"

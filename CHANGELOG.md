@@ -2,7 +2,11 @@
 
 All notable changes to UltraCode are documented here.
 
-## [Unreleased]
+## [0.7.0-rc.1] - 2026-07-25
+
+This is a release candidate, not a stable release. The Claude Code runtime support below is
+installable and was exercised end to end, but the forward-test suite has not been re-run against it
+— see the Note at the end of this entry.
 
 ### Added
 
@@ -31,9 +35,11 @@ All notable changes to UltraCode are documented here.
 
 ### Note
 
-- The 0.6.0 scenario evidence in `references/evaluation-evidence.json` predates these changes. Its
-  hashes were regenerated for local consistency; the evaluation suite in `references/eval-prompts.md`
-  should be re-run before this is released.
+- `references/evaluation-evidence.json` now carries the `0.7.0-rc.1` version prefix, but its
+  `scenario_results` were produced on 2026-07-24 against the 0.6.0 skill text, before these changes.
+  The file hashes were regenerated for local consistency only. The forward-test suite in
+  `references/eval-prompts.md` must be re-run, on both runtimes, before a stable 0.7.0 is tagged.
+  This is why 0.7.0-rc.1 ships as a pre-release.
 
 ## [0.6.0] - 2026-07-24
 

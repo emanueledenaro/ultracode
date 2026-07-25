@@ -5,14 +5,15 @@
 <h1 align="center">UltraCode</h1>
 
 <p align="center">
-  Transparent, adaptive multi-agent software engineering for Codex.
+  Transparent, adaptive multi-agent software engineering for Codex and Claude Code.
 </p>
 
 <p align="center">
   <a href="https://github.com/emanueledenaro/ultracode/actions/workflows/validate.yml"><img alt="Validation" src="https://github.com/emanueledenaro/ultracode/actions/workflows/validate.yml/badge.svg"></a>
   <a href="LICENSE"><img alt="MIT License" src="https://img.shields.io/badge/license-MIT-2FB9D1.svg"></a>
   <img alt="Codex plugin" src="https://img.shields.io/badge/Codex-plugin-202124.svg">
-  <img alt="Release" src="https://img.shields.io/badge/release-0.6.0-2FB9D1.svg">
+  <img alt="Claude Code plugin" src="https://img.shields.io/badge/Claude%20Code-plugin-202124.svg">
+  <img alt="Release" src="https://img.shields.io/badge/release-0.7.0--rc.1-2FB9D1.svg">
 </p>
 
 UltraCode is a plugin for Codex and Claude Code that keeps complex AI engineering work observable, interruptible, and evidence-driven. It inspects the real project, derives bounded jobs from the problem, schedules them through available capacity, verifies material findings adversarially, and produces one coherent result.

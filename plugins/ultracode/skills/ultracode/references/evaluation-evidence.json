@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "attestation_scope": "local-consistency-only",
-  "plugin_version_prefix": "0.6.0",
+  "plugin_version_prefix": "0.7.0-rc.1",
   "evaluated_on": "2026-07-24",
   "skill_sha256": {
     "ultracode": "24433207dc838bed1c494509df8e9393ed96b1c51329f21ec1034dbe7f52bf52",
@@ -12,9 +12,9 @@
     "ultracode-flow": "bf02e594e0b2cbade56c96f1c1c425419786e848b063e004f0c07d9d1847723f",
     "ultracode-status": "f91595229427146cf492be7cf90b917534f69c6c854b30d8cee7f1faf7da16f4"
   },
-  "payload_sha256": "e12c10cdd3a4c51b9b1614e8a42d340ac51bc09de613f38e07df16aae2dcabe4",
+  "payload_sha256": "a315031f0cc6c41d53b9d02e39541d7e6a3dd6890a69e49377c8b15898409f3d",
   "trace_artifact": "evaluation-traces.json",
-  "trace_sha256": "dabdbe60160490e3d06ab16e36a8ee2e0dfd6c78c86ccfbb33694bde0d1bd2b2",
+  "trace_sha256": "ca373b90d46c2b2d06c08afdd7efd98a2638c0c5abb3baaff6828fb21c7b5577",
   "scenario_results": [
     {
       "id": "UC-01",

@@ -1,6 +1,6 @@
 {
   "name": "ultracode",
-  "version": "0.6.0",
+  "version": "0.7.0-rc.1",
   "description": "Transparent engineering orchestration with durable feature verification. Inspects the real project, derives bounded jobs, delegates them, verifies findings adversarially, and synthesizes one coherent result.",
   "author": {
     "name": "Emanuele Denaro"
