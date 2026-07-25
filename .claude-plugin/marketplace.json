@@ -1,0 +1,34 @@
+{
+  "name": "ultracode",
+  "owner": {
+    "name": "Emanuele Denaro",
+    "url": "https://github.com/emanueledenaro"
+  },
+  "metadata": {
+    "description": "Transparent, adaptive multi-agent software engineering for Claude Code and Codex.",
+    "version": "0.6.0"
+  },
+  "plugins": [
+    {
+      "name": "ultracode",
+      "source": "./plugins/ultracode",
+      "description": "Transparent engineering orchestration with durable feature verification.",
+      "version": "0.6.0",
+      "author": {
+        "name": "Emanuele Denaro"
+      },
+      "homepage": "https://github.com/emanueledenaro/ultracode",
+      "repository": "https://github.com/emanueledenaro/ultracode",
+      "license": "MIT",
+      "category": "productivity",
+      "keywords": [
+        "coding",
+        "multi-agent",
+        "orchestration",
+        "review",
+        "validation",
+        "project-control"
+      ]
+    }
+  ]
+}
