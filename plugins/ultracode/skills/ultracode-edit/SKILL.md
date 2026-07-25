@@ -7,7 +7,7 @@ description: Safely modify an initialized UltraCode repository configuration and
 
 ## Respect explicit Help precedence
 
-If the request explicitly invokes `$ultracode-help` or `ultracode-help`, stop before diagnosis or
+If the request explicitly invokes `$ultracode-help`, `/ultracode:ultracode-help`, `/ultracode:help`, or `ultracode-help`, stop before diagnosis or
 configuration work. Read `../ultracode-help/SKILL.md` and answer `edit` as a read-only Help topic.
 
 Change the smallest configuration surface and regenerate only affected managed artifacts. Preserve user-authored content and make drift visible.

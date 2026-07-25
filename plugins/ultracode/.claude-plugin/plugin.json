@@ -1,0 +1,19 @@
+{
+  "name": "ultracode",
+  "version": "0.7.0-rc.1",
+  "description": "Transparent engineering orchestration with durable feature verification. Inspects the real project, derives bounded jobs, delegates them, verifies findings adversarially, and synthesizes one coherent result.",
+  "author": {
+    "name": "Emanuele Denaro"
+  },
+  "homepage": "https://github.com/emanueledenaro/ultracode",
+  "repository": "https://github.com/emanueledenaro/ultracode",
+  "license": "MIT",
+  "keywords": [
+    "coding",
+    "multi-agent",
+    "orchestration",
+    "review",
+    "validation",
+    "project-control"
+  ]
+}

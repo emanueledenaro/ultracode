@@ -1,6 +1,6 @@
 ---
 name: ultracode-help
-description: Explain and help choose UltraCode commands without changing the task or repository. Use when the user invokes `$ultracode-help` or `ultracode-help`, asks how UltraCode works or which command fits, or asks about UltraCode initialization, feature verification, control, tickets, agents, models, reasoning effort, safety, validation, or examples. Support focused command and model topics plus an explicitly brief or synthetic mode.
+description: Explain and help choose UltraCode commands without changing the task or repository. Use when the user invokes `$ultracode-help`, `/ultracode:ultracode-help`, `/ultracode:help`, or `ultracode-help`, asks how UltraCode works or which command fits, or asks about UltraCode initialization, feature verification, control, tickets, agents, models, reasoning effort, safety, validation, or examples. Support focused command and model topics plus an explicitly brief or synthetic mode.
 ---
 
 # UltraCode Help
@@ -14,7 +14,9 @@ question about model or effort selection.
 
 ## Select the response mode
 
-First remove the invocation token `$ultracode-help` or `ultracode-help` from the request.
+First remove the invocation token from the request: `$ultracode-help` on Codex,
+`/ultracode:ultracode-help` or `/ultracode:help` on Claude Code, or a bare `ultracode-help` on
+either. All of them are the same invocation.
 The invocation token is never itself the `help` topic. Only the remaining words can select a mode.
 Normalize remaining topics with or without `$`: `ultracode`, `verify`, `init`, `edit`, `flow`,
 `status`, `help`, `models`, and `examples`. Accept complete command names such as
@@ -31,6 +33,30 @@ An explicit Help invocation has precedence over every command name in the remain
   a requested topic. For a no-topic overview, retain every mandatory overview block.
 - **Ambiguous choice:** recommend the least powerful command that satisfies the outcome. Explain
   the recommendation; do not invoke or simulate it.
+
+## Write examples in the user's runtime syntax
+
+Help exists to hand the user something they can run. An example in the wrong invocation syntax
+fails that purpose even when every other word is correct.
+
+Identify the runtime before writing any example. Treat it as Claude Code when the session exposes an
+`Agent` or `Task` delegation tool, plugin skills addressed as `/ultracode:<name>`, or a `CLAUDE.md`
+project memory file; otherwise treat it as Codex.
+
+| Runtime | Emit | Example |
+| --- | --- | --- |
+| Codex | `$ultracode-<command>` | `Use $ultracode-flow to show what is happening now.` |
+| Claude Code | `/ultracode:<command>` | `/ultracode:flow` |
+
+On Claude Code, `/ultracode:ultracode-flow` is equally valid and is what the plugin skill is named;
+prefer the short alias in examples because it is shorter to type. Never present a `$` token to a
+Claude Code user as the way to invoke a command.
+
+The reference tables in the command guide stay in the Codex spelling. Translate them into the user's
+runtime syntax when you render them; do not copy the `$` form blindly into a Claude Code answer.
+
+When you cannot tell which runtime is active, say so in one clause and give the Claude Code form
+plus the Codex form once, rather than guessing silently.
 
 ## Render the complete overview
 
@@ -95,6 +121,7 @@ Internally verify the response without printing this checklist:
 - every described command includes when, result, write capability, and confirmation trigger;
 - model and effort claims separate requested, effective, inheritance, and fallback;
 - one example per command appears in the overview;
+- every example uses the invocation syntax of the runtime the user is actually on;
 - no runtime or project fact was invented.
 
 Do not finish the response until every semantic item required by the selected mode is covered.

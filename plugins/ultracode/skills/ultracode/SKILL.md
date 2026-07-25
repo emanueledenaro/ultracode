@@ -1,13 +1,13 @@
 ---
 name: ultracode
-description: Adaptive, user-visible software-engineering orchestration for Codex. Use when the user explicitly invokes UltraCode or requests a complex implementation, difficult diagnosis with a requested fix, broad audit, refactor, migration, reverse-engineering effort, or other work that benefits from evidence-driven decomposition, many bounded agent jobs, adversarial verification, real validation, and one coherent synthesis. Do not select this skill when the request explicitly invokes `$ultracode-help`; any following command name is a Help topic. Do not invoke implicitly for simple questions, trivial localized edits, or work fully owned by a narrower specialist skill.
+description: Adaptive, user-visible software-engineering orchestration for Claude Code and Codex. Use when the user explicitly invokes UltraCode or requests a complex implementation, difficult diagnosis with a requested fix, broad audit, refactor, migration, reverse-engineering effort, or other work that benefits from evidence-driven decomposition, many bounded agent jobs, adversarial verification, real validation, and one coherent synthesis. Do not select this skill when the request explicitly invokes `$ultracode-help`; any following command name is a Help topic. Do not invoke implicitly for simple questions, trivial localized edits, or work fully owned by a narrower specialist skill.
 ---
 
 # UltraCode
 
 ## Respect explicit Help precedence
 
-If the request explicitly invokes `$ultracode-help` or `ultracode-help`, stop before any engineering
+If the request explicitly invokes `$ultracode-help`, `/ultracode:ultracode-help`, `/ultracode:help`, or `ultracode-help`, stop before any engineering
 action. Read `../ultracode-help/SKILL.md` and answer the remaining words as a read-only Help topic.
 
 Operate as the accountable lead engineer. Keep the user able to understand and interrupt the work at every phase. Use agents to improve coverage, throughput, and independence; never use agent count as a quality signal or as a substitute for judgment.
@@ -58,6 +58,18 @@ Classify the request as one of:
 - **Monitor or wait:** observe state without turning unchanged state into failure.
 
 Separate authorization to investigate from authorization to mutate. For Answer, Review, Audit, and Diagnose requests, classify each proposed command before running it. Do not run build, test, formatter, generator, package, or editor commands that write caches, reports, imports, lockfiles, or workspace artifacts unless authorized. Prefer a genuinely read-only alternative; otherwise report the check as `BLOCKED` or `NOT RUN`.
+
+## Identify the runtime first
+
+UltraCode runs on Codex and on Claude Code. Determine which one is active before routing a model, an
+effort level, a delegated job, or a copyable example. Treat the runtime as Claude Code when the
+session exposes an `Agent` or `Task` delegation tool, plugin skills addressed as `/ultracode:<name>`,
+or a `CLAUDE.md` project memory file.
+
+On Claude Code, read [claude-code-runtime.md](references/claude-code-runtime.md) before the first
+dispatch. It maps role classes to Claude Code models, maps the effort ladder, names the delegation
+tool and its parameters, and lists what stays unobservable here. Applying the Codex identifiers or
+the Codex invocation syntax on Claude Code is a routing error, not a fallback.
 
 ## Keep the user in control
 
@@ -112,7 +124,8 @@ total jobs = independent data units
 
 A simple task with no useful independent units stays Direct and creates no artificial swarm. A configured `hard_safety_cap` is a circuit breaker, not a target: if the derived graph exceeds it, expose the count and pause for scope or cap authority instead of silently dropping jobs. Read [swarm-protocol.md](references/swarm-protocol.md) before delegated Deep or Critical work.
 
-Before dispatching any agent, read [reasoning-routing.md](references/reasoning-routing.md). Score the
+Before dispatching any agent, read [reasoning-routing.md](references/reasoning-routing.md), and on
+Claude Code also [claude-code-runtime.md](references/claude-code-runtime.md). Score the
 bounded objective with the objective-driven reasoning policy rather than assigning one effort to
 the whole task. Keep the active chat model
 inherited, use Terra with `low` as the bounded operational default, raise effort only when the
@@ -128,7 +141,7 @@ Use the lowest tier that can deliver reliable evidence. Tiers change gates, not 
 - **Deep:** multiple independent units, blind spots, or validation surfaces; use the derived job graph and wave scheduler.
 - **Critical:** security-sensitive, data-sensitive, migration-heavy, release-blocking, or evidence-intensive; require explicit acceptance criteria, adversarial verification, staged validation, and independent review.
 
-Read [routing-and-delegation.md](references/routing-and-delegation.md) for Focused, Deep, or Critical execution.
+Read [routing-and-delegation.md](references/routing-and-delegation.md) for Focused, Deep, or Critical execution. On Claude Code, dispatch a whole wave as parallel `Agent` calls in one message, using the plugin's `ultracode-explorer`, `ultracode-worker`, `ultracode-verifier`, and `ultracode-reviewer` agent types; calls split across messages serialize.
 
 ## Establish the task contract
 

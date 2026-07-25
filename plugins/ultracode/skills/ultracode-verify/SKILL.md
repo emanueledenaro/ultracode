@@ -7,7 +7,7 @@ description: Create, inspect, execute, and maintain a durable feature-level func
 
 ## Respect explicit Help precedence
 
-If the request explicitly invokes `$ultracode-help` or `ultracode-help`, do not inspect, create,
+If the request explicitly invokes `$ultracode-help`, `/ultracode:ultracode-help`, `/ultracode:help`, or `ultracode-help`, do not inspect, create,
 execute, or update a verification plan. Read `../ultracode-help/SKILL.md` and answer `verify` as a
 read-only Help topic.
 

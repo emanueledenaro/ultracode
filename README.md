@@ -5,21 +5,24 @@
 <h1 align="center">UltraCode</h1>
 
 <p align="center">
-  Transparent, adaptive multi-agent software engineering for Codex.
+  Transparent, adaptive multi-agent software engineering for Codex and Claude Code.
 </p>
 
 <p align="center">
   <a href="https://github.com/emanueledenaro/ultracode/actions/workflows/validate.yml"><img alt="Validation" src="https://github.com/emanueledenaro/ultracode/actions/workflows/validate.yml/badge.svg"></a>
   <a href="LICENSE"><img alt="MIT License" src="https://img.shields.io/badge/license-MIT-2FB9D1.svg"></a>
   <img alt="Codex plugin" src="https://img.shields.io/badge/Codex-plugin-202124.svg">
-  <img alt="Release" src="https://img.shields.io/badge/release-0.6.0-2FB9D1.svg">
+  <img alt="Claude Code plugin" src="https://img.shields.io/badge/Claude%20Code-plugin-202124.svg">
+  <img alt="Release" src="https://img.shields.io/badge/release-0.7.0--rc.1-2FB9D1.svg">
 </p>
 
-UltraCode is a Codex plugin that keeps complex AI engineering work observable, interruptible, and evidence-driven. It inspects the real project, derives bounded jobs from the problem, schedules them through available capacity, verifies material findings adversarially, and produces one coherent result.
+UltraCode is a plugin for Codex and Claude Code that keeps complex AI engineering work observable, interruptible, and evidence-driven. It inspects the real project, derives bounded jobs from the problem, schedules them through available capacity, verifies material findings adversarially, and produces one coherent result.
 
 It does not choose an impressive-looking agent count. It derives the work graph from the code and shows the user what is complete, active, queued, blocked, changed, and validated.
 
 ## Install
+
+### Codex
 
 Add this repository as a Codex marketplace, then install the plugin:
 
@@ -30,23 +33,40 @@ codex plugin add ultracode@ultracode
 
 Start a new Codex task after installation so the skills are reloaded.
 
-UltraCode has no account, API key, MCP server, background service, or telemetry requirement.
+### Claude Code
+
+Add the same repository as a Claude Code marketplace, then install the plugin:
+
+```bash
+/plugin marketplace add emanueledenaro/ultracode
+/plugin install ultracode@ultracode
+```
+
+Restart the session so the skills, commands, and agents are registered.
+
+UltraCode has no account, API key, MCP server, background service, or telemetry requirement on
+either runtime.
 
 ## Use
 
-Invoke the skill that matches the job:
+Invoke the command that matches the job. The behavior is identical on both runtimes; only the
+invocation token differs.
 
-| Skill | Purpose |
-| --- | --- |
-| `$ultracode-help` | Explain the commands, recommend the right one, and provide safe copyable examples. It is always read-only. |
-| `$ultracode` | Execute engineering work end to end. Before writing, it explains the objective, the jobs it derived, who owns them, and how completion will be verified. |
-| `$ultracode-verify` | Create, inspect, execute, and maintain a durable feature-level verification plan with append-only evidence and fail-closed status semantics. |
-| `$ultracode-init` | Inspect a repository and explain, in plain language, what project guidance it proposes, why each file is useful, and what will change. It writes only after confirmation. |
-| `$ultracode-edit` | Explain the requested configuration change as a before-and-after delta, detect conflicts or manual edits, and update only the affected managed content after confirmation. |
-| `$ultracode-flow` | Give a quick, read-only control view: objective, current phase, active or blocked tickets, responsible agent, requested and effective model and effort, completion criterion, and immediate next action. |
-| `$ultracode-status` | Give the detailed, read-only diagnostic view: full job state, files, checks, evidence, blockers, configuration drift, and next action. |
+| Codex | Claude Code | Purpose |
+| --- | --- | --- |
+| `$ultracode-help` | `/ultracode:help` | Explain the commands, recommend the right one, and provide safe copyable examples. It is always read-only. |
+| `$ultracode` | `/ultracode:ultra` | Execute engineering work end to end. Before writing, it explains the objective, the jobs it derived, who owns them, and how completion will be verified. |
+| `$ultracode-verify` | `/ultracode:verify` | Create, inspect, execute, and maintain a durable feature-level verification plan with append-only evidence and fail-closed status semantics. |
+| `$ultracode-init` | `/ultracode:init` | Inspect a repository and explain, in plain language, what project guidance it proposes, why each file is useful, and what will change. It writes only after confirmation. |
+| `$ultracode-edit` | `/ultracode:edit` | Explain the requested configuration change as a before-and-after delta, detect conflicts or manual edits, and update only the affected managed content after confirmation. |
+| `$ultracode-flow` | `/ultracode:flow` | Give a quick, read-only control view: objective, current phase, active or blocked tickets, responsible agent, requested and effective model and effort, completion criterion, and immediate next action. |
+| `$ultracode-status` | `/ultracode:status` | Give the detailed, read-only diagnostic view: full job state, files, checks, evidence, blockers, configuration drift, and next action. |
 
-Examples:
+On Claude Code the skills are also addressable by their full names — `/ultracode:ultracode-help`,
+`/ultracode:ultracode-verify`, and so on — and they trigger from a plain description of the job
+without any slash command at all.
+
+Examples on Codex:
 
 ```text
 Use $ultracode-help to explain which command I need for a configuration change.
@@ -57,6 +77,30 @@ Use $ultracode-flow to show quickly what is happening right now.
 Use $ultracode-status to diagnose why a job is blocked and inspect its evidence.
 Use $ultracode-edit to change the validation commands and status policy.
 ```
+
+The same requests on Claude Code:
+
+```text
+/ultracode:help which command do I need for a configuration change
+/ultracode:verify checkout recovery
+/ultracode:init
+/ultracode:ultra migrate this subsystem and prove behavioral parity
+/ultracode:flow
+/ultracode:status
+/ultracode:edit change the validation commands and status policy
+```
+
+### Claude Code agents
+
+On Claude Code the plugin also ships the four role agents the lead delegates to. Address them
+directly with `@ultracode:<name>` when you want one job done without the full orchestration:
+
+| Agent | Role | Write access |
+| --- | --- | --- |
+| `@ultracode:ultracode-explorer` | Answer one bounded question with file-and-symbol evidence | read-only |
+| `@ultracode:ultracode-verifier` | Adversarially test one claim, fail closed | read-only |
+| `@ultracode:ultracode-reviewer` | Review an integrated change against acceptance criteria | read-only |
+| `@ultracode:ultracode-worker` | Implement one component under exclusive file ownership | workspace write |
 
 Choose `$ultracode-help` when you need to understand or select a command. Use `$ultracode` for an engineering outcome, `$ultracode-verify` for durable feature-level functional proof, `$ultracode-init` to propose baseline project control, `$ultracode-edit` to change existing control, `$ultracode-flow` for a quick live snapshot, and `$ultracode-status` for the detailed evidence view. Help, Flow, and Status are always read-only; none starts work, initializes a repository, or runs checks merely to answer.
 

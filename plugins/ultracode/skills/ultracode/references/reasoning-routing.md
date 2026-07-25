@@ -3,12 +3,18 @@
 Read this reference before delegating any job or explaining why an agent received a model or
 reasoning effort.
 
+The scoring, floors, caps, and reporting rules below are runtime-neutral. The exact model
+identifiers and the top of the effort ladder are not. On Claude Code, read
+[the Claude Code runtime adapter](claude-code-runtime.md) and apply its role-class and effort
+mappings before emitting any dispatch value.
+
 ## Keep the chat model honest
 
-The active Codex task owns the lead model and reasoning effort. UltraCode cannot replace that model
-mid-task. Treat `swarm.model_policy.lead: inherit` as the honest default, and report the lead model
-or effort as unobservable when the runtime does not expose them. A project preference or local
-Codex default is not proof of the effective model in an already-open task.
+The active task owns the lead model and reasoning effort. UltraCode cannot replace that model
+mid-task, on Codex or on Claude Code. Treat `swarm.model_policy.lead: inherit` as the honest
+default, and report the lead model or effort as unobservable when the runtime does not expose them.
+A project preference, a plugin manifest, or a local Codex or Claude Code default is not proof of the
+effective model in an already-open task.
 
 Subagent model and effort overrides are separate decisions. Apply them only when the collaboration
 runtime exposes the requested values. When an override requires a fresh or bounded context, send a
@@ -17,15 +23,16 @@ effort; never claim that an explicit override took effect in that case.
 
 ## Start a new UltraCode task
 
-When the user can choose the lead before opening a new UltraCode task, recommend
-`gpt-5.6-sol` with `medium` effort as the balanced coordination baseline. Sol is appropriate for
-planning, cross-job synthesis, authority decisions, and deciding when verification is material;
-`medium` avoids spending critical-review effort on every conversational turn.
+When the user can choose the lead before opening a new UltraCode task, recommend the coordination
+tier with `medium` effort as the balanced baseline: `gpt-5.6-sol` on Codex, `opus` on Claude Code.
+That tier is appropriate for planning, cross-job synthesis, authority decisions, and deciding when
+verification is material; `medium` avoids spending critical-review effort on every conversational
+turn.
 
 This is startup guidance, not a runtime override. UltraCode must not change the current task's model
-or the user's global Codex configuration. It may change a global default only after a separate,
-explicit user request. Once the task is open, report the lead as inherited and report its effective
-model or effort only when the runtime exposes them.
+or the user's global Codex or Claude Code configuration. It may change a global default only after a
+separate, explicit user request. Once the task is open, report the lead as inherited and report its
+effective model or effort only when the runtime exposes them.
 
 ## Score the bounded objective
 
@@ -52,6 +59,10 @@ Map the total to the requested effort:
 | 9 | `max` |
 | 10 | `ultra` |
 
+`ultra` exists only on runtimes that expose it. On Claude Code the ladder ends at `max`: clamp a
+scored `ultra` to `max`, record the clamp, and never report the clamped dispatch as if `ultra` took
+effect. See [the Claude Code runtime adapter](claude-code-runtime.md).
+
 Record the factor values and a short plain-language reason in the lead ledger. Show the reason, not
 the raw score, unless the user asks for diagnostic detail.
 
@@ -77,14 +88,19 @@ existing convergence rule instead of continuing to raise effort.
 
 ## Choose the model separately
 
-Use the configured exact identifiers only when the runtime exposes them:
+Route by role class, then resolve the class to an identifier the active runtime actually exposes:
 
-| Job | Preferred model |
-| --- | --- |
-| bounded discovery, documentation, localized implementation, or mechanical validation | `gpt-5.6-terra` |
-| complex but bounded implementation | `gpt-5.6-terra` with the scored higher effort |
-| architecture, security, migration, data integrity, or high-impact ambiguity | `gpt-5.6-sol` |
-| material finding verification and critical integrated review | `gpt-5.6-sol` |
+| Job | Codex model | Claude Code model |
+| --- | --- | --- |
+| bounded discovery, documentation, localized implementation, or mechanical validation | `gpt-5.6-terra` | `sonnet` |
+| complex but bounded implementation | `gpt-5.6-terra` with the scored higher effort | `sonnet` with the scored higher effort |
+| architecture, security, migration, data integrity, or high-impact ambiguity | `gpt-5.6-sol` | `opus` |
+| material finding verification and critical integrated review | `gpt-5.6-sol` | `opus` |
+
+Never emit an identifier from the wrong column. Sending `gpt-5.6-sol` to a Claude Code dispatch is a
+routing error, not a fallback. On Claude Code, omitting the model so the agent inherits the session
+model is a valid dispatch and often the honest one; see
+[the Claude Code runtime adapter](claude-code-runtime.md).
 
 Model strength does not replace effort scoring, and higher effort does not silently turn one model
 into another. If the preferred model is unavailable, apply `swarm.model_policy.fallback`, preserve
