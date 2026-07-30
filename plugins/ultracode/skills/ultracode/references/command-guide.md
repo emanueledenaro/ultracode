@@ -13,7 +13,7 @@ An explicit Help invocation has precedence over any command name that follows it
 `$ultracode-help flow` explains Flow read-only and must never reconstruct live Flow state.
 
 1. quick choice as a two-column Markdown table;
-2. all seven commands, each with four labeled fields and an inline blockquote example;
+2. all eight commands, each with four labeled fields and an inline blockquote example;
 3. unconfigured-project and Init preflight behavior;
 4. models and reasoning effort as a compact table plus honest runtime notes;
 5. tickets versus agents as a compact comparison table;
@@ -34,7 +34,7 @@ is actually on whenever you write an example they are meant to copy. See
 
 The chat layout is part of the contract. Start with one H1 title. Use H2 headings for the content
 areas, H3 headings for individual commands, short labeled paragraphs, GitHub-flavored Markdown
-tables, and inline blockquote examples. Do not move all examples to the end or render them as seven
+tables, and inline blockquote examples. Do not move all examples to the end or render them as eight
 separate fenced code blocks.
 
 ## Quick choice
@@ -44,6 +44,7 @@ separate fenced code blocks.
 | An explanation, comparison, or example | `$ultracode-help` |
 | Engineering work investigated, built, fixed, or run | `$ultracode` |
 | Durable proof that a feature works | `$ultracode-verify` |
+| A Conventional Commits message prepared or validated from the real diff | `$ultracode-commit` |
 | UltraCode project control added | `$ultracode-init` |
 | Existing UltraCode control changed or drift repaired | `$ultracode-edit` |
 | A quick view of work in progress | `$ultracode-flow` |
@@ -52,7 +53,7 @@ separate fenced code blocks.
 Recommend the least powerful command that satisfies the outcome. Help explains; Flow and Status
 observe; Init configures; Edit changes that configuration; UltraCode performs engineering work.
 
-## The seven commands
+## The eight commands
 
 ### `$ultracode-help`
 
@@ -67,7 +68,7 @@ state refresh.
 **When confirmation is required:** Never. Help has no write path and also works without
 `.ultracode`.
 
-> **Example:** `Use $ultracode-help to explain all seven commands and recommend where I should start.`
+> **Example:** `Use $ultracode-help to explain all eight commands and recommend where I should start.`
 
 ### `$ultracode`
 
@@ -104,6 +105,24 @@ writes. Git, publishing, external requests, deployment, dependencies, destructiv
 production actions always require separate explicit authority.
 
 > **Example:** `Use $ultracode-verify to create a durable verification plan for checkout recovery. Do not deploy, publish, or make external requests.`
+
+### `$ultracode-commit`
+
+**When to use it:** Choose it to prepare or validate a Conventional Commits 1.0.0 message from the
+real Git diff, or to complete a separately authorized local commit.
+
+**What you get:** A truthful type, optional scope, description, body, and footer proposal, with the
+affected paths and validation evidence explained. A local commit is reported separately from push,
+release, or deployment.
+
+**Can it write?:** Message preparation is read-only. It may stage or commit only after the user
+explicitly authorizes that exact Git action and the paths included.
+
+**When confirmation is required:** Git staging, commit, amend, rebase, push, tag, publish, and pull
+request actions each require explicit authority. If unrelated changes cannot be separated safely, it
+stops and asks whether to split or narrow the commit.
+
+> **Example:** `Use $ultracode-commit to validate a Conventional Commits message from the current diff. Do not stage or commit.`
 
 ### `$ultracode-init`
 

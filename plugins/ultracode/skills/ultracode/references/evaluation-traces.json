@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
   "attestation_scope": "local-consistency-only",
-  "plugin_version_prefix": "0.7.0-rc.1",
-  "generated_on": "2026-07-24",
+  "plugin_version_prefix": "0.7.0-rc.2",
+  "generated_on": "2026-07-31",
   "records": [
     {
       "trace_id": "trace-uc-01-direct",
@@ -305,6 +305,16 @@
       "facts": ["Official skill-creator validator returned Skill is valid in offline mode after PyYAML was cached in an isolated uv environment."]
     },
     {
+      "trace_id": "trace-validate-skill-commit",
+      "category": "validation",
+      "subject": "quick_validate ultracode-commit",
+      "status": "PASSED",
+      "source_type": "command-result",
+      "command": "uv run --offline --with pyyaml -- python ${SKILL_CREATOR}/scripts/quick_validate.py ${PLUGIN_ROOT}/skills/ultracode-commit",
+      "exit_code": 0,
+      "facts": ["Official skill-creator validator returned Skill is valid for the new Conventional Commits message-preparation skill."]
+    },
+    {
       "trace_id": "trace-validate-skill-init",
       "category": "validation",
       "subject": "quick_validate ultracode-init",
@@ -362,17 +372,17 @@
       "source_type": "command-result",
       "command": "${PYTHON} ${PLUGIN_ROOT}/skills/ultracode/scripts/check_contract.py --allow-pending",
       "exit_code": 0,
-      "facts": ["The changed Python checker completed its live 44-case doctor corpus and validated the exact Verify result union, result shapes, evidenceBase fields, status-specific evidence references, and supporting and contradicting outcome consts.", "Its bootstrap rerun validated the current skill, payload, and trace bindings and returned exit code 0 with complete release evidence."]
+      "facts": ["The changed Python checker completed its live 44-case doctor corpus and validated the exact Verify result union, result shapes, evidenceBase fields, status-specific evidence references, and supporting and contradicting outcome consts.", "Its bootstrap rerun validated the current skill, payload, and trace bindings and returned exit code 0 with structurally valid but release-incomplete evidence."]
     },
     {
       "trace_id": "trace-contract-powershell",
       "category": "validation",
       "subject": "contract checker PowerShell bootstrap",
-      "status": "PASSED",
+      "status": "NOT_AVAILABLE",
       "source_type": "command-result",
       "command": "powershell -File ${PLUGIN_ROOT}/skills/ultracode/scripts/check_contract.ps1 -AllowPending",
-      "exit_code": 0,
-      "facts": ["Official PowerShell 7.6.4 arm64 runtime executed from an isolated temporary directory.", "The changed PowerShell checker completed its live doctor corpus, validated the current Verify schema and release bindings, and returned exit code 0."]
+      "exit_code": null,
+      "facts": ["PowerShell is not installed in the current environment, so the changed parity checker and its live doctor corpus were not executed."]
     },
     {
       "trace_id": "trace-contract-casing-corpus",
@@ -382,7 +392,7 @@
       "source_type": "command-result",
       "command": "${PYTHON} ${PLUGIN_ROOT}/skills/ultracode/scripts/run_contract_casing_corpus.py",
       "exit_code": 0,
-      "facts": ["The expanded disposable-copy corpus completed all 50 Python and PowerShell cases with 50 matches, zero mismatches, and zero unavailable cases.", "Both runtimes rejected evidence casing, schema expansion, Help layout and routing regressions, plus eight paired Verify mutations covering the status set, passed evidence minimum, closed evidence fields, exact oneOf length and entry type, evidenceBase required fields, and both status-specific outcome consts."]
+      "facts": ["The disposable-copy corpus completed all 25 Python cases with zero mismatches.", "Its 25 PowerShell cases were NOT_AVAILABLE because PowerShell is not installed in the current environment."]
     },
     {
       "trace_id": "trace-project-configurator-corpus",
@@ -395,6 +405,16 @@
       "facts": ["The disposable corpus completed 9/9 cases with exit code 0.", "It proved a project below a linked ancestor remains valid after canonical root normalization, while invalid config, non-portable selectors, control, managed, nested-Claude, and top-level-Claude reparse traversal, unmanaged markers, collisions, and drift are rejected before selection, read, hash, or project writes.", "A forced Windows mid-apply PermissionError restored every earlier file and left the doctor-valid project byte-identical.", "It also proved deterministic plans, confirmed apply, no-op behavior, rich adapters, unknown-key preservation, and localized edits."]
     },
     {
+      "trace_id": "trace-uc-40-conventional-commit",
+      "category": "scenario",
+      "subject": "UC-40",
+      "status": "PENDING",
+      "source_type": "planned",
+      "command": null,
+      "exit_code": null,
+      "facts": ["The UC-40 forward test is defined in the behavioral contract and evaluation prompts but has not been executed in a fresh Codex or Claude runtime."]
+    },
+    {
       "trace_id": "trace-audit-final",
       "category": "audit",
       "subject": "final independent high-severity audit",
@@ -402,7 +422,7 @@
       "source_type": "independent-audit-result",
       "command": null,
       "exit_code": null,
-      "facts": ["Fresh independent audit found no confirmed HIGH or CRITICAL defect in the stable worktree snapshot.", "The audit independently recomputed all seven skill hashes, the plugin payload hash, the trace hash, all three UC-37 hashes, and the 17-file UC-39 directory binding.", "Repository validation, the 9/9 configurator corpus, the 25/25 available Python adversarial cases, the bootstrap checker, AST parsing, and git diff checks passed; PowerShell execution remained the only environmental limitation at audit time."]
+      "facts": ["Independent contract review of the current eight-skill tree found no remaining HIGH or MEDIUM code finding after the PowerShell parity fix.", "The review confirmed counts, all eight skill hashes, payload hash, trace hash, Claude integration checks, and available Python validations."]
     }
   ]
 }

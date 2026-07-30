@@ -1,20 +1,21 @@
 {
   "schema_version": 2,
   "attestation_scope": "local-consistency-only",
-  "plugin_version_prefix": "0.7.0-rc.1",
-  "evaluated_on": "2026-07-24",
+  "plugin_version_prefix": "0.7.0-rc.2",
+  "evaluated_on": "2026-07-31",
   "skill_sha256": {
-    "ultracode": "24433207dc838bed1c494509df8e9393ed96b1c51329f21ec1034dbe7f52bf52",
-    "ultracode-help": "fa107b04b6b9344ae4b58922b5e5e705c1e4a84382410c42dc7aae4383ed79a9",
+    "ultracode": "efe7238f32338c405b7fb09ff1bec2c262c77051ac90475367325e31b38d8288",
+    "ultracode-help": "29571d12c564947a9d236df4613a9aa34befecd8e263e750828a2f6990d5aae2",
     "ultracode-verify": "94b2776a37cd4d2a142d56b957e17d14f1f292bd8174e3d47754d83d7609cff2",
+    "ultracode-commit": "f502fe9b705e9ce817bbd68e80c4e6e08542768eaacc404d09a27f6faa0ccf36",
     "ultracode-init": "c0a0ef6120cdd8a8f1ff9d6ddf7c112d2974fc488bb2d58e785d002e0a4da1ba",
     "ultracode-edit": "71ea71e28e0c107a9574d44710aa3dc5457a7969384bc9267db56f549bfbf4b7",
     "ultracode-flow": "bf02e594e0b2cbade56c96f1c1c425419786e848b063e004f0c07d9d1847723f",
     "ultracode-status": "f91595229427146cf492be7cf90b917534f69c6c854b30d8cee7f1faf7da16f4"
   },
-  "payload_sha256": "a315031f0cc6c41d53b9d02e39541d7e6a3dd6890a69e49377c8b15898409f3d",
+  "payload_sha256": "b8335d26305e2961f19e66a77584a8fc9b743b62ea12df23134ac30475da7678",
   "trace_artifact": "evaluation-traces.json",
-  "trace_sha256": "ca373b90d46c2b2d06c08afdd7efd98a2638c0c5abb3baaff6828fb21c7b5577",
+  "trace_sha256": "92962dde231904512bf0086b2fca0ce89ecd3fb414f1241b5a68cbc46f5f60ad",
   "scenario_results": [
     {
       "id": "UC-01",
@@ -117,6 +118,12 @@
       "status": "PASSED",
       "trace_id": "trace-uc-39-feature-verification",
       "evidence": "The retained dependency-free sample feature was executed through disposable subprocesses with exact command, exit, stream, persisted-byte, state-hash, and separate-process readback evidence; all eleven invalid or stale updates were zero-write, and the 17-file evaluation-results/0.6.0/uc39 manifest SHA-256 is e31c9253345919bcc297988ead78af190f6ac6ce1b2ce537cfad6bc3b89b954f."
+    },
+    {
+      "id": "UC-40",
+      "status": "PENDING",
+      "trace_id": "trace-uc-40-conventional-commit",
+      "evidence": "The Conventional Commits 1.0.0 skill and validator wiring are implemented, but the fresh runtime forward test covering Help precedence, exact Git authority, mixed-diff splitting, and the local-commit versus push boundary has not yet been executed."
     }
   ],
   "fixture_results": [
@@ -227,6 +234,14 @@
       "evidence": "Official skill-creator validator returned Skill is valid in offline mode after PyYAML was cached in an isolated uv environment."
     },
     {
+      "check": "quick_validate ultracode-commit",
+      "status": "PASSED",
+      "command": "uv run --offline --with pyyaml -- python ${SKILL_CREATOR}/scripts/quick_validate.py ${PLUGIN_ROOT}/skills/ultracode-commit",
+      "exit_code": 0,
+      "trace_id": "trace-validate-skill-commit",
+      "evidence": "Official skill-creator validator returned Skill is valid for the new Conventional Commits message-preparation skill."
+    },
+    {
       "check": "quick_validate ultracode-init",
       "status": "PASSED",
       "command": "uv run --offline --with pyyaml -- python ${SKILL_CREATOR}/scripts/quick_validate.py ${PLUGIN_ROOT}/skills/ultracode-init",
@@ -272,15 +287,15 @@
       "command": "${PYTHON} ${PLUGIN_ROOT}/skills/ultracode/scripts/check_contract.py --allow-pending",
       "exit_code": 0,
       "trace_id": "trace-contract-python",
-      "evidence": "The changed Python checker completed its live 44-case doctor corpus, validated the exact Verify schema and current payload/trace bindings, and returned exit code 0 with complete release evidence."
+      "evidence": "The changed Python checker completed its live 44-case doctor corpus, validated the exact Verify schema and current payload/trace bindings, and returned exit code 0 with structurally valid but release-incomplete evidence."
     },
     {
       "check": "contract checker PowerShell bootstrap",
-      "status": "PASSED",
+      "status": "NOT_AVAILABLE",
       "command": "powershell -File ${PLUGIN_ROOT}/skills/ultracode/scripts/check_contract.ps1 -AllowPending",
-      "exit_code": 0,
+      "exit_code": null,
       "trace_id": "trace-contract-powershell",
-      "evidence": "Official PowerShell 7.6.4 arm64 runtime executed the changed checker and its live doctor corpus from an isolated temporary directory with exit code 0."
+      "evidence": "PowerShell is not installed in the current environment, so the changed parity checker and its live doctor corpus were not executed."
     },
     {
       "check": "contract casing corpus",
@@ -288,7 +303,7 @@
       "command": "${PYTHON} ${PLUGIN_ROOT}/skills/ultracode/scripts/run_contract_casing_corpus.py",
       "exit_code": 0,
       "trace_id": "trace-contract-casing-corpus",
-      "evidence": "Expanded disposable-copy corpus completed all 50 Python and PowerShell cases with 50 matches, zero mismatches, and zero unavailable cases, including eight paired Verify-specific fail-closed mutations."
+      "evidence": "The disposable-copy corpus completed all 25 Python cases with zero mismatches; its 25 PowerShell cases were NOT_AVAILABLE because PowerShell is not installed."
     },
     {
       "check": "project configurator corpus",
@@ -305,7 +320,7 @@
       "severity": "HIGH",
       "status": "PASSED",
       "trace_id": "trace-audit-final",
-      "evidence": "Fresh independent audit found no confirmed HIGH or CRITICAL defect after recomputing the skill, payload, trace, UC-37, and UC-39 bindings and rerunning the available strict checks."
+      "evidence": "Independent contract review of the current eight-skill tree found no remaining HIGH or MEDIUM code finding after the PowerShell parity fix; counts, all eight skill hashes, payload hash, trace hash, Claude integration checks, and available Python validations were consistent."
     }
   ]
 }

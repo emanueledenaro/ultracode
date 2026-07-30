@@ -18,8 +18,8 @@ First remove the invocation token from the request: `$ultracode-help` on Codex,
 `/ultracode:ultracode-help` or `/ultracode:help` on Claude Code, or a bare `ultracode-help` on
 either. All of them are the same invocation.
 The invocation token is never itself the `help` topic. Only the remaining words can select a mode.
-Normalize remaining topics with or without `$`: `ultracode`, `verify`, `init`, `edit`, `flow`,
-`status`, `help`, `models`, and `examples`. Accept complete command names such as
+Normalize remaining topics with or without `$`: `ultracode`, `verify`, `commit`, `init`, `edit`,
+`flow`, `status`, `help`, `models`, and `examples`. Accept complete command names such as
 `ultracode-verify`.
 An explicit Help invocation has precedence over every command name in the remaining words:
 `$ultracode-help flow` explains Flow and must never execute `$ultracode-flow`.
@@ -65,8 +65,9 @@ language while preserving this Markdown hierarchy and semantic order:
 
 1. **Scelta rapida:** an H2 section containing a two-column GitHub-flavored Markdown table that maps
    user intent to the right command.
-2. **Sette comandi:** explain `$ultracode-help`, `$ultracode`, `$ultracode-verify`,
-   `$ultracode-init`, `$ultracode-edit`, `$ultracode-flow`, and `$ultracode-status` under one H2
+2. **Otto comandi:** explain `$ultracode-help`, `$ultracode`, `$ultracode-verify`,
+   `$ultracode-commit`, `$ultracode-init`, `$ultracode-edit`, `$ultracode-flow`, and
+   `$ultracode-status` under one H2
    section. Give each command its own H3 subsection, the four bold fields below, and one copyable
    example in a blockquote directly inside that subsection.
 3. **Progetto non configurato:** explain that read-only use works without `.ultracode`; change work
@@ -84,7 +85,7 @@ language while preserving this Markdown hierarchy and semantic order:
 
 Use one H1 title at the top, H2 headings for the six content areas, and H3 headings only for the
 commands. Use a compact Markdown table for model routing and another for ticket versus agent. Keep
-paragraphs short. Do not collect examples into a repeated section at the end and do not put the seven
+paragraphs short. Do not collect examples into a repeated section at the end and do not put the eight
 examples in separate fenced code blocks.
 
 For each command explanation, cover all four required fields even in compact mode:
@@ -115,7 +116,7 @@ Internally verify the response without printing this checklist:
 
 - correct mode selected;
 - read-only boundary preserved;
-- no-topic overview contains all six content areas and all seven commands in order;
+- no-topic overview contains all six content areas and all eight commands in order;
 - the overview uses one H1, H2 sections, a quick-choice table, H3 command sections, inline
   blockquote examples, a model table, and a ticket-versus-agent table;
 - every described command includes when, result, write capability, and confirmation trigger;

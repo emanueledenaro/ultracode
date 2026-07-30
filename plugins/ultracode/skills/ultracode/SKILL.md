@@ -54,6 +54,8 @@ Classify the request as one of:
 - **Answer or explain:** inspect as needed; do not write.
 - **Review or audit:** remain read-only unless the user separately requests fixes.
 - **Diagnose:** determine and prove the cause; do not implement unless fixing is requested.
+- **Commit preparation:** inspect the real diff and prepare or validate a Conventional Commits
+  message; keep Git mutations behind their own explicit authority boundary.
 - **Change or build:** implement the requested outcome and verify it proportionally.
 - **Monitor or wait:** observe state without turning unchanged state into failure.
 
@@ -77,6 +79,8 @@ Read [command-interface.md](references/command-interface.md) before presenting p
 work, blockers, or final results. Use its vocabulary consistently across every update.
 Read [command-guide.md](references/command-guide.md) when explaining which UltraCode command to use
 or handing work between commands.
+Read [conventional-commits.md](references/conventional-commits.md) when preparing or validating a
+Git commit message, or when an explicitly authorized commit is part of the requested outcome.
 Read [feature-verification.md](references/feature-verification.md) when a feature verification plan
 exists, the user asks to prove feature behavior, or completion depends on persistent functional
 evidence.
@@ -214,8 +218,14 @@ Never call work perfect, production-ready, secure, or complete beyond the eviden
   evidence using exactly `planned`, `passed`, `failed`, `not-run`, and `not-applicable`.
 - Use `$ultracode-flow` for a concise, fully explained view of active tickets, agents, models, blockers, and next actions.
 - Use `$ultracode-status` to explain current state read-only.
+- Use `$ultracode-commit` to prepare or validate a Conventional Commits 1.0.0 message from the real
+  diff, or to carry out an explicitly authorized commit with separate Git evidence.
 - Use `$ultracode-help` to explain every command, model and reasoning behavior, safety boundary, and
   practical starting path without initializing or changing the project.
 - Read [project-adapter.md](references/project-adapter.md) when configuring a repository.
 
-When maintaining this plugin, read [behavioral-contract.md](references/behavioral-contract.md) and [eval-prompts.md](references/eval-prompts.md). Run `scripts/check_contract.py` when Python is available or `scripts/check_contract.ps1` on PowerShell before forward tests and installation. If neither runtime exists, perform the equivalent checks manually and report them as manual.
+When maintaining this plugin, read [behavioral-contract.md](references/behavioral-contract.md),
+[eval-prompts.md](references/eval-prompts.md), and [conventional-commits.md](references/conventional-commits.md).
+Run `scripts/check_contract.py` when Python is available or `scripts/check_contract.ps1` on PowerShell
+before forward tests and installation. If neither runtime exists, perform the equivalent checks
+manually and report them as manual.

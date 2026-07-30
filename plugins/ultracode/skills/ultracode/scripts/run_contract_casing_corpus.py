@@ -208,8 +208,8 @@ def replace_once(path: Path, old: str, new: str) -> None:
 def remove_help_field(plugin_root: Path) -> None:
     guide = plugin_root / "skills" / "ultracode" / "references" / "command-guide.md"
     text = guide.read_text(encoding="utf-8")
-    if text.count("**What you get:**") != 7:
-        raise RuntimeError("command guide does not contain seven result fields")
+    if text.count("**What you get:**") != 8:
+        raise RuntimeError("command guide does not contain eight result fields")
     guide.write_text(
         text.replace("**What you get:**", "**Outcome:**", 1),
         encoding="utf-8",
@@ -253,8 +253,8 @@ def remove_help_ticket_table(plugin_root: Path) -> None:
 def flatten_help_example(plugin_root: Path) -> None:
     guide = plugin_root / "skills" / "ultracode" / "references" / "command-guide.md"
     text = guide.read_text(encoding="utf-8")
-    if text.count("> **Example:**") != 7:
-        raise RuntimeError("command guide does not contain seven inline blockquote examples")
+    if text.count("> **Example:**") != 8:
+        raise RuntimeError("command guide does not contain eight inline blockquote examples")
     guide.write_text(
         text.replace("> **Example:**", "**Example:**", 1),
         encoding="utf-8",

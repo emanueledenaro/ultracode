@@ -2,6 +2,24 @@
 
 All notable changes to UltraCode are documented here.
 
+## [Unreleased]
+
+## [0.7.0-rc.2] - 2026-07-31
+
+This is a release candidate, not a stable release. The Conventional Commits command is packaged
+and structurally validated, but its fresh runtime forward test is still pending and the PowerShell
+release checker was unavailable in this environment.
+
+### Added
+
+- `ultracode-commit`, an eighth public skill and matching command for preparing and validating
+  Conventional Commits 1.0.0 messages from the real Git diff.
+
+### Safety
+
+- Commit-message preparation remains read-only by default. Staging, committing, amending, rebasing,
+  pushing, tagging, publishing, and pull-request actions still require separate explicit authority.
+
 ## [0.7.0-rc.1] - 2026-07-25
 
 This is a release candidate, not a stable release. The Claude Code runtime support below is

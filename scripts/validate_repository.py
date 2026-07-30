@@ -15,6 +15,11 @@ ROOT = Path(__file__).resolve().parent.parent
 MARKETPLACE_PATH = ROOT / ".agents" / "plugins" / "marketplace.json"
 PLUGIN_ROOT = ROOT / "plugins" / "ultracode"
 MANIFEST_PATH = PLUGIN_ROOT / ".codex-plugin" / "plugin.json"
+CLAUDE_MANIFEST_PATH = PLUGIN_ROOT / ".claude-plugin" / "plugin.json"
+COMMIT_COMMAND_PATH = PLUGIN_ROOT / "commands" / "commit.md"
+CLAUDE_RUNTIME_PATH = (
+    PLUGIN_ROOT / "skills" / "ultracode" / "references" / "claude-code-runtime.md"
+)
 COMMAND_INTERFACE_PATH = (
     PLUGIN_ROOT / "skills" / "ultracode" / "references" / "command-interface.md"
 )
@@ -42,6 +47,7 @@ REQUIRED_SKILLS = (
     "ultracode",
     "ultracode-help",
     "ultracode-verify",
+    "ultracode-commit",
     "ultracode-init",
     "ultracode-edit",
     "ultracode-flow",
@@ -62,7 +68,7 @@ FLOW_REQUIRED_TEXT = (
 )
 HELP_REQUIRED_ORDER = (
     "1. **Scelta rapida:**",
-    "2. **Sette comandi:**",
+    "2. **Otto comandi:**",
     "3. **Progetto non configurato:**",
     "4. **Modelli ed effort:**",
     "5. **Ticket e agenti:**",
@@ -71,7 +77,7 @@ HELP_REQUIRED_ORDER = (
 HELP_GUIDE_SECTIONS = (
     "## Response contract",
     "## Quick choice",
-    "## The seven commands",
+    "## The eight commands",
     "## Unconfigured projects",
     "## Models and reasoning effort",
     "## Tickets and agents",
@@ -81,6 +87,7 @@ HELP_COMMANDS = (
     ("ultracode-help", "Help"),
     ("ultracode", "UltraCode"),
     ("ultracode-verify", "Verify"),
+    ("ultracode-commit", "Commit"),
     ("ultracode-init", "Init"),
     ("ultracode-edit", "Edit"),
     ("ultracode-flow", "Flow"),
@@ -105,6 +112,8 @@ HELP_GUIDE_SEMANTICS = (
     "A ticket is the user-facing form",
     "A live agent is only",
     "requires explicit user authority",
+    "Conventional Commits 1.0.0",
+    "$ultracode-commit",
 )
 HELP_PRECEDENCE_REQUIRED = (
     "## Respect explicit Help precedence",
@@ -120,7 +129,7 @@ HELP_METADATA_PROMPT_REQUIREMENTS = (
     "comparison tables",
     "H3 command sections",
     "inline blockquote examples",
-    "If I provide a command, models, flow, verify, or examples, answer only that topic",
+    "If I provide a command, commit, models, flow, verify, or examples, answer only that topic",
     "compact wording only when I explicitly say breve or sintetico",
 )
 HELP_MANIFEST_PROMPT_REQUIREMENTS = (
@@ -132,7 +141,7 @@ HELP_MANIFEST_PROMPT_REQUIREMENTS = (
     "comparison tables",
     "H3 command sections",
     "inline blockquote examples",
-    "focus on one command, models, flow, verify, or examples only when named",
+    "focus on one command, commit, models, flow, verify, or examples only when named",
     "compact wording only for an explicit breve or sintetico request",
 )
 COMMAND_REQUIRED_TEXT = {
@@ -172,6 +181,13 @@ COMMAND_REQUIRED_TEXT = {
         "Fail closed",
         "Do not automatically fix product code",
         "../ultracode/references/command-interface.md",
+    ),
+    "ultracode-commit": (
+        "../ultracode/references/conventional-commits.md",
+        "Conventional Commits 1.0.0",
+        "real diff",
+        "explicit authority",
+        "Do not stage, commit",
     ),
     "ultracode-init": (
         "../ultracode/references/command-interface.md",
@@ -268,7 +284,7 @@ def validate_help_guide(text: str) -> None:
         fail("command guide must keep inline examples with commands, not in a repeated footer")
 
     quick_start = text.index("## Quick choice")
-    quick_end = text.index("## The seven commands", quick_start)
+    quick_end = text.index("## The eight commands", quick_start)
     quick_section = text[quick_start:quick_end]
     if "| Need | Use |" not in quick_section or "| --- | --- |" not in quick_section:
         fail("command guide Quick choice must use a two-column Markdown table")
@@ -276,14 +292,14 @@ def validate_help_guide(text: str) -> None:
         if f"`${command}`" not in quick_section:
             fail(f"command guide Quick choice table is missing ${command}")
 
-    commands_start = text.index("## The seven commands")
+    commands_start = text.index("## The eight commands")
     commands_end = text.index("## Unconfigured projects", commands_start)
     command_headings = [f"### `${command}`" for command, _ in HELP_COMMANDS]
     command_positions = [
         text.find(heading, commands_start, commands_end) for heading in command_headings
     ]
     if any(position < 0 for position in command_positions):
-        fail("command guide must contain all seven command sections")
+        fail("command guide must contain all eight command sections")
     if command_positions != sorted(command_positions):
         fail("command guide command sections are out of order")
     for index, (command, _) in enumerate(HELP_COMMANDS):
@@ -558,6 +574,42 @@ def validate_repository() -> None:
         fail("plugin repository and homepage must use the canonical GitHub URL")
     if manifest.get("license") != "MIT":
         fail("plugin manifest license must be MIT")
+
+    claude_manifest = load_object(CLAUDE_MANIFEST_PATH)
+    if claude_manifest.get("name") != "ultracode":
+        fail("Claude plugin manifest name must be ultracode")
+    if claude_manifest.get("version") != version.split("+", 1)[0]:
+        fail("Claude plugin manifest version must match the Codex base version")
+    claude_keywords = claude_manifest.get("keywords")
+    if not isinstance(claude_keywords, list) or "conventional-commits" not in claude_keywords:
+        fail("Claude plugin manifest must expose the conventional-commits keyword")
+
+    for path, required in (
+        (
+            COMMIT_COMMAND_PATH,
+            (
+                "Use the `ultracode-commit` skill",
+                "Request: $ARGUMENTS",
+                "Keep preparation read-only",
+                "explicit authority",
+            ),
+        ),
+        (
+            CLAUDE_RUNTIME_PATH,
+            (
+                "$ultracode-commit",
+                "/ultracode:ultracode-commit",
+                "/ultracode:commit",
+                "same skill",
+            ),
+        ),
+    ):
+        if not path.is_file() or path.is_symlink():
+            fail(f"missing regular Claude integration file: {path.relative_to(ROOT)}")
+        text = path.read_text(encoding="utf-8")
+        for fragment in required:
+            if fragment not in text:
+                fail(f"{path.relative_to(ROOT)} is missing Claude integration text: {fragment}")
 
     interface = manifest.get("interface")
     if not isinstance(interface, dict):

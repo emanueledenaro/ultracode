@@ -139,10 +139,12 @@ Translate every visible label into the user's language and explain `INFERRED`, `
   append-only, evidence-backed scenario results.
 - `$ultracode-flow` gives a concise live control view with fully explained active tickets.
 - `$ultracode-status` gives the detailed diagnostic view, including history, files, checks, and findings.
+- `$ultracode-commit` prepares or validates a Conventional Commits 1.0.0 message from the real diff
+  and keeps Git mutations behind separate explicit authority.
 - `$ultracode-help` explains how UltraCode works, which command to choose, models, reasoning effort,
   examples, and safety boundaries without changing the project.
 
-All seven commands use the same vocabulary and truth sources. They differ in depth and purpose, not
+All eight commands use the same vocabulary and truth sources. They differ in depth and purpose, not
 in the meaning of states, tickets, agents, models, evidence, or blockers.
 
 Feature verification scenario statuses form a separate exact set: `planned`, `passed`, `failed`,

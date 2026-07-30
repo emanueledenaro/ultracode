@@ -243,3 +243,17 @@ derived feature outcome and whether each invalid update wrote anything. Do not f
 stage, commit, push, publish, install dependencies, make external requests, perform production
 writes, or deploy.
 ```
+
+## UC-40 Conventional Commit preparation and authority
+
+```text
+Use $ultracode-commit on <disposable repository> with a visible mixed worktree diff. First ask for
+a Conventional Commits 1.0.0 message only; inspect and validate the message without staging or
+committing. Then provide explicit authority for one exact path and request a local commit. Finally
+include an unrelated changed path and request the same commit. Report the derived type, scope,
+description, breaking-change decision, exact paths, Git action performed, and whether push, release,
+or deployment was verified. Also validate a small message matrix: accepted `feat`, scoped `fix`,
+custom noun types, `!`, `BREAKING CHANGE:`, and multi-footer forms; rejected missing colon-space,
+empty description, malformed scope, and invalid footer separator forms. Do not push, publish, deploy,
+or modify unrelated files.
+```

@@ -426,7 +426,7 @@ $skillsRoot = Split-Path -Parent $coreRoot
 $pluginRoot = Split-Path -Parent $skillsRoot
 $referenceRoot = Join-Path $coreRoot 'references'
 $manifestPath = Join-Path $pluginRoot '.codex-plugin\plugin.json'
-$skillNames = @('ultracode','ultracode-help','ultracode-verify','ultracode-init','ultracode-edit','ultracode-flow','ultracode-status')
+$skillNames = @('ultracode','ultracode-help','ultracode-verify','ultracode-commit','ultracode-init','ultracode-edit','ultracode-flow','ultracode-status')
 $validStatuses = @('PASSED','FAILED','DRIFT','PENDING','NOT_AVAILABLE')
 
 if ($PrintPayloadHash) {
@@ -477,7 +477,9 @@ $requiredCoreClauses = @(
     'objective-driven',
     'reasoning-routing.md',
     'feature-verification.md',
-    '$ultracode-verify'
+    '$ultracode-verify',
+    '$ultracode-commit',
+    'conventional-commits.md'
 )
 foreach ($clause in $requiredCoreClauses) {
     if (-not $coreText.Contains($clause)) { Stop-ContractCheck "missing core contract clause: $clause" }
@@ -494,7 +496,8 @@ $references = @(
     'reasoning-routing.md',
     'feature-verification.md',
     'behavioral-contract.md',
-    'eval-prompts.md'
+    'eval-prompts.md',
+    'conventional-commits.md'
 )
 foreach ($reference in $references) {
     if (-not (Test-Path -LiteralPath (Join-Path $referenceRoot $reference) -PathType Leaf)) {
@@ -750,7 +753,7 @@ foreach ($wrapperContract in @(
 $helpText = Get-Content -Raw -Encoding UTF8 -LiteralPath (Join-Path $skillsRoot 'ultracode-help\SKILL.md')
 $helpRequiredOrder = @(
     '1. **Scelta rapida:**',
-    '2. **Sette comandi:**',
+    '2. **Otto comandi:**',
     '3. **Progetto non configurato:**',
     '4. **Modelli ed effort:**',
     '5. **Ticket e agenti:**',
@@ -791,7 +794,7 @@ $commandGuideText = Get-Content -Raw -Encoding UTF8 -LiteralPath (Join-Path $ref
 $helpGuideSections = @(
     '## Response contract',
     '## Quick choice',
-    '## The seven commands',
+    '## The eight commands',
     '## Unconfigured projects',
     '## Models and reasoning effort',
     '## Tickets and agents',
@@ -813,12 +816,12 @@ if ($commandGuideText.Contains('## Copyable examples') -or $commandGuideText.Con
     Stop-ContractCheck 'command guide must keep inline examples with commands, not in a repeated footer'
 }
 $quickStart = $commandGuideText.IndexOf('## Quick choice', [StringComparison]::Ordinal)
-$quickEnd = $commandGuideText.IndexOf('## The seven commands', $quickStart, [StringComparison]::Ordinal)
+$quickEnd = $commandGuideText.IndexOf('## The eight commands', $quickStart, [StringComparison]::Ordinal)
 $quickSection = $commandGuideText.Substring($quickStart, $quickEnd - $quickStart)
 if (-not $quickSection.Contains('| Need | Use |') -or -not $quickSection.Contains('| --- | --- |')) {
     Stop-ContractCheck 'command guide Quick choice must use a two-column Markdown table'
 }
-$helpCommands = @('ultracode-help','ultracode','ultracode-verify','ultracode-init','ultracode-edit','ultracode-flow','ultracode-status')
+$helpCommands = @('ultracode-help','ultracode','ultracode-verify','ultracode-commit','ultracode-init','ultracode-edit','ultracode-flow','ultracode-status')
 foreach ($command in $helpCommands) {
     if (-not $quickSection.Contains('$' + $command)) {
         Stop-ContractCheck "command guide Quick choice table is missing `$$command"
@@ -830,7 +833,7 @@ $helpFieldMarkers = @(
     '**Can it write?:**',
     '**When confirmation is required:**'
 )
-$commandsStart = $commandGuideText.IndexOf('## The seven commands', [StringComparison]::Ordinal)
+$commandsStart = $commandGuideText.IndexOf('## The eight commands', [StringComparison]::Ordinal)
 $commandsEnd = $commandGuideText.IndexOf('## Unconfigured projects', $commandsStart, [StringComparison]::Ordinal)
 $commandPositions = [Collections.Generic.List[int]]::new()
 foreach ($command in $helpCommands) {
@@ -916,7 +919,9 @@ $helpGuideSemantics = @(
     'Effective model and effort',
     'A ticket is the user-facing form',
     'A live agent is only',
-    'requires explicit user authority'
+    'requires explicit user authority',
+    'Conventional Commits 1.0.0',
+    '$ultracode-commit'
 )
 foreach ($required in $helpGuideSemantics) {
     if (-not $normalizedGuide.Contains($required)) {
@@ -945,7 +950,7 @@ $helpMetadataRequirements = @(
     'comparison tables',
     'H3 command sections',
     'inline blockquote examples',
-    'If I provide a command, models, flow, verify, or examples, answer only that topic',
+    'If I provide a command, commit, models, flow, verify, or examples, answer only that topic',
     'compact wording only when I explicitly say breve or sintetico'
 )
 foreach ($required in $helpMetadataRequirements) {
@@ -965,6 +970,16 @@ foreach ($required in @(
     'Git staging, commits, pushes, pull requests, package publishing, deployment, external'
 )) {
     if (-not $verifyText.Contains($required)) { Stop-ContractCheck "ultracode-verify is missing: $required" }
+}
+$commitText = Get-Content -Raw -Encoding UTF8 -LiteralPath (Join-Path $skillsRoot 'ultracode-commit\SKILL.md')
+foreach ($required in @(
+    '../ultracode/references/conventional-commits.md',
+    'Conventional Commits 1.0.0',
+    'real diff',
+    'explicit authority',
+    'Do not stage, commit'
+)) {
+    if (-not $commitText.Contains($required)) { Stop-ContractCheck "ultracode-commit is missing: $required" }
 }
 $initText = Get-Content -Raw -Encoding UTF8 -LiteralPath (Join-Path $skillsRoot 'ultracode-init\SKILL.md')
 foreach ($required in @(
@@ -1033,6 +1048,7 @@ foreach ($required in @(
 $helpPrecedenceSkills = @(
     [pscustomobject]@{ Name = 'ultracode'; Text = $coreText },
     [pscustomobject]@{ Name = 'ultracode-verify'; Text = $verifyText },
+    [pscustomobject]@{ Name = 'ultracode-commit'; Text = $commitText },
     [pscustomobject]@{ Name = 'ultracode-init'; Text = $initText },
     [pscustomobject]@{ Name = 'ultracode-edit'; Text = $editText },
     [pscustomobject]@{ Name = 'ultracode-flow'; Text = $flowText },
@@ -1051,7 +1067,7 @@ foreach ($skill in $helpPrecedenceSkills) {
 }
 
 $contractText = Get-Content -Raw -Encoding UTF8 -LiteralPath (Join-Path $referenceRoot 'behavioral-contract.md')
-foreach ($index in 1..39) {
+foreach ($index in 1..40) {
     $scenario = 'UC-{0:D2}' -f $index
     if (-not $contractText.Contains($scenario)) { Stop-ContractCheck "missing behavioral scenario: $scenario" }
 }
@@ -1059,7 +1075,7 @@ $promptText = Get-Content -Raw -Encoding UTF8 -LiteralPath (Join-Path $reference
 $requiredPrompts = @(
     'UC-01','UC-03','UC-04','UC-06','UC-08','UC-10','UC-14','UC-18','UC-19',
     'UC-20','UC-23','UC-24','UC-25','UC-26','UC-29','UC-30','UC-31','UC-32','UC-33','UC-34','UC-35','UC-36',
-    'UC-37','UC-38','UC-39'
+    'UC-37','UC-38','UC-39','UC-40'
 )
 foreach ($scenario in $requiredPrompts) {
     if (-not $promptText.Contains($scenario)) { Stop-ContractCheck "missing forward-test prompt: $scenario" }
@@ -1096,7 +1112,7 @@ $helpManifestPromptRequirements = @(
     'comparison tables',
     'H3 command sections',
     'inline blockquote examples',
-    'focus on one command, models, flow, verify, or examples only when named',
+    'focus on one command, commit, models, flow, verify, or examples only when named',
     'compact wording only for an explicit breve or sintetico request'
 )
 foreach ($required in $helpManifestPromptRequirements) {
@@ -1132,9 +1148,9 @@ if (-not (Test-ContractExactString (Get-ExactPropertyValue $traceArtifactDefinit
     Stop-ContractCheck 'evaluation evidence schema must pin the trace artifact name'
 }
 $expectedSchemaCounts = ConvertTo-OrdinalDictionary ([ordered]@{
-    scenario_results = 17
+    scenario_results = 18
     fixture_results = 10
-    validation_results = 12
+    validation_results = 13
     audit_results = 1
 }) 'evaluation schema result count'
 foreach ($field in $expectedSchemaCounts.Keys) {
@@ -1273,7 +1289,7 @@ $pending = [Collections.Generic.List[string]]::new()
 $unavailableResults = [Collections.Generic.List[string]]::new()
 $referenced = [Collections.Generic.HashSet[string]]::new([StringComparer]::Ordinal)
 
-$requiredEvidenceScenarios = @('UC-01','UC-03','UC-04','UC-19','UC-23','UC-24','UC-25','UC-29','UC-30','UC-31','UC-32','UC-34','UC-35','UC-36','UC-37','UC-38','UC-39')
+$requiredEvidenceScenarios = @('UC-01','UC-03','UC-04','UC-19','UC-23','UC-24','UC-25','UC-29','UC-30','UC-31','UC-32','UC-34','UC-35','UC-36','UC-37','UC-38','UC-39','UC-40')
 $scenarios = ConvertTo-UniqueMap (Get-ExactPropertyValue $evidence 'scenario_results' 'evaluation evidence') 'id' 'scenario_results'
 Assert-ExactSet @($scenarios.Keys) $requiredEvidenceScenarios 'scenario_results'
 foreach ($scenarioId in $scenarios.Keys) {
@@ -1335,6 +1351,7 @@ $expectedValidationCommands = ConvertTo-OrdinalDictionary ([ordered]@{
     'quick_validate ultracode' = 'uv run --offline --with pyyaml -- python ${SKILL_CREATOR}/scripts/quick_validate.py ${PLUGIN_ROOT}/skills/ultracode'
     'quick_validate ultracode-help' = 'uv run --offline --with pyyaml -- python ${SKILL_CREATOR}/scripts/quick_validate.py ${PLUGIN_ROOT}/skills/ultracode-help'
     'quick_validate ultracode-verify' = 'uv run --offline --with pyyaml -- python ${SKILL_CREATOR}/scripts/quick_validate.py ${PLUGIN_ROOT}/skills/ultracode-verify'
+    'quick_validate ultracode-commit' = 'uv run --offline --with pyyaml -- python ${SKILL_CREATOR}/scripts/quick_validate.py ${PLUGIN_ROOT}/skills/ultracode-commit'
     'quick_validate ultracode-init' = 'uv run --offline --with pyyaml -- python ${SKILL_CREATOR}/scripts/quick_validate.py ${PLUGIN_ROOT}/skills/ultracode-init'
     'quick_validate ultracode-edit' = 'uv run --offline --with pyyaml -- python ${SKILL_CREATOR}/scripts/quick_validate.py ${PLUGIN_ROOT}/skills/ultracode-edit'
     'quick_validate ultracode-flow' = 'uv run --offline --with pyyaml -- python ${SKILL_CREATOR}/scripts/quick_validate.py ${PLUGIN_ROOT}/skills/ultracode-flow'

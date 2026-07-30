@@ -19,6 +19,7 @@ SKILL_NAMES = (
     "ultracode",
     "ultracode-help",
     "ultracode-verify",
+    "ultracode-commit",
     "ultracode-init",
     "ultracode-edit",
     "ultracode-flow",
@@ -36,6 +37,7 @@ CORE_REFERENCES = {
     "feature-verification.md",
     "behavioral-contract.md",
     "eval-prompts.md",
+    "conventional-commits.md",
 }
 CORE_RESOURCES = {
     "references/project-config.schema.json",
@@ -68,16 +70,18 @@ REQUIRED_CORE_TEXT = {
     "reasoning routing": "reasoning-routing.md",
     "feature verification": "feature-verification.md",
     "feature verification command": "$ultracode-verify",
+    "Conventional Commits command": "$ultracode-commit",
+    "Conventional Commits reference": "conventional-commits.md",
 }
-REQUIRED_SCENARIOS = {f"UC-{index:02d}" for index in range(1, 40)}
+REQUIRED_SCENARIOS = {f"UC-{index:02d}" for index in range(1, 41)}
 REQUIRED_EVAL_PROMPTS = {
     "UC-01", "UC-03", "UC-04", "UC-06", "UC-08", "UC-10", "UC-14",
     "UC-18", "UC-19", "UC-20", "UC-23", "UC-24", "UC-25", "UC-26",
-    "UC-29", "UC-30", "UC-31", "UC-32", "UC-33", "UC-34", "UC-35", "UC-36", "UC-37", "UC-38", "UC-39",
+    "UC-29", "UC-30", "UC-31", "UC-32", "UC-33", "UC-34", "UC-35", "UC-36", "UC-37", "UC-38", "UC-39", "UC-40",
 }
 REQUIRED_EVIDENCE_SCENARIOS = {
     "UC-01", "UC-03", "UC-04", "UC-19", "UC-23", "UC-24", "UC-25",
-    "UC-29", "UC-30", "UC-31", "UC-32", "UC-34", "UC-35", "UC-36", "UC-37", "UC-38", "UC-39",
+    "UC-29", "UC-30", "UC-31", "UC-32", "UC-34", "UC-35", "UC-36", "UC-37", "UC-38", "UC-39", "UC-40",
 }
 EXPECTED_FIXTURES = {
     "valid project fixture Python": ("PASSED", 0),
@@ -107,6 +111,7 @@ REQUIRED_VALIDATIONS = {
     "quick_validate ultracode",
     "quick_validate ultracode-help",
     "quick_validate ultracode-verify",
+    "quick_validate ultracode-commit",
     "quick_validate ultracode-init",
     "quick_validate ultracode-edit",
     "quick_validate ultracode-flow",
@@ -121,6 +126,7 @@ EXPECTED_VALIDATION_COMMANDS = {
     "quick_validate ultracode": "uv run --offline --with pyyaml -- python ${SKILL_CREATOR}/scripts/quick_validate.py ${PLUGIN_ROOT}/skills/ultracode",
     "quick_validate ultracode-help": "uv run --offline --with pyyaml -- python ${SKILL_CREATOR}/scripts/quick_validate.py ${PLUGIN_ROOT}/skills/ultracode-help",
     "quick_validate ultracode-verify": "uv run --offline --with pyyaml -- python ${SKILL_CREATOR}/scripts/quick_validate.py ${PLUGIN_ROOT}/skills/ultracode-verify",
+    "quick_validate ultracode-commit": "uv run --offline --with pyyaml -- python ${SKILL_CREATOR}/scripts/quick_validate.py ${PLUGIN_ROOT}/skills/ultracode-commit",
     "quick_validate ultracode-init": "uv run --offline --with pyyaml -- python ${SKILL_CREATOR}/scripts/quick_validate.py ${PLUGIN_ROOT}/skills/ultracode-init",
     "quick_validate ultracode-edit": "uv run --offline --with pyyaml -- python ${SKILL_CREATOR}/scripts/quick_validate.py ${PLUGIN_ROOT}/skills/ultracode-edit",
     "quick_validate ultracode-flow": "uv run --offline --with pyyaml -- python ${SKILL_CREATOR}/scripts/quick_validate.py ${PLUGIN_ROOT}/skills/ultracode-flow",
@@ -146,7 +152,7 @@ TRACE_ID_RE = re.compile(r"^trace-[a-z0-9][a-z0-9-]*$")
 HELP_GUIDE_SECTIONS = (
     "## Response contract",
     "## Quick choice",
-    "## The seven commands",
+    "## The eight commands",
     "## Unconfigured projects",
     "## Models and reasoning effort",
     "## Tickets and agents",
@@ -156,6 +162,7 @@ HELP_COMMANDS = (
     ("ultracode-help", "Help"),
     ("ultracode", "UltraCode"),
     ("ultracode-verify", "Verify"),
+    ("ultracode-commit", "Commit"),
     ("ultracode-init", "Init"),
     ("ultracode-edit", "Edit"),
     ("ultracode-flow", "Flow"),
@@ -180,6 +187,8 @@ HELP_GUIDE_SEMANTICS = (
     "A ticket is the user-facing form",
     "A live agent is only",
     "requires explicit user authority",
+    "Conventional Commits 1.0.0",
+    "$ultracode-commit",
 )
 HELP_PRECEDENCE_REQUIRED = (
     "## Respect explicit Help precedence",
@@ -195,7 +204,7 @@ HELP_METADATA_PROMPT_REQUIREMENTS = (
     "comparison tables",
     "H3 command sections",
     "inline blockquote examples",
-    "If I provide a command, models, flow, verify, or examples, answer only that topic",
+    "If I provide a command, commit, models, flow, verify, or examples, answer only that topic",
     "compact wording only when I explicitly say breve or sintetico",
 )
 HELP_MANIFEST_PROMPT_REQUIREMENTS = (
@@ -207,7 +216,7 @@ HELP_MANIFEST_PROMPT_REQUIREMENTS = (
     "comparison tables",
     "H3 command sections",
     "inline blockquote examples",
-    "focus on one command, models, flow, verify, or examples only when named",
+    "focus on one command, commit, models, flow, verify, or examples only when named",
     "compact wording only for an explicit breve or sintetico request",
 )
 LIVE_CORPUS_CASES = {
@@ -290,7 +299,7 @@ def validate_help_guide(text: str) -> None:
         fail("command guide must keep inline examples with commands, not in a repeated footer")
 
     quick_start = text.index("## Quick choice")
-    quick_end = text.index("## The seven commands", quick_start)
+    quick_end = text.index("## The eight commands", quick_start)
     quick_section = text[quick_start:quick_end]
     if "| Need | Use |" not in quick_section or "| --- | --- |" not in quick_section:
         fail("command guide Quick choice must use a two-column Markdown table")
@@ -298,14 +307,14 @@ def validate_help_guide(text: str) -> None:
         if f"`${command}`" not in quick_section:
             fail(f"command guide Quick choice table is missing ${command}")
 
-    commands_start = text.index("## The seven commands")
+    commands_start = text.index("## The eight commands")
     commands_end = text.index("## Unconfigured projects", commands_start)
     command_headings = [f"### `${command}`" for command, _ in HELP_COMMANDS]
     command_positions = [
         text.find(heading, commands_start, commands_end) for heading in command_headings
     ]
     if any(position < 0 for position in command_positions):
-        fail("command guide must contain all seven command sections")
+        fail("command guide must contain all eight command sections")
     if command_positions != sorted(command_positions):
         fail("command guide command sections are out of order")
     for index, (command, _) in enumerate(HELP_COMMANDS):
@@ -581,9 +590,9 @@ def validate_schema_document(schema: Any) -> None:
     if properties.get("trace_artifact", {}).get("const") != "evaluation-traces.json":
         fail("evaluation evidence schema must pin the trace artifact name")
     expected_counts = {
-        "scenario_results": 17,
+        "scenario_results": 18,
         "fixture_results": 10,
-        "validation_results": 12,
+        "validation_results": 13,
         "audit_results": 1,
     }
     for field, count in expected_counts.items():
@@ -598,7 +607,7 @@ def validate_schema_document(schema: Any) -> None:
     if hashes.get("additionalProperties") is not False:
         fail("evaluation evidence schema must close skill_sha256")
     if set(hashes.get("required", [])) != set(SKILL_NAMES):
-        fail("evaluation evidence schema must require exactly seven skill hashes")
+        fail("evaluation evidence schema must require exactly eight skill hashes")
     defs = schema.get("$defs", {})
     status_enum = set(defs.get("status", {}).get("enum", []))
     if status_enum != VALID_STATUSES:
@@ -1045,6 +1054,7 @@ def main() -> None:
 
     help_text = read_text(skills_root / "ultracode-help" / "SKILL.md")
     verify_text = read_text(skills_root / "ultracode-verify" / "SKILL.md")
+    commit_text = read_text(skills_root / "ultracode-commit" / "SKILL.md")
     init_text = read_text(skills_root / "ultracode-init" / "SKILL.md")
     edit_text = read_text(skills_root / "ultracode-edit" / "SKILL.md")
     flow_text = read_text(skills_root / "ultracode-flow" / "SKILL.md")
@@ -1052,6 +1062,7 @@ def main() -> None:
     for skill_name, skill_text in (
         ("ultracode", core_text),
         ("ultracode-verify", verify_text),
+        ("ultracode-commit", commit_text),
         ("ultracode-init", init_text),
         ("ultracode-edit", edit_text),
         ("ultracode-flow", flow_text),
@@ -1062,7 +1073,7 @@ def main() -> None:
                 fail(f"{skill_name} is missing explicit Help precedence: {required}")
     help_required_order = (
         "1. **Scelta rapida:**",
-        "2. **Sette comandi:**",
+        "2. **Otto comandi:**",
         "3. **Progetto non configurato:**",
         "4. **Modelli ed effort:**",
         "5. **Ticket e agenti:**",
@@ -1117,6 +1128,15 @@ def main() -> None:
     ):
         if required not in verify_text:
             fail(f"ultracode-verify is missing: {required}")
+    for required in (
+        "../ultracode/references/conventional-commits.md",
+        "Conventional Commits 1.0.0",
+        "real diff",
+        "explicit authority",
+        "Do not stage, commit",
+    ):
+        if required not in commit_text:
+            fail(f"ultracode-commit is missing: {required}")
     for required in (
         "project-config.schema.json", "Do not ask how many swarm agents",
         ".ultracode/managed.json", ".git/info/exclude", "project_configurator.py",
@@ -1213,7 +1233,7 @@ def main() -> None:
         fail("evaluated_on must be an ISO date")
     hashes = evidence.get("skill_sha256")
     if not isinstance(hashes, dict) or set(hashes) != set(SKILL_NAMES):
-        fail("evaluation evidence must contain exactly seven named skill hashes")
+        fail("evaluation evidence must contain exactly eight named skill hashes")
     for skill_name, actual_hash in skill_hashes.items():
         recorded_hash = hashes.get(skill_name)
         if not isinstance(recorded_hash, str) or not HASH_RE.fullmatch(recorded_hash):

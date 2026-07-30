@@ -1,0 +1,6 @@
+interface:
+  display_name: "UltraCode Commit"
+  short_description: "Prepare and validate Conventional Commits"
+  default_prompt: "Use $ultracode-commit to derive and validate a Conventional Commits 1.0.0 message from the real diff. Keep Git read-only until the user explicitly authorizes the exact action."
+policy:
+  allow_implicit_invocation: true

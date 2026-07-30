@@ -6,14 +6,14 @@
   },
   "metadata": {
     "description": "Transparent, adaptive multi-agent software engineering for Claude Code and Codex.",
-    "version": "0.7.0-rc.1"
+    "version": "0.7.0-rc.2"
   },
   "plugins": [
     {
       "name": "ultracode",
       "source": "./plugins/ultracode",
       "description": "Transparent engineering orchestration with durable feature verification.",
-      "version": "0.7.0-rc.1",
+      "version": "0.7.0-rc.2",
       "author": {
         "name": "Emanuele Denaro"
       },
@@ -27,7 +27,8 @@
         "orchestration",
         "review",
         "validation",
-        "project-control"
+        "project-control",
+        "conventional-commits"
       ]
     }
   ]

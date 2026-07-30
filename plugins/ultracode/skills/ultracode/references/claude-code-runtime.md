@@ -20,13 +20,14 @@ the plugin namespace. Both forms select the same skill and the same behaviour.
 | `$ultracode-help` | `/ultracode:ultracode-help` | Help |
 | `$ultracode` | `/ultracode:ultracode` | UltraCode |
 | `$ultracode-verify` | `/ultracode:ultracode-verify` | Verify |
+| `$ultracode-commit` | `/ultracode:ultracode-commit` | Commit |
 | `$ultracode-init` | `/ultracode:ultracode-init` | Init |
 | `$ultracode-edit` | `/ultracode:ultracode-edit` | Edit |
 | `$ultracode-flow` | `/ultracode:ultracode-flow` | Flow |
 | `$ultracode-status` | `/ultracode:ultracode-status` | Status |
 
 Short aliases `/ultracode:help`, `/ultracode:ultra`, `/ultracode:verify`, `/ultracode:init`,
-`/ultracode:edit`, `/ultracode:flow`, and `/ultracode:status` are shipped as plugin commands and
+`/ultracode:commit`, `/ultracode:edit`, `/ultracode:flow`, and `/ultracode:status` are shipped as plugin commands and
 route to the same skills.
 
 Apply the Help precedence rule to every form. `/ultracode:ultracode-help flow`, `$ultracode-help
